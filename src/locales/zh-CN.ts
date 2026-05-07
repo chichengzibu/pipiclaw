@@ -1,0 +1,100 @@
+/**
+ * PiPiClaw - 简体中文语言包
+ */
+
+export default {
+  common: {
+    confirm: '确认',
+    cancel: '取消',
+    save: '保存',
+    delete: '删除',
+    edit: '编辑',
+    create: '创建',
+    add: '添加',
+    update: '更新',
+    enable: '启用',
+    disable: '禁用',
+    search: '搜索',
+    filter: '筛选',
+    back: '返回',
+    loading: '加载中...',
+    success: '成功',
+    error: '错误',
+    warning: '警告'
+  },
+  nav: {
+    home: '首页',
+    chat: 'AI对话',
+    tasks: '自动化任务',
+    schedule: '定时任务',
+    skills: '技能市场',
+    plugins: '插件市场',
+    models: '模型管理',
+    permissions: '权限管理',
+    settings: '系统设置',
+    help: '帮助中心'
+  },
+  settings: {
+    title: '系统设置',
+    theme: '主题模式',
+    dark: '深色',
+    light: '浅色',
+    language: '语言',
+    guide: '新手引导',
+    openGuide: '重新打开新手引导',
+    shortcut: '快捷键设置',
+    globalShortcut: '全局唤起快捷键',
+    saveShortcut: '保存设置',
+    resetShortcut: '恢复默认',
+    hermesMemory: 'Hermes 记忆管理',
+    coreMemory: '核心记忆',
+    saveCoreMemory: '保存核心记忆',
+    clearAllMemory: '清空所有记忆',
+    feedback: '反馈与帮助',
+    submitFeedback: '提交反馈'
+  },
+  chat: {
+    title: 'AI对话',
+    placeholder: '输入消息... (Shift+Enter 换行，Enter 发送)',
+    send: '发送',
+    stop: '停止',
+    selectProvider: '选择提供商',
+    selectModel: '选择模型',
+    newChat: '新建对话',
+    searchConversation: '搜索会话...',
+    batchActions: '批量操作',
+    selectedCount: '已选中 {count} 项',
+    batchDelete: '批量删除',
+    batchArchive: '批量归档',
+    cancelSelect: '取消'
+  },
+  skills: {
+    title: '技能市场',
+    mySkills: '我的技能',
+    presetSkills: '推荐模板',
+    communitySkills: '社区技能',
+    createSkill: '创建技能',
+    importSkill: '导入技能',
+    install: '安装',
+    execute: '一键执行',
+    category: '分类',
+    usageCount: '使用次数',
+    successRate: '成功率'
+  },
+  schedule: {
+    title: '定时任务',
+    createTask: '新建任务',
+    editTask: '编辑任务',
+    taskName: '任务名称',
+    taskDesc: '任务描述',
+    instruction: '执行指令',
+    scheduleType: '执行周期',
+    cronExpr: 'Cron表达式',
+    retryCount: '重试次数',
+    once: '单次',
+    daily: '每天',
+    weekly: '每周',
+    monthly: '每月',
+    cron: 'Cron'
+  }
+};

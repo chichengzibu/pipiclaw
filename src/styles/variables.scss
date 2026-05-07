@@ -1,0 +1,258 @@
+/**
+ * PiPiClaw - SCSS变量定义
+ * 多主题系统 - 统一视觉风格
+ * 避免千篇一律的AI配色，打造自己的品牌视觉
+ */
+
+/* ==================== 主题系统 - 多主题配色方案 ==================== */
+
+/* 1. 暖科技风格 (Warm Tech) - 默认主题 */
+$theme-warm-tech: (
+  primary: #f59e0b,
+  secondary: #3b82f6,
+  accent: #fbbf24,
+  page-bg: #fefcf3,
+  card-bg: #ffffff,
+  card-bg-secondary: #f8f4e9,
+  text-primary: #1c1917,
+  text-secondary: #44403c,
+  text-placeholder: #a8a29e,
+  border-color: #e7e5e4,
+  border-color-light: #f5f5f4
+);
+
+/* 2. 深海蓝调 (Ocean Blue) - 清爽专业 */
+$theme-ocean-blue: (
+  primary: #0ea5e9,
+  secondary: #0284c7,
+  accent: #38bdf8,
+  page-bg: #f0f9ff,
+  card-bg: #ffffff,
+  card-bg-secondary: #e0f2fe,
+  text-primary: #0c4a6e,
+  text-secondary: #334155,
+  text-placeholder: #94a3b8,
+  border-color: #bae6fd,
+  border-color-light: #e0f2fe
+);
+
+/* 3. 森林绿叶 (Forest Green) - 自然活力 */
+$theme-forest-green: (
+  primary: #10b981,
+  secondary: #059669,
+  accent: #34d399,
+  page-bg: #f0fdf4,
+  card-bg: #ffffff,
+  card-bg-secondary: #d1fae5,
+  text-primary: #14532d,
+  text-secondary: #374151,
+  text-placeholder: #9ca3af,
+  border-color: #a7f3d0,
+  border-color-light: #d1fae5
+);
+
+/* 4. 优雅紫色 (Elegant Purple) - 高级时尚 */
+$theme-elegant-purple: (
+  primary: #8b5cf6,
+  secondary: #7c3aed,
+  accent: #a78bfa,
+  page-bg: #faf5ff,
+  card-bg: #ffffff,
+  card-bg-secondary: #f3e8ff,
+  text-primary: #4c1d95,
+  text-secondary: #4b5563,
+  text-placeholder: #9ca3af,
+  border-color: #ddd6fe,
+  border-color-light: #f3e8ff
+);
+
+/* 5. 樱花粉樱 (Sakura Pink) - 温暖甜美 */
+$theme-sakura-pink: (
+  primary: #f472b6,
+  secondary: #ec4899,
+  accent: #f9a8d4,
+  page-bg: #fdf2f8,
+  card-bg: #ffffff,
+  card-bg-secondary: #fce7f3,
+  text-primary: #581c43,
+  text-secondary: #4b5563,
+  text-placeholder: #9ca3af,
+  border-color: #fbcfe8,
+  border-color-light: #fce7f3
+);
+
+/* ==================== 基础色值（所有主题共用） ==================== */
+/* 功能色 - 所有主题共用 */
+$color-success: #10b981;
+$color-warning: #f59e0b;
+$color-danger: #ef4444;
+$color-gray: #6b7280;
+
+/* ==================== 核心色彩体系 - 从当前主题获取 ==================== */
+$current-theme: $theme-warm-tech; /* 默认主题 */
+$color-primary: map-get($current-theme, primary);
+$color-secondary: map-get($current-theme, secondary);
+$color-accent: map-get($current-theme, accent);
+
+/* primary衍生色 - 基于主色调生成 */
+$color-primary-light-1: adjust-hue(lighten($color-primary, 25%), 0);
+$color-primary-light-2: adjust-hue(lighten($color-primary, 20%), 0);
+$color-primary-light-3: adjust-hue(lighten($color-primary, 15%), 0);
+$color-primary-light-5: adjust-hue(lighten($color-primary, 10%), 0);
+$color-primary-light-7: adjust-hue(lighten($color-primary, 5%), 0);
+$color-primary-light-8: adjust-hue(darken($color-primary, 5%), 0);
+$color-primary-light-9: adjust-hue(lighten($color-primary, 30%), 0);
+
+/* ==================== 间距与布局系统 ==================== */
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+$title-bar-height: 32px;
+$side-nav-width: 200px;
+$content-padding: $spacing-md;
+
+/* ==================== 圆角与阴影系统 ==================== */
+$border-radius-sm: 4px;
+$border-radius-base: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+
+$box-shadow-base: 0 4px 8px rgba(0, 0, 0, 0.15);
+$box-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+/* ==================== 主题应用辅助函数 ==================== */
+@mixin apply-theme($theme) {
+  --color-primary: #{map-get($theme, primary)};
+  --color-secondary: #{map-get($theme, secondary)};
+  --color-accent: #{map-get($theme, accent)};
+  
+  --page-bg: #{map-get($theme, page-bg)};
+  --card-bg: #{map-get($theme, card-bg)};
+  --card-bg-secondary: #{map-get($theme, card-bg-secondary)};
+  --text-primary: #{map-get($theme, text-primary)};
+  --text-secondary: #{map-get($theme, text-secondary)};
+  --text-placeholder: #{map-get($theme, text-placeholder)};
+  --border-color: #{map-get($theme, border-color)};
+  --border-color-light: #{map-get($theme, border-color-light)};
+  
+  /* 兼容变量 */
+  --bg-color: #{map-get($theme, page-bg)};
+  --bg-color-secondary: #{map-get($theme, card-bg)};
+  --bg-color-tertiary: #{map-get($theme, card-bg-secondary)};
+  --bg-color-hover: #{map-get($theme, card-bg-secondary)};
+  --text-color: #{map-get($theme, text-primary)};
+  --text-color-secondary: #{map-get($theme, text-secondary)};
+  --text-color-placeholder: #{map-get($theme, text-placeholder)};
+  --hover-bg-color: #{map-get($theme, card-bg-secondary)};
+  --active-bg-color: #{map-get($theme, card-bg-secondary)};
+  
+  /* Element Plus 组件变量 - 统一覆盖所有二级三级组件 */
+  --el-bg-color: #{map-get($theme, page-bg)};
+  --el-bg-color-overlay: #{map-get($theme, card-bg)};
+  --el-bg-color-page: #{map-get($theme, page-bg)};
+  --el-fill-color: #{map-get($theme, card-bg-secondary)};
+  --el-fill-color-light: #{map-get($theme, border-color-light)};
+  --el-fill-color-lighter: #{map-get($theme, border-color-light)};
+  --el-fill-color-blank: #{map-get($theme, card-bg)};
+  --el-text-color-primary: #{map-get($theme, text-primary)};
+  --el-text-color-regular: #{map-get($theme, text-secondary)};
+  --el-text-color-secondary: #{map-get($theme, text-secondary)};
+  --el-text-color-placeholder: #{map-get($theme, text-placeholder)};
+  --el-text-color-disabled: #{map-get($theme, text-secondary)};
+  --el-border-color: #{map-get($theme, border-color)};
+  --el-border-color-light: #{map-get($theme, border-color-light)};
+  --el-border-color-lighter: #{map-get($theme, border-color-light)};
+  --el-border-color-extra-light: #{map-get($theme, border-color-light)};
+  --el-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
+  --el-box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+  --el-color-primary: #{map-get($theme, primary)};
+  --el-color-primary-light-2: #{adjust-hue(lighten(map-get($theme, primary), 20%), 0)};
+  --el-color-primary-light-5: #{adjust-hue(lighten(map-get($theme, primary), 10%), 0)};
+  --el-color-primary-light-7: #{adjust-hue(lighten(map-get($theme, primary), 5%), 0)};
+  --el-color-primary-light-8: #{adjust-hue(darken(map-get($theme, primary), 5%), 0)};
+  --el-color-primary-light-9: #{adjust-hue(lighten(map-get($theme, primary), 30%), 0)};
+  
+  /* Element Plus 下拉组件与菜单变量 */
+  --el-menu-bg-color: #{map-get($theme, card-bg)};
+  --el-menu-hover-bg-color: #{map-get($theme, border-color-light)};
+  --el-menu-active-bg-color: #{map-get($theme, card-bg-secondary)};
+  --el-dialog-bg-color: #{map-get($theme, card-bg)};
+  --el-select-bg-color: #{map-get($theme, card-bg)};
+  --el-select-input-color: #{map-get($theme, text-primary)};
+  --el-dropdown-menu-bg-color: #{map-get($theme, card-bg)};
+  --el-dropdown-menu-item-color: #{map-get($theme, text-secondary)};
+  --el-dropdown-menu-item-hover-color: #{map-get($theme, text-primary)};
+  --el-dropdown-menu-item-hover-bg-color: #{map-get($theme, border-color-light)};
+  --el-popper-bg-color: #{map-get($theme, card-bg)};
+  
+  /* Element Plus 表单组件变量 */
+  --el-input-bg-color: #{map-get($theme, card-bg)};
+  --el-input-text-color: #{map-get($theme, text-primary)};
+  --el-input-placeholder-color: #{map-get($theme, text-placeholder)};
+  --el-input-border-color: #{map-get($theme, border-color)};
+  --el-textarea-bg-color: #{map-get($theme, card-bg)};
+  --el-textarea-text-color: #{map-get($theme, text-primary)};
+  --el-textarea-placeholder-color: #{map-get($theme, text-placeholder)};
+  
+  /* Element Plus 卡片组件变量 */
+  --el-card-bg-color: #{map-get($theme, card-bg)};
+  --el-card-border-color: #{map-get($theme, border-color)};
+}
+
+/* ==================== 全局主题变量 - 默认应用暖科技 ==================== */
+:root {
+  /* 功能色 - 所有主题共用 */
+  --color-success: #{$color-success};
+  --color-warning: #{$color-warning};
+  --color-danger: #{$color-danger};
+  --color-info: #{$color-gray};
+  
+  /* 应用默认主题 */
+  @include apply-theme($theme-warm-tech);
+  
+  /* 渐变相关变量 */
+  --gradient-start: var(--color-primary);
+  --gradient-mid: var(--color-accent);
+  --gradient-end: var(--color-secondary);
+}
+
+/* ==================== 全局强制样式覆盖 ==================== */
+/* 确保所有基础元素颜色都正确 */
+html, body, #app {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* 确保所有 Element Plus 图标颜色正确 */
+.el-icon {
+  color: var(--text-color) !important;
+}
+
+/* 确保所有按钮图标颜色正确 */
+.el-button .el-icon {
+  color: inherit !important;
+}
+
+/* ==================== 多主题支持 - 类名切换主题 ==================== */
+.theme-warm-tech {
+  @include apply-theme($theme-warm-tech);
+}
+
+.theme-ocean-blue {
+  @include apply-theme($theme-ocean-blue);
+}
+
+.theme-forest-green {
+  @include apply-theme($theme-forest-green);
+}
+
+.theme-elegant-purple {
+  @include apply-theme($theme-elegant-purple);
+}
+
+.theme-sakura-pink {
+  @include apply-theme($theme-sakura-pink);
+}

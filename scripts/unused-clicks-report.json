@@ -1,0 +1,186 @@
+[
+  {
+    "file": "src\\components\\common\\FeedbackModal.vue",
+    "line": 32,
+    "handler": "visible = false",
+    "fullHandler": "visible = false",
+    "snippet": "<el-button @click=\"visible = false\">取消</el-button>",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 37,
+    "handler": "chatStore.clearConversationSelection",
+    "fullHandler": "chatStore.clearConversationSelection",
+    "snippet": "<el-button size=\"small\" text @click=\"chatStore.clearConversationSelection\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 171,
+    "handler": "hermesMemoryStore.toggleMemoryDrawer",
+    "fullHandler": "hermesMemoryStore.toggleMemoryDrawer",
+    "snippet": "@click=\"hermesMemoryStore.toggleMemoryDrawer\"",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 192,
+    "handler": "showSettings = true",
+    "fullHandler": "showSettings = true",
+    "snippet": "<el-button size=\"small\" @click=\"showSettings = true\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 290,
+    "handler": "hermesMemoryStore.toggleMemoryPanel",
+    "fullHandler": "hermesMemoryStore.toggleMemoryPanel",
+    "snippet": "<el-button size=\"small\" text @click=\"hermesMemoryStore.toggleMemoryPanel\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 421,
+    "handler": "chatStore.quoteMessage",
+    "fullHandler": "chatStore.quoteMessage(message)",
+    "snippet": "<el-button size=\"small\" text @click=\"chatStore.quoteMessage(message)\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 532,
+    "handler": "chatStore.clearQuotedMessage",
+    "fullHandler": "chatStore.clearQuotedMessage",
+    "snippet": "<el-button size=\"small\" text @click=\"chatStore.clearQuotedMessage\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 600,
+    "handler": "$router.push",
+    "fullHandler": "$router.push('/models')",
+    "snippet": "<el-button @click=\"$router.push('/models')\" v-if=\"enabledProviders.length === 0\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 661,
+    "handler": "showSettings = false",
+    "fullHandler": "showSettings = false",
+    "snippet": "<el-button @click=\"showSettings = false\">取消</el-button>",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Chat.vue",
+    "line": 707,
+    "handler": "chatStore.cancelExecuteTask",
+    "fullHandler": "chatStore.cancelExecuteTask",
+    "snippet": "<el-button @click=\"chatStore.cancelExecuteTask\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Dashboard.vue",
+    "line": 88,
+    "handler": "gatewayStore.logs = []",
+    "fullHandler": "gatewayStore.logs = []",
+    "snippet": "<el-button link size=\"small\" @click=\"gatewayStore.logs = []\">清空</el-button>",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Dashboard.vue",
+    "line": 109,
+    "handler": "$router.push",
+    "fullHandler": "$router.push('/chat')",
+    "snippet": "<el-button type=\"primary\" @click=\"$router.push('/chat')\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Dashboard.vue",
+    "line": 113,
+    "handler": "$router.push",
+    "fullHandler": "$router.push('/models')",
+    "snippet": "<el-button @click=\"$router.push('/models')\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Dashboard.vue",
+    "line": 117,
+    "handler": "$router.push",
+    "fullHandler": "$router.push('/permissions')",
+    "snippet": "<el-button @click=\"$router.push('/permissions')\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Models.vue",
+    "line": 191,
+    "handler": "dialogVisible = false",
+    "fullHandler": "dialogVisible = false",
+    "snippet": "<el-button @click=\"dialogVisible = false\">取消</el-button>",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Permissions.vue",
+    "line": 209,
+    "handler": "createDialogVisible = false",
+    "fullHandler": "createDialogVisible = false",
+    "snippet": "<el-button @click=\"createDialogVisible = false\">取消</el-button>",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Permissions.vue",
+    "line": 226,
+    "handler": "duplicateDialogVisible = false",
+    "fullHandler": "duplicateDialogVisible = false",
+    "snippet": "<el-button @click=\"duplicateDialogVisible = false\">取消</el-button>",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Schedule.vue",
+    "line": 11,
+    "handler": "scheduleStore.openCreateDialog",
+    "fullHandler": "scheduleStore.openCreateDialog",
+    "snippet": "<el-button type=\"primary\" @click=\"scheduleStore.openCreateDialog\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Schedule.vue",
+    "line": 43,
+    "handler": "scheduleStore.openEditDialog",
+    "fullHandler": "scheduleStore.openEditDialog(row)",
+    "snippet": "<el-button size=\"small\" text @click=\"scheduleStore.openEditDialog(row)\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Schedule.vue",
+    "line": 131,
+    "handler": "scheduleStore.closeDialog",
+    "fullHandler": "scheduleStore.closeDialog",
+    "snippet": "<el-button @click=\"scheduleStore.closeDialog\">取消</el-button>",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Settings.vue",
+    "line": 29,
+    "handler": "appStore.openGuide",
+    "fullHandler": "appStore.openGuide",
+    "snippet": "<el-button type=\"primary\" size=\"small\" @click=\"appStore.openGuide\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\Settings.vue",
+    "line": 88,
+    "handler": "showFeedbackModal = true",
+    "fullHandler": "showFeedbackModal = true",
+    "snippet": "<el-button type=\"primary\" size=\"small\" @click=\"showFeedbackModal = true\">",
+    "status": "unused"
+  },
+  {
+    "file": "src\\views\\SkillMarket.vue",
+    "line": 111,
+    "handler": "showExecuteModal = false",
+    "fullHandler": "showExecuteModal = false",
+    "snippet": "<el-button @click=\"showExecuteModal = false\">取消</el-button>",
+    "status": "unused"
+  }
+]

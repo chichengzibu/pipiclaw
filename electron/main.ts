@@ -1,0 +1,173 @@
+/**
+ * PiPiClaw - Electron主进程入口（修复版）
+ * 
+ * 核心改进：
+ * 1. 简化网关启动逻辑，移除对不存在文件的依赖
+ * 2. 使用内置的OpenClawServer直接启动HTTP服务
+ * 3. 更好的错误处理和日志记录
+ */
+
+import { app, BrowserWindow, Menu, shell, ipcMain } from 'electron';
+import { WindowManager } from './core/WindowManager';
+import { IpcServer } from './core/IpcServer';
+import { LogManager } from './core/LogManager';
+import { GlobalShortcut } from './core/GlobalShortcut';
+import { TrayManager } from './core/TrayManager';
+import { MiniWindow } from './core/MiniWindow';
+import { ConfigStore } from './core/ConfigStore';
+import { OpenClawGateway } from './openclaw/OpenClawGateway';
+import { PermissionConfig } from './permissions/PermissionConfig';
+
+const log = LogManager.getInstance();
+
+let windowManager: WindowManager;
+let ipcServer: IpcServer;
+let gateway: OpenClawGateway;
+let globalShortcut: GlobalShortcut;
+let trayManager: TrayManager;
+const isDev = !app.isPackaged;
+
+// 注册打开 DevTools 的 IPC 处理器
+ipcMain.on('open-devtools', () => {
+  const windowManager = WindowManager.getInstance();
+  const win = windowManager.getMainWindow();
+  if (win) {
+    log.info('用户请求打开 DevTools');
+    win.webContents.openDevTools();
+  }
+});
+
+app.whenReady().then(async () => {
+  log.info('========== PiPiClaw 应用启动 ==========', { version: app.getVersion(), isDev });
+
+  try {
+    // 1. 设置应用菜单
+    setupAppMenu();
+
+    // 2. 初始化IPC服务器
+    ipcServer = IpcServer.getInstance();
+    ipcServer.registerHandlers();
+
+    // 3. 创建主窗口
+    windowManager = WindowManager.getInstance();
+    await windowManager.createMainWindow();
+
+    // 4. 初始化全局快捷键
+    globalShortcut = GlobalShortcut.getInstance();
+    globalShortcut.registerAll();
+
+    // 5. 初始化托盘
+    trayManager = TrayManager.getInstance();
+    trayManager.create();
+
+    // 6. 强制重置权限为完全开放（预防旧配置覆盖）
+    const permissionConfig = PermissionConfig.getInstance();
+    permissionConfig.forceResetToPermissive();
+    
+    // 7. 加载配置
+    const configStore = ConfigStore.getInstance();
+    const alwaysOnTop = configStore.get('window.alwaysOnTop') || false;
+    if (alwaysOnTop) {
+      windowManager.setAlwaysOnTop(true);
+    }
+    
+    const edgeHideEnabled = configStore.get('window.edgeHideEnabled') || false;
+    if (edgeHideEnabled) {
+      windowManager.setEdgeHideEnabled(true);
+      windowManager.setupEdgeHide();
+    }
+
+    // 8. 初始化网关
+    gateway = OpenClawGateway.getInstance();
+
+    // 9. 启动网关服务
+    log.info('正在自动启动OpenClaw网关服务...');
+    const gatewayResult = await gateway.start();
+    
+    if (gatewayResult.success) {
+      log.info('========== OpenClaw网关启动成功 ==========');
+    } else {
+      log.error('OpenClaw网关启动失败', { error: gatewayResult.error });
+    }
+
+    // 10. 开发模式下打开DevTools
+    if (isDev) {
+      windowManager.getMainWindow()?.webContents.openDevTools();
+    }
+
+    log.info('========== PiPiClaw应用启动完成 ==========');
+  } catch (error) {
+    log.error('应用启动失败', error);
+    app.quit();
+  }
+});
+
+app.on('window-all-closed', () => {
+  log.info('所有窗口已关闭');
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    windowManager = WindowManager.getInstance();
+    windowManager.createMainWindow();
+  }
+});
+
+app.on('before-quit', async () => {
+  log.info('应用即将退出');
+  
+  trayManager?.setQuitting(true);
+
+  if (gateway) {
+    try {
+      log.info('正在停止OpenClaw网关...');
+      await gateway.stop();
+      log.info('网关已停止');
+    } catch (error) {
+      log.error('停止网关时出错', error);
+    }
+  }
+
+  globalShortcut?.destroy();
+  trayManager?.destroy();
+  MiniWindow.getInstance().destroy();
+  
+  if (ipcServer) {
+    ipcServer.destroy();
+  }
+
+  if (windowManager) {
+    windowManager.destroy();
+  }
+});
+
+process.on('uncaughtException', (error) => {
+  log.error('未捕获的异常', error);
+  if (!isDev) {
+    const { dialog } = require('electron');
+    dialog.showErrorBox('应用错误', `发生未知错误: ${error.message}`);
+  }
+});
+
+process.on('unhandledRejection', (reason) => {
+  log.error('未处理的Promise拒绝', reason);
+});
+
+function setupAppMenu(): void {
+  const emptyMenu = Menu.buildFromTemplate([]);
+  Menu.setApplicationMenu(emptyMenu);
+  if (process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+  }
+  log.debug('应用菜单已配置为隐藏');
+}
+
+app.on('web-contents-created', (_, contents) => {
+  contents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+});

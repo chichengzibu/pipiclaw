@@ -1,0 +1,100 @@
+/**
+ * PiPiClaw - English Language Pack
+ */
+
+export default {
+  common: {
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    save: 'Save',
+    delete: 'Delete',
+    edit: 'Edit',
+    create: 'Create',
+    add: 'Add',
+    update: 'Update',
+    enable: 'Enable',
+    disable: 'Disable',
+    search: 'Search',
+    filter: 'Filter',
+    back: 'Back',
+    loading: 'Loading...',
+    success: 'Success',
+    error: 'Error',
+    warning: 'Warning'
+  },
+  nav: {
+    home: 'Home',
+    chat: 'AI Chat',
+    tasks: 'Automation Tasks',
+    schedule: 'Schedule',
+    skills: 'Skill Market',
+    plugins: 'Plugin Market',
+    models: 'Models',
+    permissions: 'Permissions',
+    settings: 'Settings',
+    help: 'Help Center'
+  },
+  settings: {
+    title: 'Settings',
+    theme: 'Theme',
+    dark: 'Dark',
+    light: 'Light',
+    language: 'Language',
+    guide: 'Onboarding Guide',
+    openGuide: 'Reopen Onboarding',
+    shortcut: 'Shortcuts',
+    globalShortcut: 'Global Shortcut',
+    saveShortcut: 'Save Settings',
+    resetShortcut: 'Reset to Default',
+    hermesMemory: 'Hermes Memory',
+    coreMemory: 'Core Memory',
+    saveCoreMemory: 'Save Core Memory',
+    clearAllMemory: 'Clear All Memory',
+    feedback: 'Feedback & Help',
+    submitFeedback: 'Submit Feedback'
+  },
+  chat: {
+    title: 'AI Chat',
+    placeholder: 'Type a message... (Shift+Enter for new line, Enter to send)',
+    send: 'Send',
+    stop: 'Stop',
+    selectProvider: 'Select Provider',
+    selectModel: 'Select Model',
+    newChat: 'New Chat',
+    searchConversation: 'Search conversations...',
+    batchActions: 'Batch Actions',
+    selectedCount: '{count} selected',
+    batchDelete: 'Batch Delete',
+    batchArchive: 'Batch Archive',
+    cancelSelect: 'Cancel'
+  },
+  skills: {
+    title: 'Skill Market',
+    mySkills: 'My Skills',
+    presetSkills: 'Templates',
+    communitySkills: 'Community',
+    createSkill: 'Create Skill',
+    importSkill: 'Import Skill',
+    install: 'Install',
+    execute: 'Execute',
+    category: 'Category',
+    usageCount: 'Usage',
+    successRate: 'Success Rate'
+  },
+  schedule: {
+    title: 'Schedule',
+    createTask: 'New Task',
+    editTask: 'Edit Task',
+    taskName: 'Task Name',
+    taskDesc: 'Description',
+    instruction: 'Instruction',
+    scheduleType: 'Schedule',
+    cronExpr: 'Cron Expression',
+    retryCount: 'Retries',
+    once: 'Once',
+    daily: 'Daily',
+    weekly: 'Weekly',
+    monthly: 'Monthly',
+    cron: 'Cron'
+  }
+};

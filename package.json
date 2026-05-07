@@ -1,0 +1,40 @@
+{
+  "name": "pipiclaw",
+  "version": "1.0.0",
+  "description": "国产桌面AI自动化助手 - 基于Electron+OpenClaw",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && electron-builder",
+    "build:win": "vite build && electron-builder --win",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "docx": "^8.5.0",
+    "electron-log": "^5.1.1",
+    "element-plus": "^2.5.4",
+    "highlight.js": "^11.11.1",
+    "marked": "^18.0.0",
+    "pinia": "^2.1.7",
+    "playwright": "^1.59.1",
+    "vue": "^3.4.15",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "sass": "^1.70.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vite-plugin-electron": "^0.28.0",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue-tsc": "^1.8.27"
+  },
+  "author": "PiPiClaw Team",
+  "license": "MIT"
+}
