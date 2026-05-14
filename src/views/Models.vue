@@ -30,10 +30,10 @@
           <template #header>
             <div class="provider-header">
               <div class="provider-info">
-                <span class="provider-icon">{{ getProviderIcon(provider.type) }}</span>
+                <span class="provider-icon">{{ getProviderIcon(provider.type, provider.name) }}</span>
                 <div class="provider-title">
                   <span class="provider-name">{{ provider.name }}</span>
-                  <span class="provider-type">{{ getProviderTypeName(provider.type) }}</span>
+                  <span class="provider-type">{{ getProviderTypeName(provider.type, provider.name) }}</span>
                 </div>
               </div>
               <el-switch
@@ -56,29 +56,31 @@
               <span class="model-count">{{ provider.models.length }} 个模型</span>
             </div>
 
-            <div class="models-list" v-if="provider.models.length > 0">
-              <el-scrollbar class="models-scrollbar">
-                <div
-                  v-for="model in provider.models"
-                  :key="model.id"
-                  class="model-item"
-                  :class="{ default: model.id === provider.defaultModel }"
-                >
-                  <span class="model-name">{{ model.name }}</span>
-                  <span class="model-capabilities">
-                    <el-tag
-                      v-for="cap in model.capabilities.slice(0, 2)"
-                      :key="cap"
-                      size="small"
-                      effect="plain"
-                      type="info"
-                    >{{ cap }}</el-tag>
-                  </span>
-                </div>
-              </el-scrollbar>
+            <div class="models-tag-cloud" v-if="provider.models && provider.models.length > 0">
+              <el-tag
+                v-for="(model, index) in provider.models.slice(0, 8)"
+                :key="model.id"
+                size="small"
+                effect="plain"
+                type="info"
+              >
+                {{ model.name }}
+                <span class="model-cap-tag" v-if="model.capabilities.length > 0">
+                  [{{ model.capabilities[0] }}]
+                </span>
+              </el-tag>
+              <span class="more-models-tip" v-if="provider.models.length > 8">
+                +{{ provider.models.length - 8 }} 个模型
+              </span>
             </div>
             <div v-else class="no-models">
-              暂无模型配置
+              <el-tooltip 
+                :content="provider.type === 'volc_ark' ? '暂无模型配置，请手动添加' : '暂无模型配置'" 
+                placement="top" 
+                :disabled="(provider.type === 'volc_ark' ? '暂无模型配置，请手动添加' : '暂无模型配置').length <= 40"
+              >
+                <span>{{ truncateText(provider.type === 'volc_ark' ? '暂无模型配置，请手动添加' : '暂无模型配置', 40) }}</span>
+              </el-tooltip>
             </div>
           </div>
 
@@ -91,13 +93,15 @@
               >
                 测试连接
               </el-button>
+              <el-button size="small" @click="handleManageModels(provider)">
+                管理模型
+              </el-button>
               <el-button
-                v-if="provider.type === 'ollama'"
+                v-if="!isVolcEngineProvider(provider)"
                 size="small"
-                :loading="modelsStore.isSyncing(provider.id)"
-                @click="handleSyncOllama(provider.id)"
+                @click="handleFetchModels(provider.id)"
               >
-                同步模型
+                拉取模型
               </el-button>
               <el-button size="small" @click="handleEdit(provider)">
                 编辑
@@ -119,8 +123,8 @@
     <!-- 添加/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="isEditing ? '编辑提供商' : '添加提供商'"
-      width="600px"
+      :title="isEditing ? '编辑供应商' : '添加供应商'"
+      width="700px"
       :close-on-click-modal="false"
     >
       <el-form
@@ -133,14 +137,16 @@
           <el-input v-model="formData.name" placeholder="例如：OpenAI" />
         </el-form-item>
 
-        <el-form-item label="类型" prop="type">
+        <el-form-item v-if="!isEditing" label="类型" prop="type">
           <el-select v-model="formData.type" placeholder="选择提供商类型" @change="handleTypeChange">
-            <el-option label="OpenAI" value="openai" />
-            <el-option label="Anthropic" value="anthropic" />
-            <el-option label="DeepSeek" value="deepseek" />
-            <el-option label="Azure OpenAI" value="azure" />
-            <el-option label="Ollama (本地)" value="ollama" />
-            <el-option label="自定义" value="custom" />
+            <el-option 
+              v-for="template in allProviderOptions" 
+              :key="template.type" 
+              :value="template.type"
+            >
+              <span style="margin-right: 8px;">{{ getProviderIcon(template.type, template.name) }}</span>
+              {{ template.name }}
+            </el-option>
           </el-select>
         </el-form-item>
 
@@ -155,9 +161,19 @@
             show-password
             placeholder="输入 API Key"
           />
+          <div v-if="currentProviderType === 'volc_ark'" class="form-tip">
+            <el-tooltip content="请输入火山方舟创建的长效 API Key（通常以 ark- 开头，而非 IAM 访问密钥）" placement="top" :disabled="'请输入火山方舟创建的长效 API Key（通常以 ark- 开头，而非 IAM 访问密钥）'.length <= 40">
+              <span>{{ truncateText('请输入火山方舟创建的长效 API Key（通常以 ark- 开头，而非 IAM 访问密钥）', 40) }}</span>
+            </el-tooltip>
+          </div>
+          <div v-if="currentProviderType === 'anthropic'" class="form-tip">
+            <el-tooltip content="请输入 Anthropic API Key（从 console.anthropic.com 获取）" placement="top" :disabled="'请输入 Anthropic API Key（从 console.anthropic.com 获取）'.length <= 40">
+              <span>{{ truncateText('请输入 Anthropic API Key（从 console.anthropic.com 获取）', 40) }}</span>
+            </el-tooltip>
+          </div>
         </el-form-item>
 
-        <template v-if="formData.type === 'azure'">
+        <template v-if="currentProviderType === 'azure'">
           <el-form-item label="部署名称" prop="deploymentName">
             <el-input v-model="formData.deploymentName" placeholder="Azure 部署名称" />
           </el-form-item>
@@ -166,7 +182,7 @@
           </el-form-item>
         </template>
 
-        <template v-if="formData.type === 'anthropic'">
+        <template v-if="currentProviderType === 'anthropic'">
           <el-form-item label="组织 ID" prop="organization">
             <el-input v-model="formData.organization" placeholder="可选" />
           </el-form-item>
@@ -180,6 +196,13 @@
             :step="5000"
           />
           <span class="form-tip">毫秒</span>
+        </el-form-item>
+
+        <el-form-item label="模型ID" prop="modelId">
+          <el-input v-model="formData.modelId" :placeholder="isVolcEngineForm() ? '请输入模型ID，如 doubao-pro-32k-240615 或 ark-code-latest' : '请输入模型ID'" />
+          <div v-if="isVolcEngineForm()" class="form-tip">
+            Coding Plan 支持的模型：doubao-pro-32k-240615, doubao-pro-4k-240515, doubao-lite-32k-240428, doubao-pro-128k-240615
+          </div>
         </el-form-item>
 
         <el-form-item label="启用">
@@ -207,11 +230,40 @@
               <p>响应时间: {{ testResult.latency }}ms</p>
             </div>
             <div v-else>
-              <p>{{ testResult.error }}</p>
+              <el-tooltip :content="testResult.error" placement="top" :disabled="testResult.error && testResult.error.length <= 40">
+                <p>{{ testResult.error ? truncateText(testResult.error, 40) : '' }}</p>
+              </el-tooltip>
             </div>
           </template>
         </el-result>
       </div>
+    </el-dialog>
+
+    <!-- 管理模型对话框 -->
+    <el-dialog v-model="manageModelsDialogVisible" title="管理模型" width="600px">
+      <div v-if="currentProvider">
+        <div class="model-list">
+          <el-empty v-if="editingModels.length === 0" description="暂无模型" />
+          <div v-else>
+            <div v-for="(model, index) in editingModels" :key="model.id" class="model-item">
+              <span class="model-name">{{ model.name }}</span>
+              <el-button size="small" type="danger" text @click="removeModel(index)">删除</el-button>
+            </div>
+          </div>
+        </div>
+        
+        <el-divider />
+        
+        <div class="add-model">
+          <el-input v-model="newModelId" placeholder="输入新模型ID" style="margin-right: 8px;" />
+          <el-button type="primary" @click="addModel">添加模型</el-button>
+        </div>
+      </div>
+      
+      <template #footer>
+        <el-button @click="manageModelsDialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="saveModels">保存</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -227,14 +279,33 @@ const modelsStore = useModelsStore();
 
 const dialogVisible = ref(false);
 const testDialogVisible = ref(false);
+const manageModelsDialogVisible = ref(false);
 const submitting = ref(false);
 const isEditing = ref(false);
 const editingId = ref('');
 const formRef = ref();
 const testResult = ref<{ success: boolean; latency?: number; error?: string } | null>(null);
 const togglingProviders = ref<Set<string>>(new Set());
+const currentProvider = ref<ProviderConfig | null>(null);
+const newModelId = ref('');
+const editingModels = ref<any[]>([]);
 
-const formData = reactive<ProviderFormData>({
+function isVolcEngineProvider(provider: ProviderConfig): boolean {
+  return provider.type === 'volc_ark' || (provider.baseUrl && provider.baseUrl.includes('coding/v3'));
+}
+
+function isVolcEngineForm(): boolean {
+  return formData.type === 'volc_ark' || (formData.baseUrl && formData.baseUrl.includes('coding/v3'));
+}
+
+function truncateText(text: string, maxLength: number): string {
+  if (!text) return '';
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+const currentProviderType = computed(() => formData.type || 'openai');
+
+const formData = reactive<ProviderFormData & { modelId: string }>({
   name: '',
   type: 'openai',
   enabled: true,
@@ -244,7 +315,8 @@ const formData = reactive<ProviderFormData>({
   deploymentName: '',
   apiVersion: '',
   timeout: 60000,
-  maxRetries: 3
+  maxRetries: 3,
+  modelId: ''
 });
 
 const formRules = {
@@ -253,49 +325,139 @@ const formRules = {
   baseUrl: [{ required: true, message: '请输入 API 地址', trigger: 'blur' }]
 };
 
-onMounted(async () => {
-  await modelsStore.fetchProviders();
+const allProviderOptions = computed(() => {
+  const templates = [...modelsStore.providerTemplates];
+  // 确保自定义选项始终在最后
+  if (!templates.find(t => t.type === 'custom')) {
+    templates.push({ name: '自定义', type: 'custom', defaultConfig: {} });
+  }
+  return templates;
 });
 
-function getProviderIcon(type: string): string {
-  const icons: Record<string, string> = {
-    openai: '🤖',
-    anthropic: '🧠',
-    deepseek: '🔮',
-    azure: '☁️',
-    ollama: '🦙',
-    custom: '⚙️'
-  };
-  return icons[type] || '📦';
+onMounted(async () => {
+  await Promise.all([
+    modelsStore.fetchProviders(),
+    modelsStore.fetchProviderTemplates()
+  ]);
+});
+
+function handleTypeChange(type: string): void {
+  const selectedTemplate = modelsStore.providerTemplates.find(t => t.type === type);
+  if (selectedTemplate) {
+    formData.name = selectedTemplate.defaultConfig.name || '';
+    formData.baseUrl = selectedTemplate.defaultConfig.baseUrl || '';
+    formData.timeout = selectedTemplate.defaultConfig.timeout || 60000;
+    formData.maxRetries = selectedTemplate.defaultConfig.maxRetries || 3;
+  } else if (type === 'custom') {
+    formData.name = '';
+    formData.baseUrl = '';
+  } else {
+    const defaults = PROVIDER_DEFAULTS[type as keyof typeof PROVIDER_DEFAULTS];
+    if (defaults) {
+      formData.baseUrl = defaults.baseUrl || '';
+      formData.timeout = defaults.timeout || 60000;
+      formData.maxRetries = defaults.maxRetries || 3;
+      if (defaults.name) {
+        formData.name = formData.name || defaults.name;
+      }
+    }
+  }
 }
 
-function getProviderTypeName(type: string): string {
+function getProviderTypeName(type: string, name?: string): string {
   const names: Record<string, string> = {
     openai: 'OpenAI',
     anthropic: 'Anthropic Claude',
     deepseek: 'DeepSeek',
     azure: 'Azure OpenAI',
     ollama: 'Ollama 本地',
-    custom: '自定义'
+    openrouter: 'OpenRouter',
+    volc_ark: '火山引擎',
+    custom: '自定义',
+    '智谱 AI': '智谱 AI',
+    '月之暗面': '月之暗面 (Kimi)',
+    'MiniMax': 'MiniMax',
+    '零一万物': '零一万物',
+    '百川智能': '百川智能',
+    '阿里百炼': '阿里百炼',
+    '硅基流动': '硅基流动'
   };
-  return names[type] || type;
+  return names[type] || (name ? names[name] || type : type);
 }
 
-function handleTypeChange(type: string): void {
-  const defaults = PROVIDER_DEFAULTS[type as keyof typeof PROVIDER_DEFAULTS];
-  if (defaults) {
-    formData.baseUrl = defaults.baseUrl || '';
-    formData.timeout = defaults.timeout || 60000;
-    formData.maxRetries = defaults.maxRetries || 3;
-    if (defaults.name) {
-      formData.name = formData.name || defaults.name;
-    }
+function getProviderIcon(type: string, name?: string): string {
+  if (type === 'custom' && name) {
+    const customIcons: Record<string, string> = {
+      '智谱 AI': '💡',
+      '月之暗面': '🌙',
+      'MiniMax': '⭐',
+      '零一万物': '✨',
+      '百川智能': '🌊',
+      '火山引擎': '🌋',
+      '阿里百炼': '🐏',
+      '硅基流动': '🔬'
+    };
+    return customIcons[name] || '⚙️';
+  }
+  const icons: Record<string, string> = {
+    openai: '🤖',
+    anthropic: '🧠',
+    deepseek: '🔮',
+    azure: '☁️',
+    ollama: '🦙',
+    openrouter: '🌐',
+    volc_ark: '🌋',
+    custom: '⚙️'
+  };
+  return icons[type] || '📦';
+}
+
+function handleManageModels(provider: ProviderConfig): void {
+  currentProvider.value = provider;
+  editingModels.value = JSON.parse(JSON.stringify(provider.models));
+  newModelId.value = '';
+  manageModelsDialogVisible.value = true;
+}
+
+function addModel(): void {
+  if (!newModelId.value.trim()) return;
+  
+  editingModels.value.push({
+    id: newModelId.value.trim(),
+    name: newModelId.value.trim(),
+    capabilities: ['chat']
+  });
+  
+  newModelId.value = '';
+}
+
+function removeModel(index: number): void {
+  editingModels.value.splice(index, 1);
+}
+
+async function saveModels(): Promise<void> {
+  if (!currentProvider.value) return;
+  
+  try {
+    await modelsStore.updateProvider(currentProvider.value.id, {
+      ...currentProvider.value,
+      models: editingModels.value
+    });
+    ElMessage.success('保存成功');
+    manageModelsDialogVisible.value = false;
+  } catch (error) {
+    ElMessage.error('保存失败');
   }
 }
 
-function handleAddProvider(): void {
+async function handleAddProvider(): Promise<void> {
   isEditing.value = false;
   editingId.value = '';
+  
+  if (modelsStore.providerTemplates.length === 0) {
+    await modelsStore.fetchProviderTemplates();
+  }
+  
   Object.assign(formData, {
     name: '',
     type: 'openai',
@@ -306,7 +468,8 @@ function handleAddProvider(): void {
     deploymentName: '',
     apiVersion: '',
     timeout: 60000,
-    maxRetries: 3
+    maxRetries: 3,
+    modelId: ''
   });
   dialogVisible.value = true;
 }
@@ -314,6 +477,8 @@ function handleAddProvider(): void {
 function handleEdit(provider: ProviderConfig): void {
   isEditing.value = true;
   editingId.value = provider.id;
+  
+  // 回填基本信息
   Object.assign(formData, {
     name: provider.name,
     type: provider.type,
@@ -324,27 +489,41 @@ function handleEdit(provider: ProviderConfig): void {
     deploymentName: provider.deploymentName || '',
     apiVersion: provider.apiVersion || '',
     timeout: provider.timeout || 60000,
-    maxRetries: provider.maxRetries || 3
+    maxRetries: provider.maxRetries || 3,
+    modelId: provider.models && provider.models.length > 0 ? provider.models[0].id : ''
   });
+  
   dialogVisible.value = true;
 }
 
 async function handleSubmit(): Promise<void> {
   if (!formRef.value) return;
 
-  await formRef.value.validate(async (valid) => {
+  await formRef.value.validate(async (valid: boolean) => {
     if (!valid) return;
 
     submitting.value = true;
     try {
+      // 创建模型数据
+      const models = formData.modelId ? [{
+        id: formData.modelId,
+        name: formData.modelId,
+        capabilities: ['chat']
+      }] : [];
+      
+      const submitData = { 
+        ...formData,
+        models
+      };
+
       if (isEditing.value) {
-        const result = await modelsStore.updateProvider(editingId.value, formData);
+        const result = await modelsStore.updateProvider(editingId.value, submitData);
         if (result) {
           ElMessage.success('保存成功');
           dialogVisible.value = false;
         }
       } else {
-        const result = await modelsStore.addProvider(formData);
+        const result = await modelsStore.addProvider(submitData);
         if (result) {
           ElMessage.success('添加成功');
           dialogVisible.value = false;
@@ -374,12 +553,29 @@ async function handleTest(id: string): Promise<void> {
   const result = await modelsStore.testProvider(id);
   testResult.value = result;
   testDialogVisible.value = true;
+
+  if (result?.success) {
+    setTimeout(async () => {
+      const fetchResult = await modelsStore.fetchModels(id);
+      if (fetchResult.success) {
+        ElMessage.success(`发现 ${fetchResult.models.length} 个模型`);
+      } else if (fetchResult.error) {
+        ElMessage.warning(fetchResult.error);
+      }
+    }, 500);
+  }
 }
 
-async function handleSyncOllama(id: string): Promise<void> {
-  const success = await modelsStore.syncOllamaModels(id);
-  if (success) {
-    ElMessage.success('模型同步成功');
+async function handleFetchModels(id: string): Promise<void> {
+  const result = await modelsStore.fetchModels(id);
+  if (result.success) {
+    if (result.models.length > 0) {
+      ElMessage.success(`发现 ${result.models.length} 个模型`);
+    } else if (result.error) {
+      ElMessage.warning(result.error);
+    }
+  } else if (result.error) {
+    ElMessage.error(`获取模型列表失败: ${result.error}`);
   }
 }
 
@@ -400,7 +596,6 @@ async function handleDelete(id: string, name: string): Promise<void> {
       ElMessage.success('删除成功');
     }
   } catch {
-    // 用户取消
   }
 }
 </script>
@@ -455,11 +650,38 @@ async function handleDelete(id: string, name: string): Promise<void> {
 .provider-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: $content-padding;
+  gap: 16px;
 }
 
 .provider-card {
   transition: all 0.3s;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+
+  :deep(.el-card__header) {
+    height: 48px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  :deep(.el-card__body) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  :deep(.el-card__footer) {
+    height: 44px;
+    padding: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
 
   &.disabled {
     opacity: 0.7;
@@ -476,6 +698,7 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .provider-info {
@@ -506,7 +729,9 @@ async function handleDelete(id: string, name: string): Promise<void> {
 }
 
 .provider-body {
-  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .connection-status {
@@ -514,64 +739,44 @@ async function handleDelete(id: string, name: string): Promise<void> {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .model-count {
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.4;
   color: var(--el-text-color-secondary);
 }
 
-.models-list {
-  max-height: 300px;
-}
-
-.models-scrollbar {
-  max-height: 300px;
-}
-
-.models-list > .models-scrollbar :deep(.el-scrollbar__wrap) {
-  overflow-x: hidden;
-}
-
-.models-list > .models-scrollbar :deep(.el-scrollbar__view) {
+.models-tag-cloud {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+  align-content: flex-start;
 
-.model-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: var(--el-fill-color-light);
-  border-radius: 4px;
-
-  &.default {
-    border: 1px solid var(--el-color-primary-light-5);
-    background: var(--el-color-primary-light-9);
+  :deep(.el-tag) {
+    font-size: 12px;
+    height: 24px;
   }
 }
 
-.model-name {
+.model-cap-tag {
+  font-size: 11px;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
+.more-models-tip {
   font-size: 13px;
-  font-weight: 500;
-  color: var(--text-color);
-}
-
-.model-capabilities {
-  display: flex;
-  gap: 4px;
-}
-
-.more-models {
-  font-size: 12px;
+  line-height: 1.4;
   color: var(--el-text-color-secondary);
-  padding: 4px 12px;
+  padding: 2px 0;
 }
 
 .no-models {
   font-size: 13px;
+  line-height: 1.4;
   color: var(--el-text-color-secondary);
   text-align: center;
   padding: 20px;
@@ -581,10 +786,64 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.volc-tip {
+  margin-bottom: 20px;
+}
+
+.model-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--el-fill-color-light);
+  border-radius: 6px;
+  
+  :deep(.el-form-item) {
+    margin-bottom: 0;
+    flex: 1;
+  }
+}
+
+.form-item-input {
+  flex: 1;
+}
+
+.form-item-select {
+  width: 100%;
 }
 
 .form-tip {
   margin-left: 8px;
   color: var(--el-text-color-secondary);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.model-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.model-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--el-fill-color-light);
+  border-radius: 4px;
+}
+
+.model-name {
+  font-size: 14px;
+}
+
+.add-model {
+  display: flex;
+  align-items: center;
 }
 </style>

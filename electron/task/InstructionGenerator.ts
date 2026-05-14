@@ -39,26 +39,41 @@ export class InstructionGenerator {
   /**
    * 从用户指令生成操作步骤
    */
-  public async generateTaskSteps(userInstruction: string): Promise<GeneratedStep[] | null> {
+  public async generateTaskSteps(userInstruction: string, preferredProviderId?: string, preferredModelId?: string): Promise<GeneratedStep[] | null> {
     this.log.info(`[InstructionGenerator] 生成步骤: ${userInstruction}`);
+    this.log.info(`[InstructionGenerator] 用户选择: provider=${preferredProviderId || '未指定'}, model=${preferredModelId || '未指定'}`);
 
     try {
-      // 获取激活的模型
-      const providers = this.modelManager.getAllProviders().filter(p => p.enabled);
-      if (providers.length === 0) {
-        this.log.error('[InstructionGenerator] 没有可用的模型');
-        return null;
+      let provider: any = null;
+      let model: any = null;
+
+      if (preferredProviderId) {
+        provider = this.modelManager.getProvider(preferredProviderId);
+        if (provider) {
+          if (preferredModelId) {
+            model = provider.models.find((m: any) => m.id === preferredModelId && m.enabled) || provider.models.find((m: any) => m.enabled);
+          } else {
+            model = provider.models.find((m: any) => m.enabled) || provider.models[0];
+          }
+        }
       }
 
-      const provider = providers[0];
-      const model = provider.models.find(m => m.enabled) || provider.models[0];
+      if (!provider || !model) {
+        const providers = this.modelManager.getAllProviders().filter((p: any) => p.enabled);
+        if (providers.length === 0) {
+          this.log.error('[InstructionGenerator] 没有可用的模型');
+          return null;
+        }
+        provider = providers[0];
+        model = provider.models.find((m: any) => m.enabled) || provider.models[0];
+      }
       
       if (!model) {
         this.log.error('[InstructionGenerator] 没有可用的模型');
         return null;
       }
 
-      this.log.info(`[InstructionGenerator] 使用模型: ${provider.name}/${model.name}`);
+      this.log.info(`[InstructionGenerator] 实际使用: provider=${provider.name}(${provider.type}), model=${model.name || model.id}`);
 
       // 生成步骤
       let steps = await this.callModel(userInstruction, provider, model);
@@ -325,30 +340,69 @@ ${skillSummaries}
 
       let url: URL;
       let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      let body: any;
 
-      if (provider.type === 'openai' || provider.type === 'deepseek' || provider.type === 'custom' || provider.type === 'ollama') {
+      if (provider.type === 'anthropic') {
+        // 检查 API Key
+        if (!provider.apiKey) {
+          reject(new Error('Anthropic API Key未配置，请在设置中配置API Key'));
+          return;
+        }
+
+        url = new URL(baseUrl + '/v1/messages');
+        headers['x-api-key'] = provider.apiKey || '';
+        headers['anthropic-version'] = '2023-06-01';
+
+        // 分离 system 消息和其他消息
+        let systemMessage = '';
+        const filteredMessages = messages.filter(m => {
+          if (m.role === 'system') {
+            systemMessage = m.content;
+            return false;
+          }
+          return true;
+        }).map(m => ({ role: m.role, content: m.content }));
+
+        body = {
+          model: model.id,
+          messages: filteredMessages,
+          stream: false,
+          max_tokens: 2000
+        };
+        if (systemMessage) {
+          body.system = systemMessage;
+        }
+      } else if (provider.type === 'openai' || provider.type === 'deepseek' || provider.type === 'custom' || provider.type === 'ollama') {
         let endpoint = '/chat/completions';
         if (provider.type === 'ollama') {
           endpoint = '/api/chat';
         }
         url = new URL(baseUrl + endpoint);
         headers['Authorization'] = `Bearer ${provider.apiKey || ''}`;
+        
+        body = {
+          model: model.id,
+          messages,
+          stream: false,
+          temperature: 0.1,
+          max_tokens: 2000
+        };
       } else if (provider.type === 'azure') {
         const deploymentName = provider.deploymentName || model.id;
         url = new URL(`${baseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=${provider.apiVersion || '2024-02-01'}`);
         headers['api-key'] = provider.apiKey || '';
+        
+        body = {
+          model: model.id,
+          messages,
+          stream: false,
+          temperature: 0.1,
+          max_tokens: 2000
+        };
       } else {
         reject(new Error(`不支持的提供商类型: ${provider.type}`));
         return;
       }
-
-      const body: any = {
-        model: model.id,
-        messages,
-        stream: false,
-        temperature: 0.1,
-        max_tokens: 2000
-      };
 
       const protocol = url.protocol === 'https:' ? https : http;
 
@@ -369,7 +423,9 @@ ${skillSummaries}
                 const parsed = JSON.parse(data);
                 let content = '';
                 
-                if (provider.type === 'ollama' && parsed.message) {
+                if (provider.type === 'anthropic') {
+                  content = parsed.content?.[0]?.text || '';
+                } else if (provider.type === 'ollama' && parsed.message) {
                   content = parsed.message.content;
                 } else if (parsed.choices?.[0]?.message?.content) {
                   content = parsed.choices[0].message.content;
@@ -400,6 +456,22 @@ ${skillSummaries}
                   resolve(null);
                 }
               } else {
+                let errorMsg = `请求失败: HTTP ${res.statusCode}`;
+                try {
+                  const errorJson = JSON.parse(data);
+                  errorMsg = errorJson.error?.message || errorJson.message || errorMsg;
+                } catch { /* ignore parse error */ }
+                
+                if (res.statusCode === 401) {
+                  if (provider.type === 'anthropic') {
+                    errorMsg = 'Anthropic API Key无效，请检查您的API Key';
+                  } else {
+                    errorMsg = 'API Key无效，请检查您的API Key';
+                  }
+                } else if (res.statusCode === 429) {
+                  errorMsg = '请求过于频繁，请稍后再试';
+                }
+                
                 this.log.error('[InstructionGenerator] 请求失败:', res.statusCode, data);
                 resolve(null);
               }

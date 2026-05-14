@@ -178,29 +178,7 @@ export class IpcServer {
       }
     });
 
-    // ========== 快捷键 ==========
 
-    ipcMain.handle('shortcut:get', () => {
-      try {
-        const { GlobalShortcut } = require('../core/GlobalShortcut');
-        const config = GlobalShortcut.getInstance().getShortcutConfig();
-        return { success: true, data: config };
-      } catch (error) {
-        this.log.error('shortcut:get 失败', error);
-        return { success: false, error: String(error) };
-      }
-    });
-
-    ipcMain.handle('shortcut:set', (_, key: string, accelerator: string) => {
-      try {
-        const { GlobalShortcut } = require('../core/GlobalShortcut');
-        const result = GlobalShortcut.getInstance().updateShortcut(key as any, accelerator);
-        return { success: result };
-      } catch (error) {
-        this.log.error('shortcut:set 失败', error);
-        return { success: false, error: String(error) };
-      }
-    });
 
     // ========== 网关管理 ==========
     
@@ -509,6 +487,30 @@ export class IpcServer {
         return { success: true, data: models };
       } catch (error) {
         this.log.error('models:syncOllama 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('models:fetch', async (_, providerId: string) => {
+      try {
+        const modelManager = ModelManager.getInstance();
+        const result = await modelManager.fetchModels(providerId);
+        return result;
+      } catch (error) {
+        this.log.error('models:fetch 失败', error);
+        return { success: false, models: [], error: String(error) };
+      }
+    });
+
+    ipcMain.handle('models:getTemplates', () => {
+      try {
+        this.log.info('models:getTemplates 被调用');
+        const modelManager = ModelManager.getInstance();
+        const templates = modelManager.getTemplates();
+        this.log.info('models:getTemplates 返回', { count: templates.length });
+        return { success: true, data: templates };
+      } catch (error) {
+        this.log.error('models:getTemplates 失败', error);
         return { success: false, error: String(error) };
       }
     });

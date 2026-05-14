@@ -2,7 +2,7 @@
  * PiPiClaw - 模型提供商类型定义
  */
 
-export type ProviderType = 'openai' | 'anthropic' | 'deepseek' | 'azure' | 'ollama' | 'custom' | 'openrouter';
+export type ProviderType = 'openai' | 'anthropic' | 'deepseek' | 'azure' | 'ollama' | 'custom' | 'openrouter' | 'volc_ark';
 
 export type ModelCapability = 'chat' | 'completion' | 'embedding' | 'vision' | 'function';
 
@@ -100,6 +100,12 @@ export const PROVIDER_DEFAULTS: Record<ProviderType, Partial<ProviderConfig>> = 
     baseUrl: 'https://openrouter.ai/api/v1',
     timeout: 60000,
     maxRetries: 3
+  },
+  volc_ark: {
+    name: '火山引擎',
+    baseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
+    timeout: 60000,
+    maxRetries: 3
   }
 };
 
@@ -110,5 +116,6 @@ export const PROVIDER_ICONS: Record<ProviderType, string> = {
   azure: '☁️',
   ollama: '🦙',
   custom: '⚙️',
-  openrouter: '🌐'
+  openrouter: '🌐',
+  volc_ark: '🌋'
 };

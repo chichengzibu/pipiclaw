@@ -28,9 +28,7 @@ const IpcChannels = {
   WINDOW_SHOW_MINI: 'window:showMini',
   WINDOW_HIDE_TO_TRAY: 'window:hideToTray',
 
-  // 快捷键
-  SHORTCUT_GET: 'shortcut:get',
-  SHORTCUT_SET: 'shortcut:set',
+
 
   // 网关管理
   GATEWAY_START: 'gateway:start',
@@ -50,6 +48,7 @@ const IpcChannels = {
 
   // 模型管理
   MODELS_LIST: 'models:list',
+  MODELS_GET_TEMPLATES: 'models:getTemplates',
   MODELS_GET: 'models:get',
   MODELS_ADD: 'models:add',
   MODELS_UPDATE: 'models:update',
@@ -57,6 +56,7 @@ const IpcChannels = {
   MODELS_TOGGLE: 'models:toggle',
   MODELS_TEST: 'models:test',
   MODELS_SYNC_OLLAMA: 'models:syncOllama',
+  MODELS_FETCH: 'models:fetch',
 
   // 权限管理
   PERMISSIONS_LIST: 'permissions:list',
@@ -147,6 +147,13 @@ const IpcChannels = {
   SKILLS_IMPORT_URL: 'skills:importUrl',
   SKILLS_MERGE_CANDIDATES: 'skills:merge-candidates',
   SKILLS_PERFORM_MERGE: 'skills:perform-merge',
+  SKILLS_IMPORT_FOLDER: 'skills:importFolder',
+  SKILLS_GET_DIRECTORY_PREVIEW: 'skills:getDirectoryPreview',
+  SKILLS_ADD_CUSTOM_DIR: 'skills:addCustomDir',
+  SKILLS_REMOVE_CUSTOM_DIR: 'skills:removeCustomDir',
+  SKILLS_GET_CUSTOM_DIRS: 'skills:getCustomDirs',
+  SKILLS_GET_STORAGE_INFO: 'skills:getStorageInfo',
+  SKILLS_REMOVE: 'skills:remove',
 
   // ========== MCP 配置管理 ==========
   MCP_LIST: 'mcp:list',
@@ -540,11 +547,7 @@ const electronAPI = {
     }
   },
   
-  // ========== 快捷键 ==========
-  shortcut: {
-    get: () => ipcRenderer.invoke(IpcChannels.SHORTCUT_GET),
-    set: (key: string, accelerator: string) => ipcRenderer.invoke(IpcChannels.SHORTCUT_SET, key, accelerator)
-  },
+
 
   // ========== 应用信息 ==========
   app: {
@@ -609,6 +612,9 @@ const electronAPI = {
     list: (): Promise<IpcResponse<ProviderConfig[]>> =>
       ipcRenderer.invoke(IpcChannels.MODELS_LIST),
 
+    getTemplates: (): Promise<IpcResponse<Array<{ name: string; type: string; defaultConfig: Partial<ProviderConfig> }>>> =>
+      ipcRenderer.invoke(IpcChannels.MODELS_GET_TEMPLATES),
+
     get: (id: string): Promise<IpcResponse<ProviderConfig>> =>
       ipcRenderer.invoke(IpcChannels.MODELS_GET, id),
 
@@ -628,7 +634,10 @@ const electronAPI = {
       ipcRenderer.invoke(IpcChannels.MODELS_TEST, providerId, modelId),
 
     syncOllama: (providerId: string): Promise<IpcResponse<ModelInfo[]>> =>
-      ipcRenderer.invoke(IpcChannels.MODELS_SYNC_OLLAMA, providerId)
+      ipcRenderer.invoke(IpcChannels.MODELS_SYNC_OLLAMA, providerId),
+
+    fetch: (providerId: string): Promise<IpcResponse<{ models: ModelInfo[]; error?: string }>> =>
+      ipcRenderer.invoke(IpcChannels.MODELS_FETCH, providerId)
   },
 
   // ========== 权限管理 ==========
@@ -850,27 +859,48 @@ const electronAPI = {
 
   // ========== 技能管理 ==========
   skills: {
-    list: (): Promise<IpcResponse<any[]>> =>
-      ipcRenderer.invoke(IpcChannels.SKILLS_LIST),
+      list: (): Promise<IpcResponse<any[]>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_LIST),
 
-    toggle: (id: string, enabled: boolean): Promise<IpcResponse<boolean>> =>
-      ipcRenderer.invoke(IpcChannels.SKILLS_TOGGLE, id, enabled),
+      toggle: (id: string, enabled: boolean): Promise<IpcResponse<boolean>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_TOGGLE, id, enabled),
 
-    reload: (): Promise<IpcResponse<void>> =>
-      ipcRenderer.invoke(IpcChannels.SKILLS_RELOAD),
+      reload: (): Promise<IpcResponse<void>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_RELOAD),
 
-    importFile: (filePath: string): Promise<IpcResponse<any>> =>
-      ipcRenderer.invoke(IpcChannels.SKILLS_IMPORT_FILE, filePath),
+      importFile: (filePath: string): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_IMPORT_FILE, filePath),
 
-    importUrl: (url: string): Promise<IpcResponse<any>> =>
-      ipcRenderer.invoke(IpcChannels.SKILLS_IMPORT_URL, url),
+      importUrl: (url: string): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_IMPORT_URL, url),
 
-    mergeCandidates: (): Promise<IpcResponse<any[]>> =>
-      ipcRenderer.invoke(IpcChannels.SKILLS_MERGE_CANDIDATES),
+      importFolder: (sourcePath: string): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_IMPORT_FOLDER, sourcePath),
 
-    performMerge: (skillId1: string, skillId2: string): Promise<IpcResponse<any>> =>
-      ipcRenderer.invoke(IpcChannels.SKILLS_PERFORM_MERGE, skillId1, skillId2)
-  },
+      getDirectoryPreview: (dirPath: string): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_GET_DIRECTORY_PREVIEW, dirPath),
+
+      addCustomDir: (dirPath: string): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_ADD_CUSTOM_DIR, dirPath),
+
+      removeCustomDir: (dirPath: string): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_REMOVE_CUSTOM_DIR, dirPath),
+
+      getCustomDirs: (): Promise<IpcResponse<string[]>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_GET_CUSTOM_DIRS),
+
+      getStorageInfo: (): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_GET_STORAGE_INFO),
+
+      mergeCandidates: (): Promise<IpcResponse<any[]>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_MERGE_CANDIDATES),
+
+      performMerge: (skillId1: string, skillId2: string): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_PERFORM_MERGE, skillId1, skillId2),
+
+      remove: (skillId: string): Promise<IpcResponse<any>> =>
+        ipcRenderer.invoke(IpcChannels.SKILLS_REMOVE, skillId)
+    },
 
   // ========== MCP 配置管理 ==========
   mcp: {

@@ -428,14 +428,22 @@
                   :key="provider.id"
                   :label="provider.name"
                   :value="provider.id"
+                  :disabled="provider.models.length === 0"
                 />
               </el-select>
               <el-select
                 v-model="currentModelId"
                 placeholder="选择模型"
                 size="small"
-                :disabled="!canSelectModel"
+                :disabled="!canSelectModel || currentModels.length === 0"
               >
+                <el-option
+                  v-if="currentModels.length === 0"
+                  key="empty"
+                  label="暂无可用模型"
+                  :value="null"
+                  disabled
+                />
                 <el-option
                   v-for="model in currentModels"
                   :key="model.id"
@@ -860,7 +868,17 @@ const localSettings = reactive({
   presencePenalty: 0.0
 });
 
-const enabledProviders = computed(() => modelsStore.enabledProviders);
+const enabledProviders = computed(() => {
+  const result = modelsStore.enabledProviders;
+  console.log('[Chat] enabledProviders:', result.map(p => ({
+    id: p.id,
+    name: p.name,
+    type: p.type,
+    enabled: p.enabled,
+    models: p.models
+  })));
+  return result;
+});
 
 /**
  * 当前选择的 Provider ID
@@ -870,27 +888,21 @@ const currentProviderId = computed({
   get: () => chatStore.currentConversation?.providerId || chatStore.lastProviderId,
   set: (val: string | null) => {
     if (val && chatStore.currentConversationId) {
-      // 更新当前会话的模型
-      chatStore.setCurrentModel(val, chatStore.currentModelId || '');
+      console.log('[Chat] 切换供应商: provider=' + val);
+      chatStore.setCurrentModel(val, '');
     } else if (val) {
-      // 没有当前会话，只更新全局最后使用的
       chatStore.lastProviderId = val;
     }
   }
 });
 
-/**
- * 当前选择的 Model ID
- * 直接绑定到当前会话的 modelId，如果没有则使用全局最后使用的
- */
 const currentModelId = computed({
   get: () => chatStore.currentConversation?.modelId || chatStore.lastModelId,
   set: (val: string | null) => {
     if (val && chatStore.currentProviderId && chatStore.currentConversationId) {
-      // 更新当前会话的模型
+      console.log('[Chat] 切换模型: provider=' + chatStore.currentProviderId + ', model=' + val);
       chatStore.setCurrentModel(chatStore.currentProviderId, val);
     } else if (val && chatStore.currentProviderId) {
-      // 没有当前会话，更新全局最后使用的
       chatStore.lastModelId = val;
     }
   }
@@ -909,6 +921,28 @@ const currentModels = computed(() => {
  * 是否可以选择模型
  */
 const canSelectModel = computed(() => !!currentProviderId.value);
+
+// 检查当前选择的模型是否在可用模型列表中
+watch([currentProviderId, currentModels], () => {
+  if (currentProviderId.value && currentModelId.value) {
+    const modelExists = currentModels.value.some(m => m.id === currentModelId.value);
+    if (!modelExists) {
+      // 当前选择的模型不在可用列表中，需要重置
+      console.log('[Chat] 当前选择的模型不再可用，重置选择');
+      if (currentModels.value.length > 0) {
+        const provider = modelsStore.getProviderById(currentProviderId.value);
+        if (provider?.defaultModel && currentModels.value.some(m => m.id === provider.defaultModel)) {
+          currentModelId.value = provider.defaultModel;
+        } else {
+          currentModelId.value = currentModels.value[0].id;
+        }
+      } else {
+        currentModelId.value = null;
+      }
+      ElMessage.warning('当前选择的模型不再可用，已自动重置');
+    }
+  }
+});
 
 const recentConversations = computed(() =>
   chatStore.conversations
@@ -1366,10 +1400,20 @@ function handleProviderChange(): void {
   // 切换 Provider 时自动清空 Model 选择
   currentModelId.value = null;
   
-  // 如果有默认模型，自动选择
+  // 获取当前 provider
   const provider = modelsStore.getProviderById(currentProviderId.value);
-  if (provider?.defaultModel) {
-    currentModelId.value = provider.defaultModel;
+  
+  // 如果该 provider 有模型并且有默认模型，则自动选择
+  if (provider?.models && provider.models.length > 0) {
+    if (provider.defaultModel && provider.models.some(m => m.id === provider.defaultModel)) {
+      currentModelId.value = provider.defaultModel;
+    } else {
+      // 没有有效的默认模型，选择第一个模型
+      currentModelId.value = provider.models[0].id;
+    }
+  } else if (provider?.models.length === 0) {
+    // 如果该 provider 没有模型，给出提示
+    ElMessage.warning(`${provider.name} 暂无可用模型，请先配置模型`);
   }
 }
 

@@ -8,7 +8,7 @@
  */
 
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 
 // ========== 类型定义 ==========
@@ -107,6 +107,44 @@ export const useChatStore = defineStore('chat', () => {
   // 全局模型选择：记录最后使用的模型，用于新建会话时继承
   const lastProviderId = ref<string | null>(null);
   const lastModelId = ref<string | null>(null);
+  
+  // 从 localStorage 加载
+  function loadLastModelFromStorage(): void {
+    try {
+      const savedProviderId = localStorage.getItem('lastProviderId');
+      const savedModelId = localStorage.getItem('lastModelId');
+      if (savedProviderId) lastProviderId.value = savedProviderId;
+      if (savedModelId) lastModelId.value = savedModelId;
+    } catch {
+      // 忽略 localStorage 错误
+    }
+  }
+  
+  // 监听 lastProviderId 变化并持久化
+  watch(lastProviderId, (newVal) => {
+    try {
+      if (newVal) {
+        localStorage.setItem('lastProviderId', newVal);
+      } else {
+        localStorage.removeItem('lastProviderId');
+      }
+    } catch {
+      // 忽略 localStorage 错误
+    }
+  });
+  
+  // 监听 lastModelId 变化并持久化
+  watch(lastModelId, (newVal) => {
+    try {
+      if (newVal) {
+        localStorage.setItem('lastModelId', newVal);
+      } else {
+        localStorage.removeItem('lastModelId');
+      }
+    } catch {
+      // 忽略 localStorage 错误
+    }
+  });
   
   const settings = ref<ChatSettings>({
     temperature: 0.7,
@@ -938,11 +976,14 @@ export const useChatStore = defineStore('chat', () => {
   function initialize(): void {
     console.log('[ChatStore] 初始化中...');
 
+    // 从 localStorage 加载最后使用的模型
+    loadLastModelFromStorage();
+
     // 加载数据
     fetchConversations();
     fetchSettings();
     
-    // 加载最后使用的模型
+    // 加载最后使用的模型（从后端）
     fetchLastModel();
 
     // 清理旧的事件监听（防止重复监听）

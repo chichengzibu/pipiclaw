@@ -191,33 +191,8 @@ export class ModelConfig {
       type: 'ollama',
       enabled: true,
       baseUrl: 'http://localhost:11434',
-      models: [
-        {
-          id: 'llama3',
-          name: 'Llama 3',
-          provider: 'provider_ollama_default',
-          capabilities: ['chat'],
-          contextWindow: 8192,
-          description: 'Meta开源模型'
-        },
-        {
-          id: 'qwen2.5',
-          name: 'Qwen 2.5',
-          provider: 'provider_ollama_default',
-          capabilities: ['chat'],
-          contextWindow: 32768,
-          description: '阿里通义千问'
-        },
-        {
-          id: 'codellama',
-          name: 'Code Llama',
-          provider: 'provider_ollama_default',
-          capabilities: ['completion'],
-          contextWindow: 16384,
-          description: '代码专用模型'
-        }
-      ],
-      defaultModel: 'llama3',
+      models: [], // 空模型列表，从 Ollama API 动态获取
+      defaultModel: undefined,
       timeout: 30000,
       maxRetries: 2,
       createdAt: Date.now(),

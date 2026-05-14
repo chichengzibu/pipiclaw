@@ -160,6 +160,7 @@ export class ChatManager {
   ): Promise<ChatMessage> {
     const traceId = `msg_${Date.now()}`;
     this.log.info(`[ChatManager] [${traceId}] 收到消息发送请求`);
+    this.log.info(`[ChatManager] 用户选择: provider=${providerId || '未指定'}, model=${modelId || '未指定'}`);
 
     // 1. 检查是否是用户确认技能保存
     if (content.trim() === '是' || content.trim() === '确认' || content.trim() === 'yes') {
@@ -233,7 +234,7 @@ export class ChatManager {
       const instructionGenerator = InstructionGenerator.getInstance();
       const taskExecutor = TaskExecutor.getInstance();
 
-      const steps = await instructionGenerator.generateTaskSteps(content);
+      const steps = await instructionGenerator.generateTaskSteps(content, providerId, modelId);
       
       if (steps && steps.length > 0) {
         this.log.info(`[ChatManager] [${traceId}] 大模型生成了 ${steps.length} 个步骤，开始执行`);
@@ -398,6 +399,8 @@ export class ChatManager {
     const provider = this.modelManager.getProvider(effectiveProviderId);
     if (!provider) throw new Error('模型提供商不存在');
 
+    this.log.info(`[ChatManager] 实际调用: provider=${provider.name}, type=${provider.type}, model=${effectiveModelId}, url=${provider.baseUrl || 'N/A'}`);
+
     // 创建助手消息占位
     const assistantMessageId = `assistant_${Date.now()}`;
     const assistantPlaceholder: ChatMessage = {
@@ -482,11 +485,156 @@ export class ChatManager {
     const provider = this.modelManager.getProvider(providerId);
     if (!provider) throw new Error('模型提供商不存在');
 
+    this.log.info(`[ChatManager] streamModelResponse: type=${provider.type}, baseUrl=${provider.baseUrl}, model=${modelId}`);
+
     if (provider.type === 'ollama') {
       return this.streamOllama(conversationId, messageId, provider, modelId, messages, settings);
+    } else if (provider.type === 'anthropic') {
+      return this.streamAnthropic(conversationId, messageId, provider, modelId, messages, settings);
     } else {
       return this.streamCloudProvider(conversationId, messageId, provider, modelId, messages, settings);
     }
+  }
+
+  private async streamAnthropic(
+    conversationId: string, messageId: string, provider: any, modelId: string,
+    messages: any[], settings: ChatSettings
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let baseUrl = provider.baseUrl;
+      if (!baseUrl) { reject(new Error('缺少baseUrl')); return; }
+      baseUrl = baseUrl.replace(/\/$/, '');
+      const url = new URL(`${baseUrl}/v1/messages`);
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'x-api-key': provider.apiKey || '',
+        'anthropic-version': '2023-06-01'
+      };
+
+      // 分离 system 消息和其他消息
+      let systemMessage = '';
+      const filteredMessages = messages.filter(m => {
+        if (m.role === 'system') {
+          systemMessage = m.content;
+          return false;
+        }
+        return true;
+      }).map(m => ({ role: m.role, content: m.content }));
+
+      const body: any = {
+        model: modelId,
+        messages: filteredMessages,
+        stream: true,
+        max_tokens: settings.maxTokens || 4096
+      };
+      if (systemMessage) {
+        body.system = systemMessage;
+      }
+
+      const controller = new AbortController();
+      this.abortControllers.set(conversationId, controller);
+      const timeout = setTimeout(() => controller.abort(), 60000);
+      const protocol = url.protocol === 'https:' ? https : http;
+
+      const req = protocol.request(
+        {
+          hostname: url.hostname,
+          port: url.port || (url.protocol === 'https:' ? 443 : 80),
+          path: url.pathname,
+          method: 'POST',
+          headers,
+          signal: controller.signal
+        },
+        (res) => {
+          let buffer = '';
+          let accumulatedContent = '';
+
+          // 处理错误响应
+          if (res.statusCode && res.statusCode >= 400) {
+            let errorData = '';
+            res.on('data', chunk => { errorData += chunk.toString(); });
+            res.on('end', () => {
+              clearTimeout(timeout);
+              this.abortControllers.delete(conversationId);
+              
+              let errorMessage = `请求失败: HTTP ${res.statusCode}`;
+              try {
+                const errorJson = JSON.parse(errorData);
+                errorMessage = errorJson.error?.message || errorJson.message || errorMessage;
+              } catch { /* ignore parse error */ }
+              
+              if (res.statusCode === 401) {
+                errorMessage = 'API Key无效，请检查您的Anthropic API Key';
+              } else if (res.statusCode === 429) {
+                errorMessage = '请求过于频繁，请稍后再试';
+              }
+              
+              this.handleStreamError(conversationId, messageId, errorMessage);
+              reject(new Error(errorMessage));
+            });
+            return;
+          }
+
+          res.on('data', chunk => {
+            buffer += chunk.toString();
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (!line.trim() || !line.startsWith('data: ')) continue;
+              const dataStr = line.slice(6).trim();
+              if (dataStr === '[DONE]') continue;
+
+              try {
+                const data = JSON.parse(dataStr);
+                if (data.type === 'content_block_delta') {
+                  const delta = data.delta;
+                  if (delta.type === 'text_delta' && delta.text) {
+                    accumulatedContent += delta.text;
+                    this.config.appendStreamingContent(conversationId, messageId, accumulatedContent, '');
+                    const updated = this.config.getMessage(conversationId, messageId);
+                    if (updated) this.broadcastMessage(conversationId, updated);
+                  }
+                } else if (data.type === 'message_stop') {
+                  // 流结束，完成处理
+                }
+              } catch (e) { /* ignore parse errors */ }
+            }
+          });
+
+          res.on('end', () => {
+            clearTimeout(timeout);
+            this.abortControllers.delete(conversationId);
+            this.config.appendStreamingContent(conversationId, messageId, accumulatedContent, '');
+            this.config.finalizeStreamingMessage(conversationId, messageId, 'sent');
+            this.broadcastConversationUpdate(conversationId);
+            resolve();
+          });
+        }
+      );
+
+      req.on('error', (error) => {
+        clearTimeout(timeout);
+        this.abortControllers.delete(conversationId);
+        
+        // 火山引擎错误日志
+        if (provider.type === 'volc_ark') {
+          this.log.error('[火山引擎] 聊天请求失败', { error: error.message });
+        }
+        
+        if (error.name === 'AbortError') {
+          this.handleStreamError(conversationId, messageId, '用户停止了生成或请求超时');
+          reject(new Error('用户停止了生成或请求超时'));
+        } else {
+          this.handleStreamError(conversationId, messageId, error.message);
+          reject(error);
+        }
+      });
+
+      req.write(JSON.stringify(body));
+      req.end();
+    });
   }
 
   private isThinkingSupportedModel(modelId: string): boolean {
@@ -565,6 +713,16 @@ export class ChatManager {
           res.on('end', () => {
             clearTimeout(timeout);
             this.abortControllers.delete(conversationId);
+            
+            // 火山引擎响应日志
+            if (provider.type === 'volc_ark') {
+              if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+                this.log.info('[火山引擎] 聊天请求成功');
+              } else {
+                this.log.error('[火山引擎] 聊天请求失败', { statusCode: res.statusCode });
+              }
+            }
+            
             this.config.appendStreamingContent(conversationId, messageId, accumulatedContent, accumulatedThinking);
             this.config.finalizeStreamingMessage(conversationId, messageId, 'sent');
             this.broadcastConversationUpdate(conversationId);
@@ -590,6 +748,18 @@ export class ChatManager {
     });
   }
 
+  private buildUrl(baseUrl: string, path: string): URL {
+    let cleanBaseUrl = baseUrl;
+    if (cleanBaseUrl.endsWith('/')) {
+      cleanBaseUrl = cleanBaseUrl.slice(0, -1);
+    }
+    let cleanPath = path;
+    if (cleanPath.startsWith('/')) {
+      cleanPath = cleanPath.slice(1);
+    }
+    return new URL(`${cleanBaseUrl}/${cleanPath}`);
+  }
+
   private async streamCloudProvider(
     conversationId: string, messageId: string, provider: any, modelId: string,
     messages: any[], settings: ChatSettings
@@ -597,24 +767,32 @@ export class ChatManager {
     return new Promise((resolve, reject) => {
       let baseUrl = provider.baseUrl;
       if (!baseUrl) { reject(new Error('缺少baseUrl')); return; }
-      baseUrl = baseUrl.replace(/\/$/, '');
 
       let url: URL;
       let headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
-      if (provider.type === 'openai' || provider.type === 'deepseek' || provider.type === 'custom') {
-        url = new URL(`${baseUrl}/chat/completions`);
+      if (provider.type === 'openai' || provider.type === 'deepseek' || provider.type === 'custom' || provider.type === 'volc_ark') {
+        url = this.buildUrl(baseUrl, '/chat/completions');
         headers['Authorization'] = `Bearer ${provider.apiKey || ''}`;
+        
+        // 火山引擎诊断日志
+        if (provider.type === 'volc_ark') {
+          this.log.info('[火山引擎] 发起聊天请求', {
+            url: url.toString(),
+            apiKeyPrefix: provider.apiKey ? (provider.apiKey.substring(0, 6) + '...') : 'empty',
+            modelId: modelId
+          });
+        }
       } else if (provider.type === 'azure') {
         const deploymentName = provider.deploymentName || modelId;
-        url = new URL(`${baseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=${provider.apiVersion || '2024-02-01'}`);
+        url = this.buildUrl(baseUrl, `/openai/deployments/${deploymentName}/chat/completions?api-version=${provider.apiVersion || '2024-02-01'}`);
         headers['api-key'] = provider.apiKey || '';
       } else {
         reject(new Error(`不支持的提供商类型: ${provider.type}`)); return;
       }
 
-      const body: any = { model: modelId, messages, stream: true, temperature: settings.temperature, maxTokens: settings.maxTokens };
-      if (settings.topP) body.topP = settings.topP;
+      const body: any = { model: modelId, messages, stream: true, temperature: settings.temperature, max_tokens: settings.maxTokens };
+      if (settings.topP) body.top_p = settings.topP;
 
       const controller = new AbortController();
       this.abortControllers.set(conversationId, controller);

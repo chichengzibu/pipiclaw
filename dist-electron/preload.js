@@ -15,9 +15,6 @@ const IpcChannels = {
   WINDOW_IS_EDGE_HIDE: "window:isEdgeHide",
   WINDOW_SHOW_MINI: "window:showMini",
   WINDOW_HIDE_TO_TRAY: "window:hideToTray",
-  // 快捷键
-  SHORTCUT_GET: "shortcut:get",
-  SHORTCUT_SET: "shortcut:set",
   // 网关管理
   GATEWAY_START: "gateway:start",
   GATEWAY_STOP: "gateway:stop",
@@ -34,6 +31,7 @@ const IpcChannels = {
   CONFIG_GET_ALL: "config:getAll",
   // 模型管理
   MODELS_LIST: "models:list",
+  MODELS_GET_TEMPLATES: "models:getTemplates",
   MODELS_GET: "models:get",
   MODELS_ADD: "models:add",
   MODELS_UPDATE: "models:update",
@@ -41,6 +39,7 @@ const IpcChannels = {
   MODELS_TOGGLE: "models:toggle",
   MODELS_TEST: "models:test",
   MODELS_SYNC_OLLAMA: "models:syncOllama",
+  MODELS_FETCH: "models:fetch",
   // 权限管理
   PERMISSIONS_LIST: "permissions:list",
   PERMISSIONS_GET: "permissions:get",
@@ -119,6 +118,13 @@ const IpcChannels = {
   SKILLS_IMPORT_URL: "skills:importUrl",
   SKILLS_MERGE_CANDIDATES: "skills:merge-candidates",
   SKILLS_PERFORM_MERGE: "skills:perform-merge",
+  SKILLS_IMPORT_FOLDER: "skills:importFolder",
+  SKILLS_GET_DIRECTORY_PREVIEW: "skills:getDirectoryPreview",
+  SKILLS_ADD_CUSTOM_DIR: "skills:addCustomDir",
+  SKILLS_REMOVE_CUSTOM_DIR: "skills:removeCustomDir",
+  SKILLS_GET_CUSTOM_DIRS: "skills:getCustomDirs",
+  SKILLS_GET_STORAGE_INFO: "skills:getStorageInfo",
+  SKILLS_REMOVE: "skills:remove",
   // ========== MCP 配置管理 ==========
   MCP_LIST: "mcp:list",
   MCP_ADD: "mcp:add",
@@ -155,11 +161,6 @@ const electronAPI = {
       electron.ipcRenderer.on(IpcChannels.WINDOW_ON_MAXIMIZE_CHANGE, handler);
       return () => electron.ipcRenderer.removeListener(IpcChannels.WINDOW_ON_MAXIMIZE_CHANGE, handler);
     }
-  },
-  // ========== 快捷键 ==========
-  shortcut: {
-    get: () => electron.ipcRenderer.invoke(IpcChannels.SHORTCUT_GET),
-    set: (key, accelerator) => electron.ipcRenderer.invoke(IpcChannels.SHORTCUT_SET, key, accelerator)
   },
   // ========== 应用信息 ==========
   app: {
@@ -205,13 +206,15 @@ const electronAPI = {
   // ========== 模型管理 ==========
   models: {
     list: () => electron.ipcRenderer.invoke(IpcChannels.MODELS_LIST),
+    getTemplates: () => electron.ipcRenderer.invoke(IpcChannels.MODELS_GET_TEMPLATES),
     get: (id) => electron.ipcRenderer.invoke(IpcChannels.MODELS_GET, id),
     add: (data) => electron.ipcRenderer.invoke(IpcChannels.MODELS_ADD, data),
     update: (id, updates) => electron.ipcRenderer.invoke(IpcChannels.MODELS_UPDATE, id, updates),
     delete: (id) => electron.ipcRenderer.invoke(IpcChannels.MODELS_DELETE, id),
     toggle: (id, enabled) => electron.ipcRenderer.invoke(IpcChannels.MODELS_TOGGLE, id, enabled),
     test: (providerId, modelId) => electron.ipcRenderer.invoke(IpcChannels.MODELS_TEST, providerId, modelId),
-    syncOllama: (providerId) => electron.ipcRenderer.invoke(IpcChannels.MODELS_SYNC_OLLAMA, providerId)
+    syncOllama: (providerId) => electron.ipcRenderer.invoke(IpcChannels.MODELS_SYNC_OLLAMA, providerId),
+    fetch: (providerId) => electron.ipcRenderer.invoke(IpcChannels.MODELS_FETCH, providerId)
   },
   // ========== 权限管理 ==========
   permissions: {
@@ -325,8 +328,15 @@ const electronAPI = {
     reload: () => electron.ipcRenderer.invoke(IpcChannels.SKILLS_RELOAD),
     importFile: (filePath) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_IMPORT_FILE, filePath),
     importUrl: (url) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_IMPORT_URL, url),
+    importFolder: (sourcePath) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_IMPORT_FOLDER, sourcePath),
+    getDirectoryPreview: (dirPath) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_GET_DIRECTORY_PREVIEW, dirPath),
+    addCustomDir: (dirPath) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_ADD_CUSTOM_DIR, dirPath),
+    removeCustomDir: (dirPath) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_REMOVE_CUSTOM_DIR, dirPath),
+    getCustomDirs: () => electron.ipcRenderer.invoke(IpcChannels.SKILLS_GET_CUSTOM_DIRS),
+    getStorageInfo: () => electron.ipcRenderer.invoke(IpcChannels.SKILLS_GET_STORAGE_INFO),
     mergeCandidates: () => electron.ipcRenderer.invoke(IpcChannels.SKILLS_MERGE_CANDIDATES),
-    performMerge: (skillId1, skillId2) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_PERFORM_MERGE, skillId1, skillId2)
+    performMerge: (skillId1, skillId2) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_PERFORM_MERGE, skillId1, skillId2),
+    remove: (skillId) => electron.ipcRenderer.invoke(IpcChannels.SKILLS_REMOVE, skillId)
   },
   // ========== MCP 配置管理 ==========
   mcp: {

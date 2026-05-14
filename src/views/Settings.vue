@@ -135,13 +135,15 @@
                     >
                       测试连接
                     </el-button>
+                    <el-button size="small" @click="handleManageModels(provider)">
+                      管理模型
+                    </el-button>
                     <el-button
-                      v-if="provider.type === 'ollama'"
+                      v-if="!isVolcEngineProvider(provider)"
                       size="small"
-                      :loading="modelsStore.isSyncing(provider.id)"
-                      @click="handleSyncOllama(provider.id)"
+                      @click="handleFetchModels(provider.id)"
                     >
-                      同步模型
+                      拉取模型
                     </el-button>
                     <el-button size="small" @click="handleEditProvider(provider)">
                       编辑
@@ -235,12 +237,14 @@
 
         <el-form-item label="类型" prop="type">
           <el-select v-model="modelFormData.type" placeholder="选择提供商类型" @change="handleTypeChange">
-            <el-option label="OpenAI" value="openai" />
-            <el-option label="Anthropic" value="anthropic" />
-            <el-option label="DeepSeek" value="deepseek" />
-            <el-option label="Azure OpenAI" value="azure" />
-            <el-option label="Ollama (本地)" value="ollama" />
-            <el-option label="自定义" value="custom" />
+            <el-option 
+              v-for="template in allProviderOptions" 
+              :key="template.type" 
+              :value="template.type"
+            >
+              <span style="margin-right: 8px;">{{ getProviderIcon(template.type) }}</span>
+              {{ template.name }}
+            </el-option>
           </el-select>
         </el-form-item>
 
@@ -255,6 +259,12 @@
             show-password
             placeholder="输入 API Key"
           />
+          <div v-if="modelFormData.type === 'volc_ark'" class="form-tip">
+            请输入火山方舟 API Key（通常以 ark- 开头）
+          </div>
+          <div v-if="modelFormData.type === 'anthropic'" class="form-tip">
+            请输入 Anthropic API Key（从 console.anthropic.com 获取）
+          </div>
         </el-form-item>
 
         <template v-if="modelFormData.type === 'azure'">
@@ -280,6 +290,13 @@
             :step="5000"
           />
           <span class="form-tip">毫秒</span>
+        </el-form-item>
+
+        <el-form-item label="模型ID">
+          <el-input v-model="modelFormData.modelId" :placeholder="isVolcEngineForm() ? '请输入模型ID，如 doubao-pro-32k-240615 或 ark-code-latest' : '请输入模型ID'" />
+          <div v-if="isVolcEngineForm()" class="form-tip">
+            Coding Plan 支持的模型：doubao-pro-32k-240615, doubao-pro-4k-240515, doubao-lite-32k-240428, doubao-pro-128k-240615
+          </div>
         </el-form-item>
 
         <el-form-item label="启用">
@@ -314,6 +331,33 @@
       </div>
     </el-dialog>
 
+    <!-- 管理模型对话框 -->
+    <el-dialog v-model="manageModelsDialogVisible" title="管理模型" width="600px">
+      <div v-if="currentProvider">
+        <div class="model-list">
+          <el-empty v-if="editingModels.length === 0" description="暂无模型" />
+          <div v-else>
+            <div v-for="(model, index) in editingModels" :key="model.id" class="model-item">
+              <span class="model-name">{{ model.name }}</span>
+              <el-button size="small" type="danger" text @click="removeModel(index)">删除</el-button>
+            </div>
+          </div>
+        </div>
+        
+        <el-divider />
+        
+        <div class="add-model">
+          <el-input v-model="newModelId" placeholder="输入新模型ID" style="margin-right: 8px;" />
+          <el-button type="primary" @click="addModel">添加模型</el-button>
+        </div>
+      </div>
+      
+      <template #footer>
+        <el-button @click="manageModelsDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveModels">保存</el-button>
+      </template>
+    </el-dialog>
+
     <!-- MCP Server 表单对话框 -->
     <McpServerFormDialog
       v-model="mcpDialogVisible"
@@ -326,7 +370,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import ShortcutRecorder from '@/components/settings/ShortcutRecorder.vue';
 import FeedbackModal from '@/components/common/FeedbackModal.vue';
@@ -357,7 +401,7 @@ const modelFormRef = ref();
 const modelTestResult = ref<{ success: boolean; latency?: number; error?: string } | null>(null);
 const togglingProviders = ref<Set<string>>(new Set());
 
-const modelFormData = reactive<ProviderFormData>({
+const modelFormData = reactive<ProviderFormData & { modelId: string }>({
   name: '',
   type: 'openai',
   enabled: true,
@@ -367,14 +411,38 @@ const modelFormData = reactive<ProviderFormData>({
   deploymentName: '',
   apiVersion: '',
   timeout: 60000,
-  maxRetries: 3
+  maxRetries: 3,
+  modelId: ''
 });
+
+// 管理模型对话框相关
+const manageModelsDialogVisible = ref(false);
+const currentProvider = ref<ProviderConfig | null>(null);
+const editingModels = ref<any[]>([]);
+const newModelId = ref('');
+
+function isVolcEngineProvider(provider: ProviderConfig): boolean {
+  return provider.type === 'volc_ark' || (provider.baseUrl && provider.baseUrl.includes('coding/v3'));
+}
+
+function isVolcEngineForm(): boolean {
+  return modelFormData.type === 'volc_ark' || (modelFormData.baseUrl && modelFormData.baseUrl.includes('coding/v3'));
+}
 
 const modelFormRules = {
   name: [{ required: true, message: '请输入提供商名称', trigger: 'blur' }],
   type: [{ required: true, message: '请选择提供商类型', trigger: 'change' }],
   baseUrl: [{ required: true, message: '请输入 API 地址', trigger: 'blur' }]
 };
+
+const allProviderOptions = computed(() => {
+  const templates = [...modelsStore.providerTemplates];
+  // 确保自定义选项始终在最后
+  if (!templates.find(t => t.type === 'custom')) {
+    templates.push({ name: '自定义', type: 'custom', defaultConfig: {} });
+  }
+  return templates;
+});
 
 // MCP 配置相关
 const mcpServers = ref<any[]>([]);
@@ -391,7 +459,10 @@ async function loadShortcutConfig(): Promise<void> {
     if ((window as any).electronAPI?.shortcut) {
       const result = await (window as any).electronAPI.shortcut.get();
       if (result?.success && result?.data) {
-        shortcutConfig.value = result.data;
+        // 确保返回的数据有有效的值，否则使用默认值
+        shortcutConfig.value = {
+          toggle: result.data.toggle || 'Ctrl+Alt+P'
+        };
       }
     }
   } catch (error) {
@@ -458,6 +529,8 @@ function getProviderIcon(type: string): string {
     deepseek: '🔮',
     azure: '☁️',
     ollama: '🦙',
+    openrouter: '🌐',
+    volc_ark: '🌋',
     custom: '⚙️'
   };
   return icons[type] || '📦';
@@ -470,26 +543,52 @@ function getProviderTypeName(type: string): string {
     deepseek: 'DeepSeek',
     azure: 'Azure OpenAI',
     ollama: 'Ollama 本地',
-    custom: '自定义'
+    openrouter: 'OpenRouter',
+    volc_ark: '火山引擎',
+    custom: '自定义',
+    '智谱 AI': '智谱 AI',
+    '月之暗面': '月之暗面 (Kimi)',
+    'MiniMax': 'MiniMax',
+    '零一万物': '零一万物',
+    '百川智能': '百川智能',
+    '阿里百炼': '阿里百炼',
+    '硅基流动': '硅基流动'
   };
   return names[type] || type;
 }
 
 function handleTypeChange(type: string): void {
-  const defaults = PROVIDER_DEFAULTS[type as keyof typeof PROVIDER_DEFAULTS];
-  if (defaults) {
-    modelFormData.baseUrl = defaults.baseUrl || '';
-    modelFormData.timeout = defaults.timeout || 60000;
-    modelFormData.maxRetries = defaults.maxRetries || 3;
-    if (defaults.name) {
-      modelFormData.name = modelFormData.name || defaults.name;
+  const selectedTemplate = modelsStore.providerTemplates.find(t => t.type === type);
+  if (selectedTemplate) {
+    modelFormData.name = selectedTemplate.defaultConfig.name || '';
+    modelFormData.baseUrl = selectedTemplate.defaultConfig.baseUrl || '';
+    modelFormData.timeout = selectedTemplate.defaultConfig.timeout || 60000;
+    modelFormData.maxRetries = selectedTemplate.defaultConfig.maxRetries || 3;
+  } else if (type === 'custom') {
+    modelFormData.name = '';
+    modelFormData.baseUrl = '';
+  } else {
+    const defaults = PROVIDER_DEFAULTS[type as keyof typeof PROVIDER_DEFAULTS];
+    if (defaults) {
+      modelFormData.baseUrl = defaults.baseUrl || '';
+      modelFormData.timeout = defaults.timeout || 60000;
+      modelFormData.maxRetries = defaults.maxRetries || 3;
+      if (defaults.name) {
+        modelFormData.name = modelFormData.name || defaults.name;
+      }
     }
   }
 }
 
-function handleAddProvider(): void {
+async function handleAddProvider(): Promise<void> {
   isEditingModel.value = false;
   editingModelId.value = '';
+  
+  // 确保 providerTemplates 数据已加载
+  if (modelsStore.providerTemplates.length === 0) {
+    await modelsStore.fetchProviderTemplates();
+  }
+  
   Object.assign(modelFormData, {
     name: '',
     type: 'openai',
@@ -500,7 +599,8 @@ function handleAddProvider(): void {
     deploymentName: '',
     apiVersion: '',
     timeout: 60000,
-    maxRetries: 3
+    maxRetries: 3,
+    modelId: ''
   });
   modelDialogVisible.value = true;
 }
@@ -518,7 +618,8 @@ function handleEditProvider(provider: ProviderConfig): void {
     deploymentName: provider.deploymentName || '',
     apiVersion: provider.apiVersion || '',
     timeout: provider.timeout || 60000,
-    maxRetries: provider.maxRetries || 3
+    maxRetries: provider.maxRetries || 3,
+    modelId: provider.models && provider.models.length > 0 ? provider.models[0].id : ''
   });
   modelDialogVisible.value = true;
 }
@@ -531,14 +632,29 @@ async function handleModelSubmit(): Promise<void> {
 
     modelSubmitting.value = true;
     try {
+      // 构建要提交的数据
+      const models = modelFormData.modelId ? [{
+        id: modelFormData.modelId,
+        name: modelFormData.modelId,
+        capabilities: ['chat']
+      }] : [];
+      
+      const submitData = { 
+        ...modelFormData,
+        models 
+      };
+
+      // 深拷贝表单数据，避免 Vue 响应式对象无法被 Electron IPC 序列化
+      const clonedFormData = JSON.parse(JSON.stringify(submitData));
+      
       if (isEditingModel.value) {
-        const result = await modelsStore.updateProvider(editingModelId.value, modelFormData);
+        const result = await modelsStore.updateProvider(editingModelId.value, clonedFormData);
         if (result) {
           ElMessage.success('保存成功');
           modelDialogVisible.value = false;
         }
       } else {
-        const result = await modelsStore.addProvider(modelFormData);
+        const result = await modelsStore.addProvider(clonedFormData);
         if (result) {
           ElMessage.success('添加成功');
           modelDialogVisible.value = false;
@@ -568,6 +684,57 @@ async function handleTestProvider(id: string): Promise<void> {
   const result = await modelsStore.testProvider(id);
   modelTestResult.value = result;
   modelTestDialogVisible.value = true;
+}
+
+async function handleFetchModels(id: string): Promise<void> {
+  const result = await modelsStore.fetchModels(id);
+  if (result.success) {
+    if (result.models.length > 0) {
+      ElMessage.success(`发现 ${result.models.length} 个模型`);
+    } else if (result.error) {
+      ElMessage.warning(result.error);
+    }
+  } else if (result.error) {
+    ElMessage.error(`获取模型列表失败: ${result.error}`);
+  }
+}
+
+function handleManageModels(provider: ProviderConfig): void {
+  currentProvider.value = provider;
+  editingModels.value = JSON.parse(JSON.stringify(provider.models));
+  newModelId.value = '';
+  manageModelsDialogVisible.value = true;
+}
+
+function addModel(): void {
+  if (!newModelId.value.trim()) return;
+  
+  editingModels.value.push({
+    id: newModelId.value.trim(),
+    name: newModelId.value.trim(),
+    capabilities: ['chat']
+  });
+  
+  newModelId.value = '';
+}
+
+function removeModel(index: number): void {
+  editingModels.value.splice(index, 1);
+}
+
+async function saveModels(): Promise<void> {
+  if (!currentProvider.value) return;
+  
+  try {
+    await modelsStore.updateProvider(currentProvider.value.id, {
+      ...currentProvider.value,
+      models: editingModels.value
+    });
+    ElMessage.success('保存成功');
+    manageModelsDialogVisible.value = false;
+  } catch (error) {
+    ElMessage.error('保存失败');
+  }
 }
 
 async function handleSyncOllama(id: string): Promise<void> {
@@ -676,7 +843,10 @@ async function handleTestServer(name: string): Promise<void> {
 onMounted(async () => {
   loadShortcutConfig();
   hermesMemoryStore.fetchMemories();
-  await modelsStore.fetchProviders();
+  await Promise.all([
+    modelsStore.fetchProviders(),
+    modelsStore.fetchProviderTemplates()
+  ]);
   await loadMcpServers();
 });
 </script>
@@ -877,6 +1047,30 @@ onMounted(async () => {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.model-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.model-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--el-fill-color-light);
+  border-radius: 4px;
+}
+
+.model-name {
+  font-size: 14px;
+}
+
+.add-model {
+  display: flex;
+  align-items: center;
 }
 
 .mcp-grid {

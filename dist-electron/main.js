@@ -698,33 +698,9 @@ class ModelConfig {
       type: "ollama",
       enabled: true,
       baseUrl: "http://localhost:11434",
-      models: [
-        {
-          id: "llama3",
-          name: "Llama 3",
-          provider: "provider_ollama_default",
-          capabilities: ["chat"],
-          contextWindow: 8192,
-          description: "Meta开源模型"
-        },
-        {
-          id: "qwen2.5",
-          name: "Qwen 2.5",
-          provider: "provider_ollama_default",
-          capabilities: ["chat"],
-          contextWindow: 32768,
-          description: "阿里通义千问"
-        },
-        {
-          id: "codellama",
-          name: "Code Llama",
-          provider: "provider_ollama_default",
-          capabilities: ["completion"],
-          contextWindow: 16384,
-          description: "代码专用模型"
-        }
-      ],
-      defaultModel: "llama3",
+      models: [],
+      // 空模型列表，从 Ollama API 动态获取
+      defaultModel: void 0,
       timeout: 3e4,
       maxRetries: 2,
       createdAt: Date.now(),
@@ -797,6 +773,56 @@ class ModelConfig {
     ModelConfig.instance = null;
   }
 }
+const PROVIDER_DEFAULTS = {
+  openai: {
+    name: "OpenAI",
+    baseUrl: "https://api.openai.com/v1",
+    timeout: 6e4,
+    maxRetries: 3
+  },
+  anthropic: {
+    name: "Anthropic",
+    baseUrl: "https://api.anthropic.com/v1",
+    timeout: 6e4,
+    maxRetries: 3
+  },
+  deepseek: {
+    name: "DeepSeek",
+    baseUrl: "https://api.deepseek.com/v1",
+    timeout: 6e4,
+    maxRetries: 3
+  },
+  azure: {
+    name: "Azure OpenAI",
+    baseUrl: "https://{resource}.openai.azure.com",
+    timeout: 6e4,
+    maxRetries: 3
+  },
+  ollama: {
+    name: "Ollama",
+    baseUrl: "http://localhost:11434",
+    timeout: 3e4,
+    maxRetries: 2
+  },
+  custom: {
+    name: "Custom Provider",
+    baseUrl: "",
+    timeout: 6e4,
+    maxRetries: 3
+  },
+  openrouter: {
+    name: "OpenRouter",
+    baseUrl: "https://openrouter.ai/api/v1",
+    timeout: 6e4,
+    maxRetries: 3
+  },
+  volc_ark: {
+    name: "火山引擎",
+    baseUrl: "https://ark.cn-beijing.volces.com/api/v3",
+    timeout: 6e4,
+    maxRetries: 3
+  }
+};
 class ModelManager {
   constructor() {
     this.log = LogManager.getInstance();
@@ -817,6 +843,15 @@ class ModelManager {
   getEnabledProviders() {
     return this.config.getEnabledProviders();
   }
+  getTemplates() {
+    const templates = Object.entries(PROVIDER_DEFAULTS).map(([type, config]) => ({
+      name: config.name || type,
+      type,
+      defaultConfig: config
+    }));
+    this.log.info("获取模型提供商模板", { count: templates.length });
+    return templates;
+  }
   addProvider(data) {
     const provider = this.config.addProvider({
       name: data.name,
@@ -832,13 +867,13 @@ class ModelManager {
       timeout: data.timeout || 6e4,
       maxRetries: data.maxRetries || 3
     });
-    this.log.info(`添加模型提供商: ${provider.name}`);
+    this.log.info("添加模型提供商", { providerName: provider.name });
     return provider;
   }
   updateProvider(id, updates) {
     const updated = this.config.updateProvider(id, updates);
     if (updated) {
-      this.log.info(`更新模型提供商: ${updated.name}`);
+      this.log.info("更新模型提供商", { providerName: updated.name });
     }
     return updated;
   }
@@ -847,7 +882,7 @@ class ModelManager {
     if (provider) {
       const deleted = this.config.deleteProvider(id);
       if (deleted) {
-        this.log.info(`删除模型提供商: ${provider.name}`);
+        this.log.info("删除模型提供商", { providerName: provider.name });
       }
       return deleted;
     }
@@ -856,7 +891,7 @@ class ModelManager {
   setProviderEnabled(id, enabled) {
     const result = this.config.setProviderEnabled(id, enabled);
     if (result) {
-      this.log.info(`设置提供商 ${id} 启用状态: ${enabled}`);
+      this.log.info("设置提供商启用状态", { providerId: id, enabled });
     }
     return result;
   }
@@ -885,228 +920,362 @@ class ModelManager {
       };
     }
   }
-  async makeTestRequest(provider, modelId) {
-    return new Promise((resolve) => {
-      const timeout = setTimeout(() => {
-        resolve({ success: false, error: "Connection timeout" });
-      }, provider.timeout || 3e4);
-      let req;
-      switch (provider.type) {
-        case "ollama": {
-          const url$1 = new url.URL("/api/tags", provider.baseUrl);
-          const protocol = url$1.protocol === "https:" ? https : http;
-          req = protocol.request(url$1, { method: "GET" }, (res) => {
-            res.on("data", (chunk) => {
-            });
-            res.on("end", () => {
-              clearTimeout(timeout);
-              if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                resolve({ success: true, response: "Ollama service is running" });
-              } else {
-                resolve({ success: false, error: `Service error: HTTP ${res.statusCode}` });
-              }
-            });
-          });
-          break;
-        }
-        case "openai":
-        case "deepseek": {
-          const url$1 = new url.URL("/v1/models", provider.baseUrl);
-          const protocol = url$1.protocol === "https:" ? https : http;
-          const headers = {
-            "Authorization": `Bearer ${provider.apiKey || ""}`
+  async fetchModels(providerId) {
+    var _a, _b, _c;
+    const provider = this.config.getProvider(providerId);
+    if (!provider) {
+      return { success: false, models: [], error: "Provider not found" };
+    }
+    const isVolcEngine = provider.type === "volc_ark" || ((_a = provider.baseUrl) == null ? void 0 : _a.includes("volces.com"));
+    if (isVolcEngine) {
+      try {
+        const url2 = this.buildUrl(provider.baseUrl || "", "/models");
+        const protocol = url2.protocol === "https:" ? https : http;
+        const headers = {
+          "Authorization": `Bearer ${provider.apiKey || ""}`
+        };
+        const result = await this.makeHttpRequest(protocol, url2, "GET", headers, void 0, provider.timeout || 6e4);
+        if (result.success && ((_b = result.data) == null ? void 0 : _b.data)) {
+          const models = result.data.data.map((m) => ({
+            id: m.id,
+            name: m.id,
+            provider: providerId,
+            capabilities: ["chat"],
+            description: m.description || ""
+          }));
+          this.config.updateProvider(providerId, { models });
+          return { success: true, models };
+        } else {
+          return {
+            success: false,
+            models: [],
+            error: result.error || "获取模型列表失败，请手动添加模型。"
           };
-          req = protocol.request(url$1, { method: "GET", headers }, (res) => {
-            let data = "";
-            res.on("data", (chunk) => {
-              data += chunk;
-            });
-            res.on("end", () => {
-              var _a, _b;
-              clearTimeout(timeout);
-              if (res.statusCode === 200) {
-                resolve({ success: true, response: "Connection successful" });
-              } else if (res.statusCode === 401) {
-                resolve({ success: false, error: "Invalid API key" });
-              } else if (res.statusCode === 403) {
-                resolve({ success: false, error: "Access forbidden" });
-              } else {
-                let errorMsg = `HTTP ${res.statusCode}`;
-                try {
-                  const parsed = JSON.parse(data);
-                  if ((_a = parsed.error) == null ? void 0 : _a.message) errorMsg = parsed.error.message;
-                  else if ((_b = parsed.error) == null ? void 0 : _b.type) errorMsg = `${parsed.error.type}: ${parsed.error.message || ""}`;
-                } catch {
-                }
-                resolve({ success: false, error: errorMsg });
-              }
-            });
-          });
-          break;
         }
-        case "anthropic": {
-          const url$1 = new url.URL("/v1/messages", provider.baseUrl);
-          const protocol = url$1.protocol === "https:" ? https : http;
+      } catch (error) {
+        this.log.warn("火山引擎模型获取失败", { error: error.message });
+        return {
+          success: false,
+          models: [],
+          error: "获取模型列表失败，请手动添加模型。"
+        };
+      }
+    }
+    if (provider.type === "ollama") {
+      const models = await this.syncOllamaModels(providerId);
+      return { success: true, models };
+    }
+    try {
+      const url2 = this.buildUrl(provider.baseUrl || "", "/v1/models");
+      const protocol = url2.protocol === "https:" ? https : http;
+      const headers = {};
+      if (provider.apiKey) {
+        headers["Authorization"] = `Bearer ${provider.apiKey}`;
+      }
+      const result = await this.makeHttpRequest(protocol, url2, "GET", headers, void 0, provider.timeout || 6e4);
+      if (result.success && ((_c = result.data) == null ? void 0 : _c.data)) {
+        const models = result.data.data.map((m) => ({
+          id: m.id,
+          name: m.id,
+          provider: providerId,
+          capabilities: ["chat"],
+          description: m.description || ""
+        }));
+        this.config.updateProvider(providerId, { models });
+        return { success: true, models };
+      } else {
+        return { success: false, models: [], error: result.error || "Failed to fetch models" };
+      }
+    } catch (error) {
+      return { success: false, models: [], error: error.message };
+    }
+  }
+  buildUrl(baseUrl, path2) {
+    let cleanBaseUrl = baseUrl;
+    if (cleanBaseUrl.endsWith("/")) {
+      cleanBaseUrl = cleanBaseUrl.slice(0, -1);
+    }
+    let cleanPath = path2;
+    if (cleanPath.startsWith("/")) {
+      cleanPath = cleanPath.slice(1);
+    }
+    return new url.URL(`${cleanBaseUrl}/${cleanPath}`);
+  }
+  async makeHttpRequest(protocol, url2, method, headers, body, timeout) {
+    return new Promise((resolve) => {
+      const requestTimeout = timeout || 3e4;
+      const timeoutHandle = setTimeout(() => {
+        resolve({ success: false, error: "Request timeout" });
+      }, requestTimeout);
+      const options = {
+        method,
+        headers
+      };
+      const sanitizedHeaders = { ...headers };
+      if (sanitizedHeaders["Authorization"]) {
+        const authParts = sanitizedHeaders["Authorization"].split(" ");
+        if (authParts.length === 2 && authParts[0].toLowerCase() === "bearer") {
+          const token = authParts[1];
+          sanitizedHeaders["Authorization"] = `Bearer ${token.substring(0, 8)}...`;
+        }
+      }
+      if (sanitizedHeaders["x-api-key"]) {
+        const token = sanitizedHeaders["x-api-key"];
+        sanitizedHeaders["x-api-key"] = `${token.substring(0, 8)}...`;
+      }
+      if (sanitizedHeaders["api-key"]) {
+        const token = sanitizedHeaders["api-key"];
+        sanitizedHeaders["api-key"] = `${token.substring(0, 8)}...`;
+      }
+      this.log.info("发起 HTTP 请求", {
+        method,
+        url: url2.toString(),
+        headers: sanitizedHeaders
+      });
+      const req = protocol.request(url2, options, (res) => {
+        let data = "";
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+        res.on("end", () => {
+          var _a, _b;
+          clearTimeout(timeoutHandle);
+          this.log.info("收到 HTTP 响应", {
+            statusCode: res.statusCode,
+            statusMessage: res.statusMessage,
+            rawBody: data
+          });
+          try {
+            const parsed = JSON.parse(data);
+            if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+              resolve({ success: true, data: parsed });
+            } else {
+              let errorMsg = `HTTP ${res.statusCode}`;
+              if ((_a = parsed.error) == null ? void 0 : _a.message) errorMsg = parsed.error.message;
+              else if ((_b = parsed.error) == null ? void 0 : _b.type) errorMsg = `${parsed.error.type}: ${parsed.error.message || ""}`;
+              resolve({ success: false, error: errorMsg });
+            }
+          } catch (error) {
+            this.log.error("JSON 解析失败", {
+              errorMessage: error.message,
+              errorStack: error.stack,
+              rawBody: data
+            });
+            resolve({ success: false, error: "Invalid response format" });
+          }
+        });
+      });
+      req.on("error", (error) => {
+        clearTimeout(timeoutHandle);
+        this.log.error("HTTP 请求错误", { error: error.message });
+        resolve({ success: false, error: error.message });
+      });
+      if (body) {
+        req.write(JSON.stringify(body));
+      }
+      req.end();
+    });
+  }
+  async makeTestRequest(provider, modelId) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+    const isVolcEngine = provider.type === "volc_ark" || ((_a = provider.baseUrl) == null ? void 0 : _a.includes("volces.com"));
+    if (isVolcEngine) {
+      const testModelId = modelId || provider.defaultModel || (provider.models && provider.models.length > 0 ? provider.models[0].id : void 0);
+      if (!testModelId) {
+        return {
+          success: false,
+          error: "请先在编辑中填写模型 ID"
+        };
+      }
+      try {
+        const url2 = this.buildUrl(provider.baseUrl || "", "/chat/completions");
+        const protocol = url2.protocol === "https:" ? https : http;
+        const headers = {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${provider.apiKey || ""}`
+        };
+        const body = {
+          model: testModelId,
+          messages: [{ role: "user", content: "Hello" }],
+          max_tokens: 5
+        };
+        this.log.info("[火山引擎] 发送请求前", {
+          url: url2.toString(),
+          method: "POST",
+          testModelId,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${provider.apiKey ? provider.apiKey.substring(0, 8) + "..." : "empty"}`
+          },
+          body
+        });
+        const result = await this.makeHttpRequest(protocol, url2, "POST", headers, body, provider.timeout || 3e4);
+        this.log.info("[火山引擎] 收到响应", {
+          success: result.success,
+          data: result.data,
+          error: result.error
+        });
+        if (result.success) {
+          this.log.info("[火山引擎] 连接测试成功");
+          return { success: true, response: "Connection successful" };
+        } else {
+          this.log.error("[火山引擎] 连接测试失败", { error: result.error });
+          return { success: false, error: result.error };
+        }
+      } catch (error) {
+        this.log.error("[火山引擎] 连接测试异常", { error: error.message, stack: error.stack });
+        return { success: false, error: error.message };
+      }
+    }
+    switch (provider.type) {
+      case "ollama": {
+        try {
+          const url2 = this.buildUrl(provider.baseUrl || "", "/api/tags");
+          const protocol = url2.protocol === "https:" ? https : http;
+          const result = await this.makeHttpRequest(protocol, url2, "GET", {}, void 0, provider.timeout || 3e4);
+          if (result.success) {
+            return { success: true, response: "Ollama service is running" };
+          } else {
+            return { success: false, error: result.error };
+          }
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      }
+      case "openai":
+      case "deepseek":
+      case "volc_ark":
+      case "openrouter":
+      case "custom": {
+        try {
+          const url2 = this.buildUrl(provider.baseUrl || "", "/v1/models");
+          const protocol = url2.protocol === "https:" ? https : http;
+          const headers = {};
+          if (provider.apiKey) {
+            headers["Authorization"] = `Bearer ${provider.apiKey}`;
+          }
+          const result = await this.makeHttpRequest(protocol, url2, "GET", headers, void 0, provider.timeout || 3e4);
+          if (result.success) {
+            return { success: true, response: "Connection successful" };
+          } else if ((_b = result.error) == null ? void 0 : _b.includes("401")) {
+            return { success: false, error: "Invalid API key" };
+          } else if ((_c = result.error) == null ? void 0 : _c.includes("403")) {
+            return { success: false, error: "Access forbidden" };
+          } else {
+            return { success: false, error: result.error };
+          }
+        } catch (error) {
+          if ((_d = error.message) == null ? void 0 : _d.includes("ECONNREFUSED")) {
+            return { success: false, error: "Connection refused, please check if service is running" };
+          } else if ((_e = error.message) == null ? void 0 : _e.includes("ENOTFOUND")) {
+            return { success: false, error: "Host not found, please check the base URL" };
+          } else {
+            return { success: false, error: error.message };
+          }
+        }
+      }
+      case "anthropic": {
+        try {
+          const url2 = this.buildUrl(provider.baseUrl || "", "/v1/messages");
+          const protocol = url2.protocol === "https:" ? https : http;
           const headers = {
             "Content-Type": "application/json",
             "x-api-key": provider.apiKey || "",
             "anthropic-version": "2023-06-01",
             "anthropic-dangerous-direct-browser-access": "true"
           };
-          const body = JSON.stringify({
+          const body = {
             model: modelId || provider.defaultModel || "claude-3-5-sonnet-20241022",
             max_tokens: 10,
-            messages: [{ role: "user", content: "Hi" }]
-          });
-          req = protocol.request(url$1, { method: "POST", headers }, (res) => {
-            let data = "";
-            res.on("data", (chunk) => {
-              data += chunk;
-            });
-            res.on("end", () => {
-              var _a;
-              clearTimeout(timeout);
-              if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                resolve({ success: true, response: "Connection successful" });
-              } else if (res.statusCode === 401) {
-                resolve({ success: false, error: "Invalid API key" });
-              } else if (res.statusCode === 403) {
-                resolve({ success: false, error: "Access forbidden" });
-              } else {
-                let errorMsg = `HTTP ${res.statusCode}`;
-                try {
-                  const parsed = JSON.parse(data);
-                  if ((_a = parsed.error) == null ? void 0 : _a.message) errorMsg = parsed.error.message;
-                } catch {
-                }
-                resolve({ success: false, error: errorMsg });
-              }
-            });
-          });
-          req.write(body);
-          break;
+            messages: [{ role: "user", content: "Hello" }]
+          };
+          const result = await this.makeHttpRequest(protocol, url2, "POST", headers, body, provider.timeout || 3e4);
+          if (result.success) {
+            return { success: true, response: "Connection successful" };
+          } else if ((_f = result.error) == null ? void 0 : _f.includes("401")) {
+            return { success: false, error: "Invalid API key" };
+          } else if ((_g = result.error) == null ? void 0 : _g.includes("403")) {
+            return { success: false, error: "Access forbidden" };
+          } else {
+            return { success: false, error: result.error };
+          }
+        } catch (error) {
+          if ((_h = error.message) == null ? void 0 : _h.includes("ECONNREFUSED")) {
+            return { success: false, error: "Connection refused, please check if service is running" };
+          } else if ((_i = error.message) == null ? void 0 : _i.includes("ENOTFOUND")) {
+            return { success: false, error: "Host not found, please check the base URL" };
+          } else {
+            return { success: false, error: error.message };
+          }
         }
-        case "azure": {
+      }
+      case "azure": {
+        try {
           const deploymentName = provider.deploymentName || modelId || provider.defaultModel || "gpt-4";
-          const url$1 = new url.URL(`/openai/deployments/${deploymentName}/chat/completions?api-version=${provider.apiVersion || "2024-02-01"}`, provider.baseUrl);
-          const protocol = url$1.protocol === "https:" ? https : http;
+          const url2 = this.buildUrl(provider.baseUrl || "", `/openai/deployments/${deploymentName}/chat/completions?api-version=${provider.apiVersion || "2024-02-01"}`);
+          const protocol = url2.protocol === "https:" ? https : http;
           const headers = {
             "Content-Type": "application/json",
             "api-key": provider.apiKey || ""
           };
-          const body = JSON.stringify({
+          const body = {
             model: deploymentName,
-            messages: [{ role: "user", content: "Hi" }],
+            messages: [{ role: "user", content: "Hello" }],
             max_tokens: 10
-          });
-          req = protocol.request(url$1, { method: "POST", headers }, (res) => {
-            let data = "";
-            res.on("data", (chunk) => {
-              data += chunk;
-            });
-            res.on("end", () => {
-              var _a, _b;
-              clearTimeout(timeout);
-              if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                resolve({ success: true, response: "Connection successful" });
-              } else if (res.statusCode === 401) {
-                resolve({ success: false, error: "Invalid API key" });
-              } else if (res.statusCode === 404) {
-                resolve({ success: false, error: "Deployment not found, please check deployment name" });
-              } else {
-                let errorMsg = `HTTP ${res.statusCode}`;
-                try {
-                  const parsed = JSON.parse(data);
-                  if ((_a = parsed.error) == null ? void 0 : _a.message) errorMsg = parsed.error.message;
-                  else if ((_b = parsed.error) == null ? void 0 : _b.code) errorMsg = `${parsed.error.code}: ${parsed.error.message || ""}`;
-                } catch {
-                }
-                resolve({ success: false, error: errorMsg });
-              }
-            });
-          });
-          req.write(body);
-          break;
-        }
-        case "custom": {
-          const url$1 = new url.URL("/v1/models", provider.baseUrl);
-          const protocol = url$1.protocol === "https:" ? https : http;
-          const headers = {};
-          if (provider.apiKey) {
-            headers["Authorization"] = `Bearer ${provider.apiKey}`;
+          };
+          const result = await this.makeHttpRequest(protocol, url2, "POST", headers, body, provider.timeout || 3e4);
+          if (result.success) {
+            return { success: true, response: "Connection successful" };
+          } else if ((_j = result.error) == null ? void 0 : _j.includes("401")) {
+            return { success: false, error: "Invalid API key" };
+          } else if ((_k = result.error) == null ? void 0 : _k.includes("404")) {
+            return { success: false, error: "Deployment not found, please check deployment name" };
+          } else {
+            return { success: false, error: result.error };
           }
-          req = protocol.request(url$1, { method: "GET", headers }, (res) => {
-            res.on("data", (chunk) => {
-            });
-            res.on("end", () => {
-              clearTimeout(timeout);
-              if (res.statusCode === 200) {
-                resolve({ success: true, response: "Connection successful" });
-              } else {
-                resolve({ success: false, error: `HTTP ${res.statusCode}` });
-              }
-            });
-          });
-          break;
+        } catch (error) {
+          if ((_l = error.message) == null ? void 0 : _l.includes("ECONNREFUSED")) {
+            return { success: false, error: "Connection refused, please check if service is running" };
+          } else if ((_m = error.message) == null ? void 0 : _m.includes("ENOTFOUND")) {
+            return { success: false, error: "Host not found, please check the base URL" };
+          } else {
+            return { success: false, error: error.message };
+          }
         }
-        default:
-          clearTimeout(timeout);
-          resolve({ success: false, error: `Unsupported provider type: ${provider.type}` });
-          return;
       }
-      req.on("error", (error) => {
-        clearTimeout(timeout);
-        if (error.message.includes("ECONNREFUSED")) {
-          resolve({ success: false, error: "Connection refused, please check if service is running" });
-        } else if (error.message.includes("ENOTFOUND")) {
-          resolve({ success: false, error: "Host not found, please check the base URL" });
-        } else {
-          resolve({ success: false, error: error.message });
-        }
-      });
-      req.end();
-    });
+      default:
+        return { success: false, error: `Unsupported provider type: ${provider.type}` };
+    }
   }
   async syncOllamaModels(providerId) {
+    var _a;
     const provider = this.config.getProvider(providerId);
     if (!provider || provider.type !== "ollama") {
       return [];
     }
-    return new Promise((resolve) => {
-      const timeout = setTimeout(() => {
-        resolve([]);
-      }, provider.timeout || 3e4);
-      http.get(`${provider.baseUrl}/api/tags`, (res) => {
-        let data = "";
-        res.on("data", (chunk) => {
-          data += chunk;
+    try {
+      const url2 = this.buildUrl(provider.baseUrl || "", "/api/tags");
+      const protocol = url2.protocol === "https:" ? https : http;
+      const result = await this.makeHttpRequest(protocol, url2, "GET", {}, void 0, provider.timeout || 3e4);
+      if (result.success && ((_a = result.data) == null ? void 0 : _a.models)) {
+        const models = result.data.models.map((m) => {
+          var _a2;
+          return {
+            id: m.name,
+            name: m.name,
+            provider: providerId,
+            capabilities: ["chat"],
+            contextWindow: m.size ? Math.round(m.size / 1024 / 1024 / 1024 * 10) * 1024 * 1024 * 1024 / 2 : void 0,
+            description: ((_a2 = m.details) == null ? void 0 : _a2.parameter_size) || ""
+          };
         });
-        res.on("end", () => {
-          clearTimeout(timeout);
-          try {
-            const parsed = JSON.parse(data);
-            const models = (parsed.models || []).map((m) => {
-              var _a;
-              return {
-                id: m.name,
-                name: m.name,
-                provider: providerId,
-                capabilities: ["chat"],
-                contextWindow: m.size ? Math.round(m.size / 1024 / 1024 / 1024 * 10) * 1024 * 1024 * 1024 / 2 : void 0,
-                description: ((_a = m.details) == null ? void 0 : _a.parameter_size) || ""
-              };
-            });
-            this.config.updateProvider(providerId, { models });
-            resolve(models);
-          } catch {
-            resolve([]);
-          }
-        });
-      }).on("error", () => {
-        clearTimeout(timeout);
-        resolve([]);
-      });
-    });
+        this.config.updateProvider(providerId, { models });
+        return models;
+      }
+      return [];
+    } catch {
+      return [];
+    }
   }
   destroy() {
     ModelManager.instance = null;
@@ -4764,21 +4933,36 @@ class InstructionGenerator {
   /**
    * 从用户指令生成操作步骤
    */
-  async generateTaskSteps(userInstruction) {
+  async generateTaskSteps(userInstruction, preferredProviderId, preferredModelId) {
     this.log.info(`[InstructionGenerator] 生成步骤: ${userInstruction}`);
+    this.log.info(`[InstructionGenerator] 用户选择: provider=${preferredProviderId || "未指定"}, model=${preferredModelId || "未指定"}`);
     try {
-      const providers = this.modelManager.getAllProviders().filter((p) => p.enabled);
-      if (providers.length === 0) {
-        this.log.error("[InstructionGenerator] 没有可用的模型");
-        return null;
+      let provider = null;
+      let model = null;
+      if (preferredProviderId) {
+        provider = this.modelManager.getProvider(preferredProviderId);
+        if (provider) {
+          if (preferredModelId) {
+            model = provider.models.find((m) => m.id === preferredModelId && m.enabled) || provider.models.find((m) => m.enabled);
+          } else {
+            model = provider.models.find((m) => m.enabled) || provider.models[0];
+          }
+        }
       }
-      const provider = providers[0];
-      const model = provider.models.find((m) => m.enabled) || provider.models[0];
+      if (!provider || !model) {
+        const providers = this.modelManager.getAllProviders().filter((p) => p.enabled);
+        if (providers.length === 0) {
+          this.log.error("[InstructionGenerator] 没有可用的模型");
+          return null;
+        }
+        provider = providers[0];
+        model = provider.models.find((m) => m.enabled) || provider.models[0];
+      }
       if (!model) {
         this.log.error("[InstructionGenerator] 没有可用的模型");
         return null;
       }
-      this.log.info(`[InstructionGenerator] 使用模型: ${provider.name}/${model.name}`);
+      this.log.info(`[InstructionGenerator] 实际使用: provider=${provider.name}(${provider.type}), model=${model.name || model.id}`);
       let steps = await this.callModel(userInstruction, provider, model);
       if (steps && steps.length > 0) {
         steps = await this.validateAndFixSteps(steps, userInstruction, provider, model);
@@ -4997,28 +5181,61 @@ ${matchedSkillContext}
       baseUrl = baseUrl.replace(/\/$/, "");
       let url$1;
       let headers = { "Content-Type": "application/json" };
-      if (provider.type === "openai" || provider.type === "deepseek" || provider.type === "custom" || provider.type === "ollama") {
+      let body;
+      if (provider.type === "anthropic") {
+        if (!provider.apiKey) {
+          reject(new Error("Anthropic API Key未配置，请在设置中配置API Key"));
+          return;
+        }
+        url$1 = new url.URL(baseUrl + "/v1/messages");
+        headers["x-api-key"] = provider.apiKey || "";
+        headers["anthropic-version"] = "2023-06-01";
+        let systemMessage = "";
+        const filteredMessages = messages.filter((m) => {
+          if (m.role === "system") {
+            systemMessage = m.content;
+            return false;
+          }
+          return true;
+        }).map((m) => ({ role: m.role, content: m.content }));
+        body = {
+          model: model.id,
+          messages: filteredMessages,
+          stream: false,
+          max_tokens: 2e3
+        };
+        if (systemMessage) {
+          body.system = systemMessage;
+        }
+      } else if (provider.type === "openai" || provider.type === "deepseek" || provider.type === "custom" || provider.type === "ollama") {
         let endpoint = "/chat/completions";
         if (provider.type === "ollama") {
           endpoint = "/api/chat";
         }
         url$1 = new url.URL(baseUrl + endpoint);
         headers["Authorization"] = `Bearer ${provider.apiKey || ""}`;
+        body = {
+          model: model.id,
+          messages,
+          stream: false,
+          temperature: 0.1,
+          max_tokens: 2e3
+        };
       } else if (provider.type === "azure") {
         const deploymentName = provider.deploymentName || model.id;
         url$1 = new url.URL(`${baseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=${provider.apiVersion || "2024-02-01"}`);
         headers["api-key"] = provider.apiKey || "";
+        body = {
+          model: model.id,
+          messages,
+          stream: false,
+          temperature: 0.1,
+          max_tokens: 2e3
+        };
       } else {
         reject(new Error(`不支持的提供商类型: ${provider.type}`));
         return;
       }
-      const body = {
-        model: model.id,
-        messages,
-        stream: false,
-        temperature: 0.1,
-        max_tokens: 2e3
-      };
       const protocol = url$1.protocol === "https:" ? https : http;
       const req = protocol.request(
         {
@@ -5032,14 +5249,16 @@ ${matchedSkillContext}
           let data = "";
           res.on("data", (chunk) => data += chunk);
           res.on("end", () => {
-            var _a, _b, _c;
+            var _a, _b, _c, _d, _e, _f;
             try {
               if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
                 const parsed = JSON.parse(data);
                 let content = "";
-                if (provider.type === "ollama" && parsed.message) {
+                if (provider.type === "anthropic") {
+                  content = ((_b = (_a = parsed.content) == null ? void 0 : _a[0]) == null ? void 0 : _b.text) || "";
+                } else if (provider.type === "ollama" && parsed.message) {
                   content = parsed.message.content;
-                } else if ((_c = (_b = (_a = parsed.choices) == null ? void 0 : _a[0]) == null ? void 0 : _b.message) == null ? void 0 : _c.content) {
+                } else if ((_e = (_d = (_c = parsed.choices) == null ? void 0 : _c[0]) == null ? void 0 : _d.message) == null ? void 0 : _e.content) {
                   content = parsed.choices[0].message.content;
                 }
                 if (!content) {
@@ -5062,6 +5281,21 @@ ${matchedSkillContext}
                   resolve(null);
                 }
               } else {
+                let errorMsg = `请求失败: HTTP ${res.statusCode}`;
+                try {
+                  const errorJson = JSON.parse(data);
+                  errorMsg = ((_f = errorJson.error) == null ? void 0 : _f.message) || errorJson.message || errorMsg;
+                } catch {
+                }
+                if (res.statusCode === 401) {
+                  if (provider.type === "anthropic") {
+                    errorMsg = "Anthropic API Key无效，请检查您的API Key";
+                  } else {
+                    errorMsg = "API Key无效，请检查您的API Key";
+                  }
+                } else if (res.statusCode === 429) {
+                  errorMsg = "请求过于频繁，请稍后再试";
+                }
                 this.log.error("[InstructionGenerator] 请求失败:", res.statusCode, data);
                 resolve(null);
               }
@@ -5184,6 +5418,7 @@ class ChatManager {
     var _a, _b;
     const traceId = `msg_${Date.now()}`;
     this.log.info(`[ChatManager] [${traceId}] 收到消息发送请求`);
+    this.log.info(`[ChatManager] 用户选择: provider=${providerId || "未指定"}, model=${modelId || "未指定"}`);
     if (content.trim() === "是" || content.trim() === "确认" || content.trim() === "yes") {
       const selfLearner = SelfLearner.getInstance();
       const pendingProposal = selfLearner.getPendingProposal();
@@ -5236,7 +5471,7 @@ class ChatManager {
     try {
       const instructionGenerator = InstructionGenerator.getInstance();
       const taskExecutor = TaskExecutor.getInstance();
-      const steps = await instructionGenerator.generateTaskSteps(content);
+      const steps = await instructionGenerator.generateTaskSteps(content, providerId, modelId);
       if (steps && steps.length > 0) {
         this.log.info(`[ChatManager] [${traceId}] 大模型生成了 ${steps.length} 个步骤，开始执行`);
         const placeholderId = `assistant_${Date.now()}`;
@@ -5365,6 +5600,7 @@ class ChatManager {
     }
     const provider = this.modelManager.getProvider(effectiveProviderId);
     if (!provider) throw new Error("模型提供商不存在");
+    this.log.info(`[ChatManager] 实际调用: provider=${provider.name}, type=${provider.type}, model=${effectiveModelId}, url=${provider.baseUrl || "N/A"}`);
     const assistantMessageId = `assistant_${Date.now()}`;
     const assistantPlaceholder = {
       id: assistantMessageId,
@@ -5433,11 +5669,138 @@ AI回复: ${finalMsg.content.substring(0, 500)}${finalMsg.content.length > 500 ?
   async streamModelResponse(conversationId, messageId, providerId, modelId, messages, settings) {
     const provider = this.modelManager.getProvider(providerId);
     if (!provider) throw new Error("模型提供商不存在");
+    this.log.info(`[ChatManager] streamModelResponse: type=${provider.type}, baseUrl=${provider.baseUrl}, model=${modelId}`);
     if (provider.type === "ollama") {
       return this.streamOllama(conversationId, messageId, provider, modelId, messages, settings);
+    } else if (provider.type === "anthropic") {
+      return this.streamAnthropic(conversationId, messageId, provider, modelId, messages, settings);
     } else {
       return this.streamCloudProvider(conversationId, messageId, provider, modelId, messages, settings);
     }
+  }
+  async streamAnthropic(conversationId, messageId, provider, modelId, messages, settings) {
+    return new Promise((resolve, reject) => {
+      let baseUrl = provider.baseUrl;
+      if (!baseUrl) {
+        reject(new Error("缺少baseUrl"));
+        return;
+      }
+      baseUrl = baseUrl.replace(/\/$/, "");
+      const url$1 = new url.URL(`${baseUrl}/v1/messages`);
+      const headers = {
+        "Content-Type": "application/json",
+        "x-api-key": provider.apiKey || "",
+        "anthropic-version": "2023-06-01"
+      };
+      let systemMessage = "";
+      const filteredMessages = messages.filter((m) => {
+        if (m.role === "system") {
+          systemMessage = m.content;
+          return false;
+        }
+        return true;
+      }).map((m) => ({ role: m.role, content: m.content }));
+      const body = {
+        model: modelId,
+        messages: filteredMessages,
+        stream: true,
+        max_tokens: settings.maxTokens || 4096
+      };
+      if (systemMessage) {
+        body.system = systemMessage;
+      }
+      const controller = new AbortController();
+      this.abortControllers.set(conversationId, controller);
+      const timeout = setTimeout(() => controller.abort(), 6e4);
+      const protocol = url$1.protocol === "https:" ? https : http;
+      const req = protocol.request(
+        {
+          hostname: url$1.hostname,
+          port: url$1.port || (url$1.protocol === "https:" ? 443 : 80),
+          path: url$1.pathname,
+          method: "POST",
+          headers,
+          signal: controller.signal
+        },
+        (res) => {
+          let buffer = "";
+          let accumulatedContent = "";
+          if (res.statusCode && res.statusCode >= 400) {
+            let errorData = "";
+            res.on("data", (chunk) => {
+              errorData += chunk.toString();
+            });
+            res.on("end", () => {
+              var _a;
+              clearTimeout(timeout);
+              this.abortControllers.delete(conversationId);
+              let errorMessage = `请求失败: HTTP ${res.statusCode}`;
+              try {
+                const errorJson = JSON.parse(errorData);
+                errorMessage = ((_a = errorJson.error) == null ? void 0 : _a.message) || errorJson.message || errorMessage;
+              } catch {
+              }
+              if (res.statusCode === 401) {
+                errorMessage = "API Key无效，请检查您的Anthropic API Key";
+              } else if (res.statusCode === 429) {
+                errorMessage = "请求过于频繁，请稍后再试";
+              }
+              this.handleStreamError(conversationId, messageId, errorMessage);
+              reject(new Error(errorMessage));
+            });
+            return;
+          }
+          res.on("data", (chunk) => {
+            buffer += chunk.toString();
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+            for (const line of lines) {
+              if (!line.trim() || !line.startsWith("data: ")) continue;
+              const dataStr = line.slice(6).trim();
+              if (dataStr === "[DONE]") continue;
+              try {
+                const data = JSON.parse(dataStr);
+                if (data.type === "content_block_delta") {
+                  const delta = data.delta;
+                  if (delta.type === "text_delta" && delta.text) {
+                    accumulatedContent += delta.text;
+                    this.config.appendStreamingContent(conversationId, messageId, accumulatedContent, "");
+                    const updated = this.config.getMessage(conversationId, messageId);
+                    if (updated) this.broadcastMessage(conversationId, updated);
+                  }
+                } else if (data.type === "message_stop") {
+                }
+              } catch (e) {
+              }
+            }
+          });
+          res.on("end", () => {
+            clearTimeout(timeout);
+            this.abortControllers.delete(conversationId);
+            this.config.appendStreamingContent(conversationId, messageId, accumulatedContent, "");
+            this.config.finalizeStreamingMessage(conversationId, messageId, "sent");
+            this.broadcastConversationUpdate(conversationId);
+            resolve();
+          });
+        }
+      );
+      req.on("error", (error) => {
+        clearTimeout(timeout);
+        this.abortControllers.delete(conversationId);
+        if (provider.type === "volc_ark") {
+          this.log.error("[火山引擎] 聊天请求失败", { error: error.message });
+        }
+        if (error.name === "AbortError") {
+          this.handleStreamError(conversationId, messageId, "用户停止了生成或请求超时");
+          reject(new Error("用户停止了生成或请求超时"));
+        } else {
+          this.handleStreamError(conversationId, messageId, error.message);
+          reject(error);
+        }
+      });
+      req.write(JSON.stringify(body));
+      req.end();
+    });
   }
   isThinkingSupportedModel(modelId) {
     const lower = modelId.toLowerCase();
@@ -5508,6 +5871,13 @@ AI回复: ${finalMsg.content.substring(0, 500)}${finalMsg.content.length > 500 ?
           res.on("end", () => {
             clearTimeout(timeout);
             this.abortControllers.delete(conversationId);
+            if (provider.type === "volc_ark") {
+              if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+                this.log.info("[火山引擎] 聊天请求成功");
+              } else {
+                this.log.error("[火山引擎] 聊天请求失败", { statusCode: res.statusCode });
+              }
+            }
             this.config.appendStreamingContent(conversationId, messageId, accumulatedContent, accumulatedThinking);
             this.config.finalizeStreamingMessage(conversationId, messageId, "sent");
             this.broadcastConversationUpdate(conversationId);
@@ -5530,6 +5900,17 @@ AI回复: ${finalMsg.content.substring(0, 500)}${finalMsg.content.length > 500 ?
       req.end();
     });
   }
+  buildUrl(baseUrl, path2) {
+    let cleanBaseUrl = baseUrl;
+    if (cleanBaseUrl.endsWith("/")) {
+      cleanBaseUrl = cleanBaseUrl.slice(0, -1);
+    }
+    let cleanPath = path2;
+    if (cleanPath.startsWith("/")) {
+      cleanPath = cleanPath.slice(1);
+    }
+    return new url.URL(`${cleanBaseUrl}/${cleanPath}`);
+  }
   async streamCloudProvider(conversationId, messageId, provider, modelId, messages, settings) {
     return new Promise((resolve, reject) => {
       let baseUrl = provider.baseUrl;
@@ -5537,28 +5918,34 @@ AI回复: ${finalMsg.content.substring(0, 500)}${finalMsg.content.length > 500 ?
         reject(new Error("缺少baseUrl"));
         return;
       }
-      baseUrl = baseUrl.replace(/\/$/, "");
-      let url$1;
+      let url2;
       let headers = { "Content-Type": "application/json" };
-      if (provider.type === "openai" || provider.type === "deepseek" || provider.type === "custom") {
-        url$1 = new url.URL(`${baseUrl}/chat/completions`);
+      if (provider.type === "openai" || provider.type === "deepseek" || provider.type === "custom" || provider.type === "volc_ark") {
+        url2 = this.buildUrl(baseUrl, "/chat/completions");
         headers["Authorization"] = `Bearer ${provider.apiKey || ""}`;
+        if (provider.type === "volc_ark") {
+          this.log.info("[火山引擎] 发起聊天请求", {
+            url: url2.toString(),
+            apiKeyPrefix: provider.apiKey ? provider.apiKey.substring(0, 6) + "..." : "empty",
+            modelId
+          });
+        }
       } else if (provider.type === "azure") {
         const deploymentName = provider.deploymentName || modelId;
-        url$1 = new url.URL(`${baseUrl}/openai/deployments/${deploymentName}/chat/completions?api-version=${provider.apiVersion || "2024-02-01"}`);
+        url2 = this.buildUrl(baseUrl, `/openai/deployments/${deploymentName}/chat/completions?api-version=${provider.apiVersion || "2024-02-01"}`);
         headers["api-key"] = provider.apiKey || "";
       } else {
         reject(new Error(`不支持的提供商类型: ${provider.type}`));
         return;
       }
-      const body = { model: modelId, messages, stream: true, temperature: settings.temperature, maxTokens: settings.maxTokens };
-      if (settings.topP) body.topP = settings.topP;
+      const body = { model: modelId, messages, stream: true, temperature: settings.temperature, max_tokens: settings.maxTokens };
+      if (settings.topP) body.top_p = settings.topP;
       const controller = new AbortController();
       this.abortControllers.set(conversationId, controller);
       const timeout = setTimeout(() => controller.abort(), 6e4);
-      const protocol = url$1.protocol === "https:" ? https : http;
+      const protocol = url2.protocol === "https:" ? https : http;
       const req = protocol.request(
-        { hostname: url$1.hostname, port: url$1.port || (url$1.protocol === "https:" ? 443 : 80), path: url$1.pathname + url$1.search, method: "POST", headers, signal: controller.signal },
+        { hostname: url2.hostname, port: url2.port || (url2.protocol === "https:" ? 443 : 80), path: url2.pathname + url2.search, method: "POST", headers, signal: controller.signal },
         (res) => {
           let buffer = "";
           let accumulatedContent = "";
@@ -6662,26 +7049,6 @@ class IpcServer {
         return { success: false, error: String(error) };
       }
     });
-    electron.ipcMain.handle("shortcut:get", () => {
-      try {
-        const { GlobalShortcut: GlobalShortcut2 } = require("../core/GlobalShortcut");
-        const config = GlobalShortcut2.getInstance().getShortcutConfig();
-        return { success: true, data: config };
-      } catch (error) {
-        this.log.error("shortcut:get 失败", error);
-        return { success: false, error: String(error) };
-      }
-    });
-    electron.ipcMain.handle("shortcut:set", (_, key, accelerator) => {
-      try {
-        const { GlobalShortcut: GlobalShortcut2 } = require("../core/GlobalShortcut");
-        const result = GlobalShortcut2.getInstance().updateShortcut(key, accelerator);
-        return { success: result };
-      } catch (error) {
-        this.log.error("shortcut:set 失败", error);
-        return { success: false, error: String(error) };
-      }
-    });
     electron.ipcMain.handle("gateway:start", async (_, options) => {
       try {
         const gateway2 = OpenClawGateway.getInstance();
@@ -6951,6 +7318,28 @@ class IpcServer {
         return { success: true, data: models };
       } catch (error) {
         this.log.error("models:syncOllama 失败", error);
+        return { success: false, error: String(error) };
+      }
+    });
+    electron.ipcMain.handle("models:fetch", async (_, providerId) => {
+      try {
+        const modelManager = ModelManager.getInstance();
+        const result = await modelManager.fetchModels(providerId);
+        return result;
+      } catch (error) {
+        this.log.error("models:fetch 失败", error);
+        return { success: false, models: [], error: String(error) };
+      }
+    });
+    electron.ipcMain.handle("models:getTemplates", () => {
+      try {
+        this.log.info("models:getTemplates 被调用");
+        const modelManager = ModelManager.getInstance();
+        const templates = modelManager.getTemplates();
+        this.log.info("models:getTemplates 返回", { count: templates.length });
+        return { success: true, data: templates };
+      } catch (error) {
+        this.log.error("models:getTemplates 失败", error);
         return { success: false, error: String(error) };
       }
     });
