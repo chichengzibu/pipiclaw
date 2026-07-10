@@ -242,7 +242,7 @@
               :key="template.type" 
               :value="template.type"
             >
-              <span style="margin-right: 8px;">{{ getProviderIcon(template.type) }}</span>
+              <span style="margin-right: var(--space-sm);">{{ getProviderIcon(template.type) }}</span>
               {{ template.name }}
             </el-option>
           </el-select>
@@ -347,7 +347,7 @@
         <el-divider />
         
         <div class="add-model">
-          <el-input v-model="newModelId" placeholder="输入新模型ID" style="margin-right: 8px;" />
+          <el-input v-model="newModelId" placeholder="输入新模型ID" style="margin-right: var(--space-sm);" />
           <el-button type="primary" @click="addModel">添加模型</el-button>
         </div>
       </div>
@@ -863,13 +863,13 @@ onMounted(async () => {
 }
 
 .page-header {
-  margin-bottom: $content-padding;
+  margin-bottom: var(--content-padding);
   flex-shrink: 0;
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary) !important;
   margin: 0;
 }
@@ -891,15 +891,15 @@ onMounted(async () => {
   :deep(.el-tabs__content) {
     height: calc(100% - 60px);
     overflow-y: auto;
-    padding-top: $content-padding;
+    padding-top: var(--content-padding);
   }
 }
 
 .tab-content {
   display: flex;
   flex-direction: column;
-  gap: $content-padding;
-  padding: 0 $content-padding;
+  gap: var(--content-padding);
+  padding: 0 var(--content-padding);
 }
 
 .settings-card {
@@ -923,31 +923,31 @@ onMounted(async () => {
 }
 
 .form-tip {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--text-secondary) !important;
-  margin-left: 8px;
+  margin-left: var(--space-sm);
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 
 .provider-count, .mcp-count {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--text-secondary);
 }
 
 .provider-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: $content-padding;
+  gap: var(--content-padding);
 }
 
 .provider-card {
-  transition: all 0.3s;
+  transition: all var(--duration-base) var(--ease-standard);
 
   &.disabled {
     opacity: 0.7;
@@ -963,43 +963,43 @@ onMounted(async () => {
 .provider-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .provider-icon {
-  font-size: 32px;
+  font-size: var(--space-xl);
 }
 
 .provider-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-xs);
 }
 
 .provider-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-title-2);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
 .provider-type {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--text-secondary);
 }
 
 .provider-body {
-  padding: 8px 0;
+  padding: var(--space-sm) 0;
 }
 
 .connection-status {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
 }
 
 .model-count {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--text-secondary);
 }
 
@@ -1015,9 +1015,9 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: var(--space-sm) var(--space-sm);
   background: var(--border-color);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 
   &.default {
     border: 1px solid var(--el-color-primary-light-5);
@@ -1026,26 +1026,26 @@ onMounted(async () => {
 }
 
 .model-name {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-callout);
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
 }
 
 .model-capabilities {
   display: flex;
-  gap: 4px;
+  gap: var(--space-xs);
 }
 
 .no-models {
-  font-size: 13px;
+  font-size: var(--font-size-callout);
   color: var(--text-secondary);
   text-align: center;
-  padding: 20px;
+  padding: var(--space-lg);
 }
 
 .provider-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   justify-content: flex-end;
 }
 
@@ -1058,14 +1058,14 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  margin-bottom: 8px;
+  padding: var(--space-sm) var(--space-sm);
+  margin-bottom: var(--space-sm);
   background: var(--el-fill-color-light);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .model-name {
-  font-size: 14px;
+  font-size: var(--font-size-body);
 }
 
 .add-model {
@@ -1076,6 +1076,6 @@ onMounted(async () => {
 .mcp-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: $content-padding;
+  gap: var(--content-padding);
 }
 </style>
