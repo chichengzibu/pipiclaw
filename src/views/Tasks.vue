@@ -519,13 +519,13 @@ async function handleBatchDelete(): Promise<void> {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $content-padding;
+  margin-bottom: var(--content-padding);
   flex-shrink: 0;
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
   margin: 0;
 }
@@ -533,7 +533,7 @@ async function handleBatchDelete(): Promise<void> {
 .tasks-content {
   flex: 1;
   display: flex;
-  gap: $content-padding;
+  gap: var(--content-padding);
   min-height: 0;
 }
 
@@ -541,23 +541,23 @@ async function handleBatchDelete(): Promise<void> {
   width: 360px;
   flex-shrink: 0;
   background: var(--el-bg-color);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .stat-card {
   background: var(--el-fill-color-light);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
   text-align: center;
 
   &.success {
@@ -572,32 +572,32 @@ async function handleBatchDelete(): Promise<void> {
 }
 
 .stat-value {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--el-color-primary);
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
-  margin-top: 4px;
+  margin-top: var(--space-xs);
 }
 
 .filter-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .filter-title {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .actions-bar {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .tasks-list {
@@ -607,11 +607,11 @@ async function handleBatchDelete(): Promise<void> {
 
 .task-item {
   background: var(--el-fill-color-light);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 8px;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast) var(--ease-standard);
   border: 1px solid transparent;
 
   &:hover {
@@ -639,23 +639,23 @@ async function handleBatchDelete(): Promise<void> {
 .task-item-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
 }
 
 .task-status-icon,
 .task-mode-icon {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
 }
 
 .task-time {
   margin-left: auto;
-  font-size: 11px;
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
 }
 
 .task-item-content {
-  font-size: 13px;
+  font-size: var(--font-size-callout);
   color: var(--text-color);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -665,22 +665,22 @@ async function handleBatchDelete(): Promise<void> {
 .task-item-footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 6px;
-  font-size: 11px;
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
 }
 
 .empty-list {
   text-align: center;
-  padding: 40px;
+  padding: var(--space-2xl);
   color: var(--el-text-color-secondary);
 }
 
 .task-detail {
   flex: 1;
   background: var(--el-bg-color);
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
   overflow-y: auto;
 }
 
@@ -688,43 +688,43 @@ async function handleBatchDelete(): Promise<void> {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
 .detail-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .title-icon {
-  font-size: 20px;
+  font-size: var(--font-size-title-2);
 }
 
 .title-text {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-title-2);
+  font-weight: var(--font-weight-semibold);
 }
 
 .detail-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .detail-info {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--space-sm);
+  font-size: var(--font-size-callout);
 }
 
 .info-label {
@@ -736,39 +736,39 @@ async function handleBatchDelete(): Promise<void> {
 }
 
 .section-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
 }
 
 .detail-instruction {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
 }
 
 .instruction-text {
   background: var(--el-fill-color-light);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  line-height: 1.6;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-callout);
+  line-height: var(--line-height-relaxed);
 }
 
 .detail-steps {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
 }
 
 .steps-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .step-item {
   background: var(--el-fill-color-light);
-  border-radius: 8px;
-  padding: 12px;
-  border-left: 3px solid var(--el-border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  border-left: var(--space-xs) solid var(--el-border-color);
 
   &.risk-low { border-left-color: var(--el-color-success); }
   &.risk-medium { border-left-color: var(--el-color-warning); }
@@ -780,27 +780,27 @@ async function handleBatchDelete(): Promise<void> {
 .step-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
+  gap: var(--space-sm);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-sm);
 }
 
 .step-order {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: var(--space-lg);
+  height: var(--space-lg);
   background: var(--el-color-primary-light-8);
-  border-radius: 50%;
-  font-size: 11px;
-  font-weight: 600;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-caption-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--el-color-primary);
 }
 
 .step-icon {
-  font-size: 14px;
+  font-size: var(--font-size-body);
 }
 
 .step-description {
@@ -808,17 +808,17 @@ async function handleBatchDelete(): Promise<void> {
 }
 
 .step-details {
-  padding-left: 28px;
+  padding-left: var(--space-lg);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .detail-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: var(--space-sm);
+  font-size: var(--font-size-caption-1);
 }
 
 .row-label {
@@ -828,7 +828,7 @@ async function handleBatchDelete(): Promise<void> {
 
 .row-value {
   color: var(--text-color);
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
 
   &.success { color: var(--el-color-success); }
   &.error { color: var(--el-color-danger); }
@@ -836,29 +836,29 @@ async function handleBatchDelete(): Promise<void> {
 
 code {
   background: var(--el-fill-color);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: var(--space-xs) var(--space-xs);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-caption-1);
 }
 
 .detail-summary,
 .detail-error {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
 }
 
 .summary-text {
   background: var(--el-fill-color-light);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-callout);
 }
 
 .error-text {
   background: rgba(245, 108, 108, 0.05);
   border: 1px solid var(--el-color-danger-light-5);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-callout);
   color: var(--el-color-danger);
 }
 
@@ -871,7 +871,7 @@ code {
   color: var(--el-text-color-secondary);
 
   p {
-    margin-top: 16px;
+    margin-top: var(--space-md);
   }
 }
 </style>
