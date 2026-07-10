@@ -1,4 +1,36 @@
-node_modules/ 
-release/ 
-dist/ 
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+dist-electron/
+release/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# editor
+.vscode/
+.idea/
+
+# logs & debug
+*.log
+vite_err*.txt
+vite_out*.txt
+debug.log
+
+# playwright report
+tests/e2e-report/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# coverage
+coverage/
+
+# os temp
+tmp/
+.tmp/
