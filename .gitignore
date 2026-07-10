@@ -34,3 +34,18 @@ coverage/
 # os temp
 tmp/
 .tmp/
+
+# typescript
+*.tsbuildinfo
+.tsbuildinfo
+
+# eslint
+.eslintcache
+
+# playwright screenshots (不同于 e2e-report/)
+tests/e2e/**/screenshots/
+
+# sandbox runtime
+sandbox/base/.cache/
+sandbox/runtime/
+
