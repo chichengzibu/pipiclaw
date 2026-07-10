@@ -150,7 +150,7 @@ function testConnection(platform: keyof RemoteControlConfig): void {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: $content-padding;
+  gap: var(--content-padding);
 }
 
 .page-header {
@@ -161,8 +161,8 @@ function testConnection(platform: keyof RemoteControlConfig): void {
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
   margin: 0;
 }
@@ -173,7 +173,7 @@ function testConnection(platform: keyof RemoteControlConfig): void {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: $content-padding;
+  gap: var(--content-padding);
 }
 
 .control-card {
@@ -181,20 +181,20 @@ function testConnection(platform: keyof RemoteControlConfig): void {
 }
 
 .tutorial-collapse {
-  margin-top: 16px;
+  margin-top: var(--space-md);
 }
 
 .tutorial-content {
   p {
-    margin: 8px 0;
-    font-size: 14px;
+    margin: var(--space-sm) 0;
+    font-size: var(--font-size-body);
     color: var(--text-color);
   }
 }
 
 .action-bar {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
   flex-shrink: 0;
 }
 </style>
