@@ -120,7 +120,7 @@
             </el-col>
           </el-row>
           
-          <el-alert type="info" :closable="false" style="margin-top: 24px;">
+          <el-alert type="info" :closable="false" style="margin-top: var(--space-lg);">
             <template #title>
               如有问题或建议，请前往「系统设置」→「反馈与帮助」提交反馈
             </template>
@@ -147,8 +147,8 @@ const activeFaq = ref<string[]>([]);
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: $content-padding;
-  min-width: 1200px;
+  gap: var(--content-padding);
+  min-width: var(--content-max-width);
   background-color: var(--page-bg) !important;
   color: var(--text-primary) !important;
 }
@@ -161,8 +161,8 @@ const activeFaq = ref<string[]>([]);
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary) !important;
   margin: 0;
 }
@@ -189,24 +189,24 @@ const activeFaq = ref<string[]>([]);
   min-height: 0;
   display: flex;
   flex-direction: column;
-  
+
   :deep(.el-tabs__nav) {
     display: flex;
-    gap: 8px;
+    gap: var(--space-sm);
   }
-  
+
   :deep(.el-tabs__item) {
     min-width: 100px;
-    padding: 0 24px;
-    font-size: 14px;
-    line-height: 1.5;
+    padding: 0 var(--space-lg);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-normal);
   }
-  
+
   :deep(.el-tabs__content) {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 20px 0;
+    padding: var(--space-lg) 0;
   }
 }
 
@@ -217,20 +217,20 @@ const activeFaq = ref<string[]>([]);
 
 .faq-answer {
   p {
-    margin: 8px 0;
-    font-size: 14px;
+    margin: var(--space-sm) 0;
+    font-size: var(--font-size-body);
     color: var(--text-color);
-    line-height: 1.5;
+    line-height: var(--line-height-normal);
   }
 }
 
 :deep(.el-collapse-item__header) {
-  padding: 16px 20px;
-  line-height: 1.5;
+  padding: var(--space-md) var(--space-lg);
+  line-height: var(--line-height-normal);
 }
 
 :deep(.el-collapse-item__content) {
-  padding: 0 20px 16px;
+  padding: 0 var(--space-lg) var(--space-md);
 }
 
 :deep(.el-collapse) {
@@ -245,38 +245,38 @@ const activeFaq = ref<string[]>([]);
 .tutorial-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
   max-width: 800px;
 }
 
 .tutorial-step {
   display: flex;
-  gap: 16px;
+  gap: var(--space-md);
   align-items: flex-start;
 }
 
 .step-number {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: var(--button-height-lg);
+  height: var(--button-height-lg);
+  border-radius: var(--radius-pill);
   background-color: var(--el-color-primary);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   flex-shrink: 0;
 }
 
 .step-content h3 {
-  margin: 0 0 8px 0;
-  font-size: 16px;
+  margin: 0 0 var(--space-sm) 0;
+  font-size: var(--font-size-title-2);
   color: var(--text-color);
 }
 
 .step-content p {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--text-color-secondary);
 }
 
@@ -284,23 +284,23 @@ const activeFaq = ref<string[]>([]);
 .features-section {
   .feature-card {
     text-align: center;
-    padding: 32px 20px;
+    padding: var(--space-xl) var(--space-lg);
   }
-  
+
   .feature-icon {
     font-size: 48px;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
   }
-  
+
   h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
+    margin: 0 0 var(--space-sm) 0;
+    font-size: var(--font-size-title-2);
     color: var(--text-color);
   }
-  
+
   p {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--font-size-body);
     color: var(--text-color-secondary);
   }
 }
