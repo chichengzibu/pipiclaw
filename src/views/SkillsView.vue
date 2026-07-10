@@ -23,7 +23,7 @@
       title="技能较多，建议使用智能去重优化"
       type="warning"
       :closable="true"
-      style="margin-bottom: 16px;"
+      style="margin-bottom: var(--space-md);"
     />
     
     <!-- 技能提案横幅 -->
@@ -52,7 +52,7 @@
       type="warning"
       :closable="true"
       @close="showNeedsRestartNotice = false"
-      style="margin-bottom: 24px;"
+      style="margin-bottom: var(--space-lg);"
     />
     
     <div class="skills-content">
@@ -122,7 +122,7 @@
               v-for="keyword in pendingProposal.keywords"
               :key="keyword"
               size="small"
-              style="margin-right: 8px; margin-bottom: 8px;"
+              style="margin-right: var(--space-sm); margin-bottom: var(--space-sm);"
             >
               {{ keyword }}
             </el-tag>
@@ -389,8 +389,8 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
   box-sizing: border-box;
   overflow: hidden;
   background-color: var(--page-bg) !important;
@@ -406,24 +406,24 @@ onUnmounted(() => {
 
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .header-left {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-xs);
 }
 
 .page-title {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary) !important;
   margin: 0;
 }
 
 .page-desc {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--text-secondary);
   margin: 0;
 }
@@ -431,19 +431,19 @@ onUnmounted(() => {
 .proposal-banner {
   background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, var(--el-color-primary-light-8) 100%);
   border: 1px solid var(--el-color-primary-light-5);
-  border-radius: 12px;
-  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
   flex-shrink: 0;
 }
 
 .banner-content {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .banner-icon {
-  font-size: 32px;
+  font-size: var(--space-xl);
   flex-shrink: 0;
 }
 
@@ -453,31 +453,31 @@ onUnmounted(() => {
 }
 
 .banner-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-title-2);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-xs);
 }
 
 .banner-desc {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-sm);
 }
 
 .banner-condition {
-  font-size: 13px;
+  font-size: var(--font-size-callout);
   color: var(--el-color-primary);
   background: var(--el-color-primary-light-9);
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
   display: inline-block;
 }
 
 .banner-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
   align-items: flex-end;
 }
 
@@ -490,121 +490,121 @@ onUnmounted(() => {
 .skills-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: 20px;
+  gap: var(--space-lg);
 }
 
 .empty-state {
   text-align: center;
-  padding: 80px 20px;
+  padding: var(--space-3xl) var(--space-lg);
 }
 
 .empty-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
+  font-size: var(--space-3xl);
+  margin-bottom: var(--space-md);
 }
 
 .empty-title {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-sm) 0;
 }
 
 .empty-desc {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--text-secondary);
-  margin: 0 0 24px 0;
+  margin: 0 0 var(--space-lg) 0;
 }
 
 .page-footer {
   flex-shrink: 0;
-  padding-top: 16px;
+  padding-top: var(--space-md);
   border-top: 1px solid var(--border-color);
 }
 
 .stats-bar {
   display: flex;
-  gap: 24px;
+  gap: var(--space-lg);
 }
 
 .stat-item {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--text-secondary);
 }
 
 .stat-item strong {
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .proposal-detail {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-lg);
 }
 
 .detail-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .detail-label {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
 .detail-value {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
 }
 
 .step-item {
-  padding: 8px 12px;
+  padding: var(--space-sm) var(--space-sm);
   background: var(--el-fill-color-light);
-  border-radius: 6px;
-  margin-bottom: 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-sm);
 }
 
 .merge-candidates {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .candidate-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: var(--space-md);
   background: var(--el-fill-color-lighter);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--el-border-color);
 }
 
 .candidate-info {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: var(--space-lg);
   flex: 1;
 }
 
 .candidate-skill {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-xs);
 }
 
 .skill-label {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--text-secondary);
 }
 
 .skill-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
@@ -616,11 +616,11 @@ onUnmounted(() => {
 
 .no-candidates {
   text-align: center;
-  padding: 40px 20px;
+  padding: var(--space-2xl) var(--space-lg);
 }
 
 .no-candidates-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-size: var(--space-3xl);
+  margin-bottom: var(--space-md);
 }
 </style>
