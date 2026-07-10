@@ -263,7 +263,7 @@ watch(() => scheduleStore.editingTask, (task) => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: $content-padding;
+  gap: var(--content-padding);
 }
 
 .page-header {
@@ -275,7 +275,7 @@ watch(() => scheduleStore.editingTask, (task) => {
 
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .schedule-alert {
@@ -283,8 +283,8 @@ watch(() => scheduleStore.editingTask, (task) => {
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
   margin: 0;
 }
@@ -296,7 +296,7 @@ watch(() => scheduleStore.editingTask, (task) => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  
+
   :deep(.el-card__body) {
     flex: 1;
     min-height: 0;
