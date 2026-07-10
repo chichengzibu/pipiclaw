@@ -150,8 +150,8 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
   box-sizing: border-box;
   overflow-y: auto;
   background-color: var(--page-bg) !important;
@@ -166,8 +166,8 @@ onMounted(() => {
 }
 
 .page-title {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary) !important;
   margin: 0;
 }
@@ -185,35 +185,35 @@ onMounted(() => {
 .gateway-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-lg);
 }
 
 .gateway-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: var(--space-lg);
 }
 
 .info-item {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   align-items: center;
 }
 
 .info-label {
   color: var(--text-secondary) !important;
-  font-size: 14px;
+  font-size: var(--font-size-body);
 }
 
 .info-value {
   color: var(--text-primary) !important;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
 }
 
 .gateway-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-sm);
   flex-wrap: wrap;
   width: 100%;
 }
@@ -221,7 +221,7 @@ onMounted(() => {
 .gateway-actions .el-button {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .quick-actions-section {
@@ -229,40 +229,40 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--font-size-title-2);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--space-md) 0;
 }
 
 .quick-actions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .action-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 24px;
+  gap: var(--space-md);
+  padding: var(--space-lg);
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast) var(--ease-standard);
 }
 
 .action-card:hover {
   border-color: var(--el-color-primary-light-5);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
 .action-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+  width: var(--space-2xl);
+  height: var(--space-2xl);
+  border-radius: var(--radius-lg);
   background: var(--el-color-primary-light-9);
   display: flex;
   align-items: center;
@@ -271,7 +271,7 @@ onMounted(() => {
 }
 
 .action-icon .el-icon {
-  font-size: 28px;
+  font-size: var(--font-size-display);
   color: var(--el-color-primary);
 }
 
@@ -281,27 +281,27 @@ onMounted(() => {
 }
 
 .action-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-title-2);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin: 0 0 4px 0;
+  margin: 0 0 var(--space-xs) 0;
 }
 
 .action-desc {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--text-secondary);
   margin: 0;
 }
 
 .action-arrow {
-  font-size: 20px;
+  font-size: var(--icon-size-xl);
   color: var(--text-secondary);
   flex-shrink: 0;
-  transition: transform 0.2s;
+  transition: transform var(--duration-fast) var(--ease-standard);
 }
 
 .action-card:hover .action-arrow {
   color: var(--el-color-primary);
-  transform: translateX(4px);
+  transform: translateX(var(--space-xs));
 }
 </style>
