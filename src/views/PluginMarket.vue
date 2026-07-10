@@ -4,7 +4,7 @@
       <h1 class="page-title">插件市场</h1>
       <Breadcrumb />
     </div>
-    
+
     <div class="market-content">
       <el-alert type="info" :closable="false" class="market-alert">
         扩展产品的核心能力，解锁更多自动化场景，比如浏览器控制、消息推送、第三方服务对接
@@ -12,8 +12,8 @@
       <el-tabs v-model="activeTab" class="plugin-tabs">
         <el-tab-pane label="官方插件" name="official">
           <div class="plugin-grid">
-            <div 
-              v-for="plugin in officialPlugins" 
+            <div
+              v-for="plugin in officialPlugins"
               :key="plugin.id"
               class="plugin-card"
             >
@@ -44,11 +44,11 @@
             </div>
           </div>
         </el-tab-pane>
-        
+
         <el-tab-pane label="我的插件" name="my">
           <div class="plugin-grid">
-            <div 
-              v-for="plugin in myPlugins" 
+            <div
+              v-for="plugin in myPlugins"
               :key="plugin.id"
               class="plugin-card"
             >
@@ -139,7 +139,7 @@ function togglePlugin(plugin: Plugin): void {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: $content-padding;
+  gap: var(--content-padding);
 }
 
 .page-header {
@@ -150,14 +150,14 @@ function togglePlugin(plugin: Plugin): void {
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
   margin: 0;
 }
 
 .market-alert {
-  margin-bottom: $content-padding;
+  margin-bottom: var(--content-padding);
 }
 
 .market-content {
@@ -173,7 +173,7 @@ function togglePlugin(plugin: Plugin): void {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  
+
   :deep(.el-tabs__content) {
     flex: 1;
     min-height: 0;
@@ -184,22 +184,22 @@ function togglePlugin(plugin: Plugin): void {
 .plugin-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
-  padding: 8px 0;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
 }
 
 .plugin-card {
-  padding: 16px;
+  padding: var(--space-md);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: all 0.2s;
-  
+  gap: var(--space-sm);
+  transition: all var(--duration-fast) var(--ease-standard);
+
   &:hover {
     border-color: var(--el-color-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-md);
   }
 }
 
@@ -210,33 +210,33 @@ function togglePlugin(plugin: Plugin): void {
 }
 
 .plugin-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-title-2);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
 }
 
 .plugin-desc {
-  font-size: 13px;
+  font-size: var(--font-size-callout);
   color: var(--text-color-secondary);
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
 }
 
 .plugin-meta {
   display: flex;
-  gap: 16px;
-  font-size: 12px;
+  gap: var(--space-md);
+  font-size: var(--font-size-caption-1);
   color: var(--text-color-secondary);
-  
+
   .meta-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-xs);
   }
 }
 
 .plugin-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   margin-top: auto;
 }
 </style>
