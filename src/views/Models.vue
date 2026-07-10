@@ -144,7 +144,7 @@
               :key="template.type" 
               :value="template.type"
             >
-              <span style="margin-right: 8px;">{{ getProviderIcon(template.type, template.name) }}</span>
+              <span style="margin-right: var(--space-sm);">{{ getProviderIcon(template.type, template.name) }}</span>
               {{ template.name }}
             </el-option>
           </el-select>
@@ -255,7 +255,7 @@
         <el-divider />
         
         <div class="add-model">
-          <el-input v-model="newModelId" placeholder="输入新模型ID" style="margin-right: 8px;" />
+          <el-input v-model="newModelId" placeholder="输入新模型ID" style="margin-right: var(--space-sm);" />
           <el-button type="primary" @click="addModel">添加模型</el-button>
         </div>
       </div>
@@ -613,32 +613,32 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $content-padding;
+  margin-bottom: var(--content-padding);
   flex-shrink: 0;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
   margin: 0;
 }
 
 .provider-count {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--el-text-color-secondary);
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .models-content {
@@ -650,18 +650,18 @@ async function handleDelete(id: string, name: string): Promise<void> {
 .provider-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .provider-card {
-  transition: all 0.3s;
+  transition: all var(--duration-base) var(--ease-standard);
   height: 200px;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: var(--space-md);
 
   :deep(.el-card__header) {
-    height: 48px;
+    height: var(--space-2xl);
     padding: 0;
     display: flex;
     align-items: center;
@@ -676,7 +676,7 @@ async function handleDelete(id: string, name: string): Promise<void> {
   }
 
   :deep(.el-card__footer) {
-    height: 44px;
+    height: var(--button-height-lg);
     padding: 0;
     flex-shrink: 0;
     display: flex;
@@ -704,27 +704,27 @@ async function handleDelete(id: string, name: string): Promise<void> {
 .provider-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .provider-icon {
-  font-size: 32px;
+  font-size: var(--space-xl);
 }
 
 .provider-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-xs);
 }
 
 .provider-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-title-2);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
 }
 
 .provider-type {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
 }
 
@@ -737,71 +737,71 @@ async function handleDelete(id: string, name: string): Promise<void> {
 .connection-status {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
   flex-shrink: 0;
 }
 
 .model-count {
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: var(--font-size-callout);
+  line-height: var(--line-height-normal);
   color: var(--el-text-color-secondary);
 }
 
 .models-tag-cloud {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-xs);
   flex: 1;
   align-content: flex-start;
 
   :deep(.el-tag) {
-    font-size: 12px;
-    height: 24px;
+    font-size: var(--font-size-caption-1);
+    height: var(--button-height-sm);
   }
 }
 
 .model-cap-tag {
-  font-size: 11px;
-  margin-left: 4px;
+  font-size: var(--font-size-caption-1);
+  margin-left: var(--space-xs);
   opacity: 0.8;
 }
 
 .more-models-tip {
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: var(--font-size-callout);
+  line-height: var(--line-height-normal);
   color: var(--el-text-color-secondary);
-  padding: 2px 0;
+  padding: var(--space-xs) 0;
 }
 
 .no-models {
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: var(--font-size-callout);
+  line-height: var(--line-height-normal);
   color: var(--el-text-color-secondary);
   text-align: center;
-  padding: 20px;
+  padding: var(--space-lg);
 }
 
 .provider-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   justify-content: flex-end;
   flex-wrap: wrap;
   width: 100%;
 }
 
 .volc-tip {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
 }
 
 .model-row {
   display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 12px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm);
   background: var(--el-fill-color-light);
-  border-radius: 6px;
-  
+  border-radius: var(--radius-sm);
+
   :deep(.el-form-item) {
     margin-bottom: 0;
     flex: 1;
@@ -817,10 +817,10 @@ async function handleDelete(id: string, name: string): Promise<void> {
 }
 
 .form-tip {
-  margin-left: 8px;
+  margin-left: var(--space-sm);
   color: var(--el-text-color-secondary);
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: var(--font-size-callout);
+  line-height: var(--line-height-normal);
 }
 
 .model-list {
@@ -832,14 +832,14 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  margin-bottom: 8px;
+  padding: var(--space-sm) var(--space-sm);
+  margin-bottom: var(--space-sm);
   background: var(--el-fill-color-light);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .model-name {
-  font-size: 14px;
+  font-size: var(--font-size-body);
 }
 
 .add-model {
