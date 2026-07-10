@@ -168,7 +168,28 @@ const IpcChannels = {
   LEARNING_RESET: 'learning:reset',
   LEARNING_SAVE_SKILL_PROPOSAL: 'learning:save-skill-proposal',
   LEARNING_GET_PENDING_PROPOSAL: 'learning:get-pending-proposal',
-  LEARNING_CLEAR_PENDING_PROPOSAL: 'learning:clear-pending-proposal'
+  LEARNING_CLEAR_PENDING_PROPOSAL: 'learning:clear-pending-proposal',
+
+  // ========== Agent 能力域 (W3 新增) ==========
+  AGENT_THINK: 'agent:think',
+  AGENT_SPAWN: 'agent:spawn',
+  AGENT_LIST: 'agent:list',
+
+  // ========== Channel 能力域 (W3 新增) ==========
+  CHANNEL_LIST: 'channel:list',
+  CHANNEL_HEALTH: 'channel:health',
+  CHANNEL_SEND: 'channel:send',
+
+  // ========== P7 Sandbox 能力域 (W3 新增) ==========
+  SANDBOX_DETECT: 'sandbox:detect',
+  SANDBOX_RUN: 'sandbox:run',
+  SANDBOX_PREVIEW: 'sandbox:preview',
+  SANDBOX_STOP: 'sandbox:stop',
+
+  // ========== Insight 能力域 (W3 新增) ==========
+  INSIGHT_TRACE_START: 'insight:trace:start',
+  INSIGHT_TRACE_END: 'insight:trace:end',
+  INSIGHT_COST_TODAY: 'insight:cost:today'
 } as const;
 
 type IpcCallback = (event: IpcRendererEvent, ...args: any[]) => void;
@@ -939,6 +960,48 @@ const electronAPI = {
 
     clearPendingProposal: (): Promise<IpcResponse<void>> =>
       ipcRenderer.invoke(IpcChannels.LEARNING_CLEAR_PENDING_PROPOSAL)
+  },
+
+  // ========== Agent 能力域 (W3 新增) ==========
+  agent: {
+    think: (ctx: Record<string, unknown>): Promise<IpcResponse<{ action: string; payload: unknown; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.AGENT_THINK, ctx),
+    spawn: (subtask: { instruction: string; parentTaskId?: string }): Promise<IpcResponse<{ id: string; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.AGENT_SPAWN, subtask),
+    list: (): Promise<IpcResponse<any[]>> =>
+      ipcRenderer.invoke(IpcChannels.AGENT_LIST)
+  },
+
+  // ========== Channel 能力域 (W3 新增) ==========
+  channel: {
+    list: (): Promise<IpcResponse<Array<{ id: string; name: string; healthy: boolean }>>> =>
+      ipcRenderer.invoke(IpcChannels.CHANNEL_LIST),
+    health: (channelId: string): Promise<IpcResponse<{ healthy: boolean; latencyMs: number; stub: boolean; channelId: string }>> =>
+      ipcRenderer.invoke(IpcChannels.CHANNEL_HEALTH, channelId),
+    send: (msg: { channelId: string; to: string; text?: string }): Promise<IpcResponse<{ messageId: string; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.CHANNEL_SEND, msg)
+  },
+
+  // ========== P7 Sandbox 能力域 (W3 新增) ==========
+  sandbox: {
+    detect: (): Promise<IpcResponse<{ platform: NodeJS.Platform; arch: string; dockerAvailable: boolean; sandboxRoot: string; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.SANDBOX_DETECT),
+    run: (cmd: string, opts?: { cwd?: string; env?: Record<string, string>; timeoutMs?: number }): Promise<IpcResponse<{ exitCode: number; stdout: string; stderr: string; durationMs: number; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.SANDBOX_RUN, cmd, opts),
+    preview: (): Promise<IpcResponse<{ url: string; port: number; expiresAt: number; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.SANDBOX_PREVIEW),
+    stop: (): Promise<IpcResponse<{ stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.SANDBOX_STOP)
+  },
+
+  // ========== Insight 能力域 (W3 新增) ==========
+  insight: {
+    traceStart: (name: string, attrs?: Record<string, unknown>): Promise<IpcResponse<{ spanId: string; name: string; startMs: number; attrs: Record<string, unknown>; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.INSIGHT_TRACE_START, name, attrs),
+    traceEnd: (spanId: string): Promise<IpcResponse<{ spanId: string; endMs: number; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.INSIGHT_TRACE_END, spanId),
+    costToday: (): Promise<IpcResponse<{ totalCostUsd: number; totalTokens: number; stub: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.INSIGHT_COST_TODAY)
   }
 };
 

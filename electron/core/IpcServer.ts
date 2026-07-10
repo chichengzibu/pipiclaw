@@ -1559,10 +1559,157 @@ export class IpcServer {
           // 可以删除第二个技能，或者保留备份
           return { success: true, data: { mergedTo: skillId1 } };
         }
-        
+
         return { success: false, error: '合并失败' };
       } catch (error) {
         this.log.error('skills:perform-merge 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // ========== Agent 能力域 (W3 新增) ==========
+    ipcMain.handle('agent:think', async (_, ctx: any) => {
+      try {
+        // W5 才实现 AgentBrain,本期先 stub
+        this.log.debug('agent:think stub', { ctx });
+        return { success: true, data: { action: 'think', payload: ctx, stub: true } };
+      } catch (error) {
+        this.log.error('agent:think 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('agent:spawn', async (_, subtask: any) => {
+      try {
+        this.log.debug('agent:spawn stub', { subtask });
+        return { success: true, data: { id: `agent-stub-${Date.now()}`, stub: true } };
+      } catch (error) {
+        this.log.error('agent:spawn 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('agent:list', async () => {
+      try {
+        const reg = require('../contracts/CapabilityRegistry').CapabilityRegistry.getInstance();
+        return { success: true, data: reg.listDomains() };
+      } catch (error) {
+        this.log.error('agent:list 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // ========== Channel 能力域 (W3 新增) ==========
+    ipcMain.handle('channel:list', async () => {
+      try {
+        // W7 才实现 ChannelRouter,本期先返回空数组
+        return { success: true, data: [] as Array<{ id: string; name: string; healthy: boolean }> };
+      } catch (error) {
+        this.log.error('channel:list 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('channel:health', async (_, channelId: string) => {
+      try {
+        return { success: true, data: { healthy: true, latencyMs: 0, stub: true, channelId } };
+      } catch (error) {
+        this.log.error('channel:health 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('channel:send', async (_, msg: { channelId: string; to: string; text?: string }) => {
+      try {
+        this.log.debug('channel:send stub', { msg });
+        return { success: true, data: { messageId: `msg-stub-${Date.now()}`, stub: true } };
+      } catch (error) {
+        this.log.error('channel:send 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // ========== P7 Sandbox 能力域 (W3 新增) ==========
+    ipcMain.handle('sandbox:detect', async () => {
+      try {
+        // W9 才实现 SandboxBuilder,本期先 stub:返回 host 平台 + docker 是否可用(用 which 探测)
+        const { execSync } = require('node:child_process');
+        let dockerAvailable = false;
+        try {
+          execSync('docker --version', { stdio: 'ignore' });
+          dockerAvailable = true;
+        } catch {}
+        return {
+          success: true,
+          data: {
+            platform: process.platform,
+            arch: process.arch,
+            dockerAvailable,
+            sandboxRoot: require('node:os').homedir() + '/.pipiclaw/sandbox',
+            stub: true
+          }
+        };
+      } catch (error) {
+        this.log.error('sandbox:detect 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('sandbox:run', async (_, cmd: string, opts: any) => {
+      try {
+        this.log.debug('sandbox:run stub', { cmd, opts });
+        return { success: true, data: { exitCode: 0, stdout: 'sandbox:run stub', stderr: '', durationMs: 0, stub: true } };
+      } catch (error) {
+        this.log.error('sandbox:run 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('sandbox:preview', async () => {
+      try {
+        return { success: true, data: { url: '', port: 0, expiresAt: 0, stub: true } };
+      } catch (error) {
+        this.log.error('sandbox:preview 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('sandbox:stop', async () => {
+      try {
+        return { success: true, data: { stub: true } };
+      } catch (error) {
+        this.log.error('sandbox:stop 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // ========== Insight 能力域 (W3 新增) ==========
+    ipcMain.handle('insight:trace:start', async (_, name: string, attrs: Record<string, unknown>) => {
+      try {
+        const spanId = `span-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        this.log.debug(`insight:trace:start ${spanId}`, { name, attrs });
+        return { success: true, data: { spanId, name, startMs: Date.now(), attrs, stub: true } };
+      } catch (error) {
+        this.log.error('insight:trace:start 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('insight:trace:end', async (_, spanId: string) => {
+      try {
+        this.log.debug(`insight:trace:end ${spanId}`);
+        return { success: true, data: { spanId, endMs: Date.now(), stub: true } };
+      } catch (error) {
+        this.log.error('insight:trace:end 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('insight:cost:today', async () => {
+      try {
+        return { success: true, data: { totalCostUsd: 0, totalTokens: 0, stub: true } };
+      } catch (error) {
+        this.log.error('insight:cost:today 失败', error);
         return { success: false, error: String(error) };
       }
     });
