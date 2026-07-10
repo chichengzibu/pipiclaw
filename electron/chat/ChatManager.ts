@@ -18,7 +18,8 @@ import { TaskExecutor } from '../task/TaskExecutor';
 import { InstructionGenerator } from '../task/InstructionGenerator';
 import { OpenClawGateway } from '../openclaw/OpenClawGateway';
 import { SelfLearner } from '../learning/SelfLearner';
-import type { Conversation, ChatMessage, ChatSettings, MessageRole } from './ChatTypes';
+import type { Conversation, ChatMessage, ChatSettings, MessageRole, StreamChunk } from './ChatTypes';
+import type { AgentBrain, Disposable } from '../contracts/types';
 
 export class ChatManager {
   private static instance: ChatManager;
@@ -900,5 +901,63 @@ export class ChatManager {
     this.abortControllers.forEach(c => c.abort());
     this.abortControllers.clear();
     ChatManager.instance = null as any;
+  }
+
+  // ============ W4.6 新增:Agent 接入点(additive,不改既有方法) ============
+
+  private registeredAgent: AgentBrain | null = null;
+  private streamHandlers: Set<(chunk: StreamChunk) => void> = new Set();
+  private streamSeq = 0;
+
+  /**
+   * 注册 Agent brain(由 Agent 域在启动时调用,ChatManager 后续可通过 dispatchToAgent 把消息转给 agent)
+   * 只保留最后注册的 agent;重复注册会覆盖。
+   */
+  public registerAgent(brain: AgentBrain): void {
+    this.log.info('[ChatManager] 注册 AgentBrain');
+    this.registeredAgent = brain;
+  }
+
+  /**
+   * 派发消息给已注册的 agent(由 IpcServer / TaskExecutor 调用)
+   * 如果没注册 agent,返回 void(noop),不抛错
+   */
+  public async dispatchToAgent(msg: ChatMessage): Promise<void> {
+    if (!this.registeredAgent) {
+      this.log.debug('[ChatManager] dispatchToAgent: 未注册 agent,跳过');
+      return;
+    }
+    try {
+      const decision = await this.registeredAgent.think({ conversationId: msg.id, content: msg.content });
+      this.log.debug('[ChatManager] dispatchToAgent: agent decision', { decision });
+    } catch (e) {
+      this.log.error('[ChatManager] dispatchToAgent 失败', e);
+    }
+  }
+
+  /**
+   * 订阅流式 chunk(由渲染进程通过 IPC 订阅)
+   * 返回 Disposable 用于取消订阅
+   */
+  public subscribeStream(handler: (chunk: StreamChunk) => void): Disposable {
+    this.streamHandlers.add(handler);
+    return {
+      dispose: () => {
+        this.streamHandlers.delete(handler);
+      },
+    };
+  }
+
+  /** W4.6 内部:产生一个 stream chunk 并通知所有订阅者(供 Chat 流使用) */
+  public _emitStreamChunk(chunk: Omit<StreamChunk, 'seq' | 'timestamp'>): void {
+    this.streamSeq += 1;
+    const fullChunk: StreamChunk = { ...chunk, seq: this.streamSeq, timestamp: Date.now() };
+    for (const h of Array.from(this.streamHandlers)) {
+      try {
+        h(fullChunk);
+      } catch (e) {
+        this.log.error('[ChatManager] stream handler error', e);
+      }
+    }
   }
 }

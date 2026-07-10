@@ -59,7 +59,7 @@ export interface ChatResponse {
   };
 }
 
-export interface StreamChunk {
+export interface LLMStreamChunk {
   id: string;
   choices: Array<{
     delta: {
@@ -68,6 +68,23 @@ export interface StreamChunk {
     };
     finishReason?: string;
   }>;
+}
+
+/**
+ * 流式 chunk(W4.6 新增,用于 ChatManager.subscribeStream)
+ */
+export interface StreamChunk {
+  seq: number;
+  messageId: string;
+  conversationId: string;
+  textDelta?: string;
+  thinkingDelta?: string;
+  toolCallDelta?: {
+    name: string;
+    args: string;
+  };
+  done: boolean;
+  timestamp: number;
 }
 
 export interface ChatSettings {
