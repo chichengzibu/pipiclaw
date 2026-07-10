@@ -18,8 +18,9 @@ import { LogManager } from '../core/LogManager';
 import { PermissionManager } from '../permissions/PermissionManager';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { OpenClawServer } from './OpenClawServer';
-import { GatewayConfig } from '../gateway/GatewayConfig';
 import { BrowserManager } from '../browser/BrowserManager';
+
+const DEFAULT_OPENCLAW_PORT = 18789;
 import type {
   OpenClawOperationType,
   OpenClawOperationStatus,
@@ -98,9 +99,8 @@ export class OpenClawGateway {
   private constructor() {
     this.log.info('[OpenClawGateway] 初始化中...');
     // 不在这里初始化 OpenClawServer，避免循环依赖
-    // 加载默认配置
-    const gatewayConfig = GatewayConfig.getInstance();
-    this.port = gatewayConfig.getDefaultPort();
+    // 默认端口（v2：移除对 electron/gateway/GatewayConfig 的依赖，原 gateway 模块已删除）
+    this.port = DEFAULT_OPENCLAW_PORT;
     // 初始化浏览器管理器
     this.browserManager = BrowserManager.getInstance();
     this.log.info('[OpenClawGateway] 初始化完成');
@@ -131,9 +131,8 @@ export class OpenClawGateway {
       return { success: true };
     }
 
-    // 加载默认配置
-    const gatewayConfig = GatewayConfig.getInstance();
-    this.port = options.port || gatewayConfig.getDefaultPort();
+    // 默认端口（v2：移除对 electron/gateway/GatewayConfig 的依赖，原 gateway 模块已删除）
+    this.port = options.port || DEFAULT_OPENCLAW_PORT;
     this.state = 'starting';
     this.lastError = null;
     this.broadcastStatus();

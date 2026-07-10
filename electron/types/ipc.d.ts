@@ -75,6 +75,6 @@ export interface LogEntry {
   data?: any;
 }
 
-// ========== 网关相关类型导入 ==========
-import type { GatewayStatusInfo, GatewayLogEntry, GatewayState, GatewayStoredConfig } from './gateway';
-export type { GatewayStatusInfo, GatewayLogEntry, GatewayState, GatewayStoredConfig };
+// ========== 网关相关类型来源：./gateway.d.ts（v2: 保留类型文件，删 electron/gateway/*.ts 实现） ==========
+// GatewayStatusInfo / GatewayLogEntry / GatewayState / GatewayStoredConfig 等
+// 仍由 ./gateway.d.ts ambient 导出；IpcGatewayStatusResponse 等在下方使用这些类型。

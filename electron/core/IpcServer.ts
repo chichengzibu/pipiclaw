@@ -6,7 +6,6 @@ import { ipcMain, app, dialog } from 'electron';
 import { LogManager } from './LogManager';
 import { WindowManager } from './WindowManager';
 import { ConfigStore } from './ConfigStore';
-import { GatewayConfig } from '../gateway/GatewayConfig';
 import { ModelManager } from '../models/ModelManager';
 import { PermissionManager } from '../permissions/PermissionManager';
 import { ChatManager } from '../chat/ChatManager';
@@ -248,8 +247,9 @@ export class IpcServer {
 
     ipcMain.handle('gateway:config:get', async () => {
       try {
-        const gatewayConfig = GatewayConfig.getInstance();
-        return { success: true, data: gatewayConfig.getConfig() };
+        // v2: 改用 ConfigStore 的 gateway 字段（替代已删除的 GatewayConfig 单例）
+        const configStore = ConfigStore.getInstance();
+        return { success: true, data: configStore.get('gateway') };
       } catch (error) {
         this.log.error('gateway:config:get 失败', error);
         return { success: false, error: String(error) };
@@ -258,8 +258,10 @@ export class IpcServer {
 
     ipcMain.handle('gateway:config:set', async (_, config: any) => {
       try {
-        const gatewayConfig = GatewayConfig.getInstance();
-        gatewayConfig.setAll(config);
+        // v2: 改用 ConfigStore 的 gateway 字段（替代已删除的 GatewayConfig 单例）
+        const configStore = ConfigStore.getInstance();
+        const current = configStore.get('gateway') ?? {};
+        configStore.set('gateway', { ...current, ...config });
         return { success: true };
       } catch (error) {
         this.log.error('gateway:config:set 失败', error);
