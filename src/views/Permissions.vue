@@ -416,19 +416,19 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $content-padding;
+  margin-bottom: var(--content-padding);
   flex-shrink: 0;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
   margin: 0;
 }
@@ -436,7 +436,7 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .permissions-content {
@@ -447,41 +447,41 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 .permissions-layout {
   display: flex;
   height: 100%;
-  gap: $content-padding;
+  gap: var(--content-padding);
 }
 
 .sets-panel {
   width: 280px;
   flex-shrink: 0;
   background: var(--el-bg-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 .panel-header {
-  padding: 16px;
+  padding: var(--space-md);
   border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .panel-title {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-body);
   color: var(--text-color);
 }
 
 .sets-list {
   flex: 1;
-  padding: 8px;
+  padding: var(--space-sm);
 }
 
 .set-item {
-  padding: 12px;
-  border-radius: 6px;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 4px;
+  transition: all var(--duration-fast) var(--ease-standard);
+  margin-bottom: var(--space-xs);
 
   &:hover {
     background: var(--el-fill-color-light);
@@ -496,36 +496,36 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 .set-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-xs);
 }
 
 .set-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .set-icon {
-  font-size: 18px;
+  font-size: var(--font-size-title-2);
 }
 
 .set-name {
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-body);
   color: var(--text-color);
 }
 
 .set-desc {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
-  line-height: 1.4;
+  line-height: var(--line-height-normal);
 }
 
 .detail-panel {
   flex: 1;
   background: var(--el-bg-color);
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
   overflow-y: auto;
   min-width: 0;
 }
@@ -536,44 +536,44 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
   align-items: center;
   justify-content: center;
   background: var(--el-bg-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
 }
 
 .detail-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 20px;
-  font-weight: 600;
+  gap: var(--space-sm);
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
 }
 
 .detail-icon {
-  font-size: 28px;
+  font-size: var(--font-size-display);
 }
 
 .detail-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .detail-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .info-row {
   display: flex;
-  gap: 12px;
-  font-size: 14px;
+  gap: var(--space-sm);
+  font-size: var(--font-size-body);
 }
 
 .info-label {
@@ -587,43 +587,43 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 }
 
 .section-header {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
 }
 
 .section-title {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-body);
   color: var(--text-color);
 }
 
 .rules-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .rule-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: var(--space-sm) var(--space-md);
   background: var(--el-fill-color-light);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .rule-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-sm);
 }
 
 .rule-icon {
-  font-size: 20px;
+  font-size: var(--font-size-title-2);
 }
 
 .rule-name {
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-body);
   color: var(--text-color);
 }
 
@@ -639,36 +639,36 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 .level-option {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-xs);
 }
 
 .level-desc {
-  font-size: 11px;
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
 }
 
 .advanced-section {
-  margin-top: 16px;
+  margin-top: var(--space-md);
 }
 
 .path-rules {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .path-rule {
-  padding: 12px;
+  padding: var(--space-sm);
   background: var(--el-fill-color-lighter);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .path-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-sm);
 
   &:last-child {
     margin-bottom: 0;
@@ -676,13 +676,13 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 }
 
 .path-label {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
   width: 70px;
 }
 
 .path-empty {
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-placeholder);
   font-style: italic;
 }
