@@ -156,7 +156,7 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: $content-padding;
+  gap: var(--content-padding);
 }
 
 .page-header {
@@ -167,19 +167,19 @@ onMounted(() => {
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-title-1);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
   margin: 0;
 }
 
 .market-alert {
-  margin-bottom: $content-padding;
+  margin-bottom: var(--content-padding);
 }
 
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .market-content {
@@ -206,22 +206,22 @@ onMounted(() => {
 .skill-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
-  padding: 8px 0;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
 }
 
 .skill-card {
-  padding: 16px;
+  padding: var(--space-md);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: all 0.2s;
-  
+  gap: var(--space-sm);
+  transition: all var(--duration-fast) var(--ease-standard);
+
   &:hover {
     border-color: var(--el-color-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-md);
   }
 }
 
@@ -232,42 +232,42 @@ onMounted(() => {
 }
 
 .skill-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-title-2);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-color);
 }
 
 .skill-desc {
-  font-size: 13px;
+  font-size: var(--font-size-callout);
   color: var(--text-color-secondary);
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
 }
 
 .skill-meta {
   display: flex;
-  gap: 16px;
-  font-size: 12px;
+  gap: var(--space-md);
+  font-size: var(--font-size-caption-1);
   color: var(--text-color-secondary);
-  
+
   .meta-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-xs);
   }
 }
 
 .skill-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   margin-top: auto;
 }
 
 .execute-content {
   .execute-skill-name {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: var(--font-size-title-1);
+    font-weight: var(--font-weight-semibold);
     color: var(--text-color);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-lg);
   }
 }
 </style>
