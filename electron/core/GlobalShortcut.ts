@@ -10,6 +10,8 @@
 import { globalShortcut, BrowserWindow } from 'electron';
 import { LogManager } from './LogManager';
 import { ConfigStore } from './ConfigStore';
+// ============ W5.3 added (additive,不改既有 import) ============
+import { handleD1Shortcut } from '../skill/builtin/D1ScreenshotQA';
 
 export interface ShortcutConfig {
   toggleWindow: string;
@@ -222,5 +224,23 @@ export class GlobalShortcut {
     this.unregisterAll();
     GlobalShortcut.instance = null as any;
     this.log.info('[GlobalShortcut] 已销毁');
+  }
+}
+
+// ============ W5.3 新增:D1 截屏问答快捷键 (additive,不改既有快捷键) ============
+export function registerD1ScreenshotShortcut(): boolean {
+  try {
+    const accelerator = 'CommandOrControl+Shift+S'
+    if (globalShortcut.isRegistered(accelerator)) {
+      globalShortcut.unregister(accelerator);
+    }
+    const ok = globalShortcut.register(accelerator, () => {
+      void handleD1Shortcut();
+    });
+    LogManager.getInstance().info(`GlobalShortcut[D1]: ${accelerator} ${ok ? 'OK' : 'FAIL'}`);
+    return ok;
+  } catch (e) {
+    LogManager.getInstance().error('GlobalShortcut[D1]: 注册失败', e);
+    return false;
   }
 }
