@@ -18,3 +18,15 @@ export const INSIGHT_DOMAIN = {
 } as const
 
 export type InsightDomainId = typeof INSIGHT_DOMAIN.id
+
+// ============ W5.1 added (保留上方 W3.1 的 AGENT_DOMAIN/INSIGHT_DOMAIN 常量不动) ============
+export { TraceCollector } from './TraceCollector'
+export type { TraceSpanOptions } from './TraceCollector'
+export { CostTracker } from './CostTracker'
+export type { UsageEntry, ModelPricing, TodayCostSummary } from './CostTracker'
+export { TaskKanban } from './TaskKanban'
+export type { KanbanTask, KanbanColumn, KanbanPriority } from './TaskKanban'
+export { AnomalyTimeline } from './AnomalyTimeline'
+export type { Anomaly, AnomalySeverity, AnomalyCategory } from './AnomalyTimeline'
+export { InsightManager } from './InsightManager'
+export type { InsightDashboardPayload } from './InsightManager'
