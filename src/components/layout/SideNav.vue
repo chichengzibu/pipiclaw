@@ -45,7 +45,17 @@ const navItems = [
   { path: '/dashboard', name: 'Dashboard', title: '首页', icon: 'HomeFilled' },
   { path: '/chat', name: 'Chat', title: '对话', icon: 'ChatDotRound' },
   { path: '/skills', name: 'Skills', title: '技能管理', icon: 'Box' },
-  { path: '/settings', name: 'Settings', title: '设置', icon: 'Setting' }
+  { path: '/settings', name: 'Settings', title: '设置', icon: 'Setting' },
+  { path: '/help', name: 'Help', title: '帮助', icon: 'QuestionFilled' },
+  { path: '/models', name: 'Models', title: '模型', icon: 'Cpu' },
+  { path: '/permissions', name: 'Permissions', title: '权限', icon: 'Lock' },
+  { path: '/plugin-market', name: 'PluginMarket', title: '插件市场', icon: 'Shop' },
+  { path: '/remote-control', name: 'RemoteControl', title: '远程控制', icon: 'Connection' },
+  { path: '/schedule', name: 'Schedule', title: '计划任务', icon: 'Calendar' },
+  { path: '/skill-market', name: 'SkillMarket', title: '技能市场', icon: 'Goods' },
+  { path: '/tasks', name: 'Tasks', title: '任务', icon: 'List' },
+  { path: '/d1-demo', name: 'D1ScreenshotDemo', title: 'D1 截屏', icon: 'Camera' },
+  { path: '/d5-demo', name: 'D5RecordingToSkill', title: 'D5 录屏', icon: 'VideoCamera' }
 ];
 
 const sidebarWidth = ref(200);

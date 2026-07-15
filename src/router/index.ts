@@ -49,6 +49,66 @@ const routes: RouteRecordRaw[] = [
       title: '设置',
       icon: 'Setting'
     }
+  },
+  {
+    path: '/help',
+    name: 'Help',
+    component: () => import('@/views/Help.vue'),
+    meta: { title: '帮助', icon: 'QuestionFilled' }
+  },
+  {
+    path: '/models',
+    name: 'Models',
+    component: () => import('@/views/Models.vue'),
+    meta: { title: '模型', icon: 'Cpu' }
+  },
+  {
+    path: '/permissions',
+    name: 'Permissions',
+    component: () => import('@/views/Permissions.vue'),
+    meta: { title: '权限', icon: 'Lock' }
+  },
+  {
+    path: '/plugin-market',
+    name: 'PluginMarket',
+    component: () => import('@/views/PluginMarket.vue'),
+    meta: { title: '插件市场', icon: 'Shop' }
+  },
+  {
+    path: '/remote-control',
+    name: 'RemoteControl',
+    component: () => import('@/views/RemoteControl.vue'),
+    meta: { title: '远程控制', icon: 'Connection' }
+  },
+  {
+    path: '/schedule',
+    name: 'Schedule',
+    component: () => import('@/views/Schedule.vue'),
+    meta: { title: '计划任务', icon: 'Calendar' }
+  },
+  {
+    path: '/skill-market',
+    name: 'SkillMarket',
+    component: () => import('@/views/SkillMarket.vue'),
+    meta: { title: '技能市场', icon: 'Goods' }
+  },
+  {
+    path: '/tasks',
+    name: 'Tasks',
+    component: () => import('@/views/Tasks.vue'),
+    meta: { title: '任务', icon: 'List' }
+  },
+  {
+    path: '/d1-demo',
+    name: 'D1ScreenshotDemo',
+    component: () => import('@/views/D1ScreenshotDemo.vue'),
+    meta: { title: 'D1 截屏', icon: 'Camera' }
+  },
+  {
+    path: '/d5-demo',
+    name: 'D5RecordingToSkill',
+    component: () => import('@/views/D5RecordingToSkill.vue'),
+    meta: { title: 'D5 录屏', icon: 'VideoCamera' }
   }
 ];
 

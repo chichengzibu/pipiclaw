@@ -189,7 +189,10 @@ const IpcChannels = {
   // ========== Insight 能力域 (W3 新增) ==========
   INSIGHT_TRACE_START: 'insight:trace:start',
   INSIGHT_TRACE_END: 'insight:trace:end',
-  INSIGHT_COST_TODAY: 'insight:cost:today'
+  INSIGHT_COST_TODAY: 'insight:cost:today',
+
+  // ========== W7.0.2: D5 录屏转技能 IPC ==========
+  D5_RUN: 'd5:run'
 } as const;
 
 type IpcCallback = (event: IpcRendererEvent, ...args: any[]) => void;
@@ -1002,6 +1005,12 @@ const electronAPI = {
       ipcRenderer.invoke(IpcChannels.INSIGHT_TRACE_END, spanId),
     costToday: (): Promise<IpcResponse<{ totalCostUsd: number; totalTokens: number; stub: boolean }>> =>
       ipcRenderer.invoke(IpcChannels.INSIGHT_COST_TODAY)
+  },
+
+  // ========== W7.0.2: D5 录屏转技能 IPC ==========
+  d5: {
+    run: (input: { triggerPhrase: string; description?: string }): Promise<IpcResponse<{ ok: boolean; skillName?: string; frameCount?: number; durationMs?: number; error?: string }>> =>
+      ipcRenderer.invoke(IpcChannels.D5_RUN, input)
   }
 };
 

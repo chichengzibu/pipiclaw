@@ -1714,6 +1714,18 @@ export class IpcServer {
       }
     });
 
+    // ============ W7.0.2: D5 录屏转技能 IPC ============
+    ipcMain.handle('d5:run', async (_: any, input: { triggerPhrase: string; description?: string }) => {
+      try {
+        const { runD5 } = require('../skill/builtin/D5RecordingToSkill')
+        const result = await runD5(input)
+        return { success: true, data: result }
+      } catch (error) {
+        this.log.error('d5:run 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
     this.log.info('IPC处理器注册完成');
   }
 
