@@ -109,6 +109,12 @@ const routes: RouteRecordRaw[] = [
     name: 'D5RecordingToSkill',
     component: () => import('@/views/D5RecordingToSkill.vue'),
     meta: { title: 'D5 录屏', icon: 'VideoCamera' }
+  },
+  {
+    path: '/d3-demo',
+    name: 'D3RemoteDemo',
+    component: () => import('@/views/D3RemoteDemo.vue'),
+    meta: { title: 'D3 远程', icon: 'Promotion' }
   }
 ];
 
