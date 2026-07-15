@@ -18,8 +18,18 @@ export class SkillManager {
   private skillsDir: string;
   private skills: Skill[] = [];
 
+  /** W7.0.4: 路径单点 — 其它模块应使用这个而非自己 join(userData,'skills') */
+  public static getSkillsDir(): string {
+    const userDataPath = app.getPath('userData');
+    const dir = path.join(userDataPath, 'skills');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    return dir;
+  }
+
   private constructor() {
-    this.skillsDir = path.join(app.getPath('userData'), 'skills');
+    this.skillsDir = SkillManager.getSkillsDir();
     this.ensureSkillsDir();
     this.loadSkills();
   }

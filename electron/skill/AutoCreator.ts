@@ -6,6 +6,7 @@ import { SkillVersioning } from './SkillVersioning'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { app } from 'electron'
+import { SkillManager } from './SkillManager'
 
 export interface SkillDraft {
   id: string
@@ -68,7 +69,7 @@ export class AutoCreator {
   }
 
   async saveDraftToDisk(draft: SkillDraft): Promise<string> {
-    const skillsDir = path.join(app.getPath('userData'), 'skills', draft.name)
+    const skillsDir = path.join(SkillManager.getSkillsDir(), draft.name)
     if (!fs.existsSync(skillsDir)) fs.mkdirSync(skillsDir, { recursive: true })
     const filePath = path.join(skillsDir, 'SKILL.md')
     fs.writeFileSync(filePath, draft.content, 'utf-8')

@@ -16,6 +16,7 @@ import { LogManager } from '../core/LogManager';
 import { ConfigStore } from '../core/ConfigStore';
 import { ModelManager } from '../models/ModelManager';
 import { SelfLearner } from '../learning/SelfLearner';
+import { SkillManager } from './SkillManager';
 
 /**
  * 技能定义接口
@@ -70,8 +71,8 @@ export class SkillLoader {
     // this.selfLearner 现在只会在需要时才加载
     // this.selfLearner = SelfLearner.getInstance();
     
-    // 使用用户数据目录下的 skills 文件夹，确保数据持久化
-    this.skillsDir = path.join(app.getPath('userData'), 'skills');
+    // 使用 SkillManager.getSkillsDir() 作为路径单点(W7.0.4)
+    this.skillsDir = SkillManager.getSkillsDir();
     
     // 如果用户数据目录下没有技能，尝试从项目根目录复制
     const projectSkillsDir = path.join(app.getAppPath(), '..', 'skills');
