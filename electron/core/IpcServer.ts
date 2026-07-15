@@ -807,7 +807,7 @@ export class IpcServer {
     ipcMain.handle('task:executeTool', async (_, request: any) => {
       try {
         const taskExecutor = TaskExecutor.getInstance();
-        const result = await taskExecutor.executeToolCall(request);
+        const result = await (taskExecutor as any).executeToolCall(request);
         return { success: true, data: result };
       } catch (error) {
         this.log.error('task:executeTool 失败', error);

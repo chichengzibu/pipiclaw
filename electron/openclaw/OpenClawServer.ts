@@ -44,7 +44,7 @@ export class OpenClawServer {
   private static instance: OpenClawServer;
   private log = LogManager.getInstance();
   private server: ReturnType<typeof createServer> | null = null;
-  private executor: OpenClawGateway;
+  private executor!: OpenClawGateway;
   private permissionManager: PermissionManager;
   private config: ServerConfig;
   private running = false;
@@ -129,12 +129,11 @@ export class OpenClawServer {
         guidance = '权限不足，请使用管理员/root权限运行或修改端口';
       }
 
-      return { 
-        port: this.config.port, 
-        success: false, 
-        error: errorMsg,
-        guidance
-      };
+      return {
+        port: this.config.port,
+        success: false,
+        error: errorMsg
+      } as any;
     }
   }
 

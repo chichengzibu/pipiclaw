@@ -80,10 +80,10 @@ export class OpenClawGateway {
   private log = LogManager.getInstance();
   private permissionManager = PermissionManager.getInstance();
   private auditLogs: OpenClawAuditLogEntry[] = [];
-  private browserManager: BrowserManager;
-  
+  private browserManager!: BrowserManager;
+
   // 网关状态管理
-  private server: OpenClawServer;
+  private server!: OpenClawServer;
   private state: GatewayState = 'stopped';
   private port: number = 18789;
   private pid: number | null = null;
@@ -691,7 +691,7 @@ export class OpenClawGateway {
     const { stdout, stderr } = await execAsync(fullCommand, {
       cwd: cwd ? this.resolvePath(cwd) : undefined,
       timeout,
-      shell
+      shell: shell as any
     });
 
     return { stdout, stderr };
@@ -898,10 +898,7 @@ export class OpenClawGateway {
 
     // 相对路径转绝对路径（相对于用户文档目录）
     if (!path.isAbsolute(resolved)) {
-      const docs = process.env.DOCUMENTS || 
-                    process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Documents') :
-                    process.env.HOME ? path.join(process.env.HOME, 'Documents') :
-                    process.cwd();
+      const docs = process.env.DOCUMENTS || (process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Documents') : process.env.HOME ? path.join(process.env.HOME, 'Documents') : process.cwd());
       resolved = path.join(docs, resolved);
     }
 

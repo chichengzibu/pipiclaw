@@ -24,8 +24,8 @@ import type { AgentBrain, Disposable } from '../contracts/types';
 export class ChatManager {
   private static instance: ChatManager;
   private log = LogManager.getInstance();
-  private config: ChatConfig;
-  private modelManager: ModelManager;
+  private config!: ChatConfig;
+  private modelManager!: ModelManager;
   private abortControllers: Map<string, AbortController> = new Map();
 
   private constructor() {
@@ -274,7 +274,7 @@ export class ChatManager {
           createdAt: Date.now()
         };
 
-        const result = await taskExecutor.executeTask(task);
+        const result = await taskExecutor.executeTask(task as any);
 
         // 更新助手消息 - 详细的任务结果格式
         // 构建详细步骤列表
@@ -303,8 +303,8 @@ export class ChatManager {
                 resultContent += `${statusIcon} **步骤 ${i + 1}**：${originalStep.description || originalStep.action}\n`;
 
                 // 如果有更详细的描述，追加显示
-                if (stepResult.description && stepResult.description !== originalStep.description) {
-                    resultContent += `   > ${stepResult.description}\n`;
+                if ((stepResult as any).description && (stepResult as any).description !== originalStep.description) {
+                    resultContent += `   > ${(stepResult as any).description}\n`;
                 }
 
                 // 如果是文件操作，显示核心参数
@@ -352,7 +352,7 @@ export class ChatManager {
             error: result.error,
             duration: result.duration
           }
-        };
+        } as any;
 
         this.config.updateMessage(conversationId, placeholderId, finalMsg);
         this.broadcastMessage(conversationId, finalMsg);

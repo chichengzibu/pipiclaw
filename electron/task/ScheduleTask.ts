@@ -297,20 +297,20 @@ export class ScheduleTaskManager {
         history.retryCount = i;
 
         // 1. 解析任务指令
-        const parsed = this.taskExecutor.parseInstruction(task.instruction);
+        const parsed = (this.taskExecutor as any).parseInstruction(task.instruction);
         if (!parsed?.isExecutable) {
           throw new Error('无法解析指令为可执行步骤');
         }
 
         // 更新日志中的步骤
-        const logSteps = parsed.steps.map(s => ({
+        const logSteps = parsed.steps.map((s: any) => ({
           order: s.order,
           operation: s.type,
           description: s.description,
           params: s.params || {},
           status: 'pending' as const
         }));
-        
+
         // 重新设置日志步骤（因为 startTask 时可能还没解析出步骤）
         const entry = (this.taskLog as any).logs?.get(logId);
         if (entry) {
@@ -375,17 +375,17 @@ export class ScheduleTaskManager {
           conversationId: 'system_schedule',
           messageId: `msg_${Date.now()}`,
           instruction: task.instruction,
-          steps: parsed.steps.map((s, idx) => ({
+          steps: parsed.steps.map((s: any, idx: number) => ({
             id: `step_${idx}`,
             order: s.order,
             type: s.type as any,
             description: s.description,
             params: s.params || {},
-            status: 'pending' as const
+            status: 'pending' as any
           })),
-          status: 'pending',
+          status: 'pending' as any,
           createdAt: Date.now()
-        });
+        } as any);
 
         history.status = 'success';
         history.endTime = Date.now();

@@ -45,7 +45,7 @@ export class TaskExecutor {
       
       // 确保步骤有描述
       if (!step.description) {
-        switch (step.type) {
+        switch (step.type as string) {
           case 'write_file':
             step.description = '写入文件';
             break;
@@ -113,8 +113,9 @@ export class TaskExecutor {
   private async executeStep(step: TaskStep): Promise<any> {
     const params = step.params as Record<string, any>;
     this.log.debug('[TaskExecutor] 原始 step.params:', JSON.stringify(params));
-    
-    switch (step.type) {
+
+    const stepType = step.type as string;
+    switch (stepType) {
       case 'write_file': {
         this.log.debug('[TaskExecutor] write_file 准备执行');
         return await this.gateway.executeOperation({
