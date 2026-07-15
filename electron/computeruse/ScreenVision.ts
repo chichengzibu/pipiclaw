@@ -111,4 +111,62 @@ export class ScreenVision {
   isRecording(): boolean {
     return this.recording !== null
   }
+
+  // ============ W8 扩展:additive,不改既有方法 ============
+
+  async captureAndAnalyze(opts: AnalyzeOptions = {}): Promise<{ frame: ScreenFrame; ocr?: OcrResult; understanding?: VisionUnderstanding; durationMs: number }> {
+    const startMs = Date.now()
+    const frame = await this.captureFrame()
+    if (!frame) {
+      throw new Error('ScreenVision: 截屏失败')
+    }
+    const result: { frame: ScreenFrame; ocr?: OcrResult; understanding?: VisionUnderstanding; durationMs: number } = {
+      frame,
+      durationMs: Date.now() - startMs,
+    }
+    if (opts.ocr !== false) {
+      result.ocr = await this.ocrFrame(frame)
+    }
+    if (opts.understand !== false) {
+      result.understanding = await this.understandFrame(frame)
+    }
+    return result
+  }
+
+  async ocrFrame(frame: ScreenFrame): Promise<OcrResult> {
+    this.log.debug(`ScreenVision.ocrFrame: stub (frame ${frame.width}x${frame.height})`)
+    return {
+      text: '',
+      confidence: 0,
+      blocks: [],
+    }
+  }
+
+  async understandFrame(frame: ScreenFrame): Promise<VisionUnderstanding> {
+    this.log.debug(`ScreenVision.understandFrame: stub (frame ${frame.width}x${frame.height})`)
+    return {
+      description: '(W8 stub) 屏幕内容分析待 W9 接入 Ollama Vision',
+      elements: [],
+      clickable: [],
+    }
+  }
+}
+
+export interface OcrResult {
+  text: string
+  confidence: number
+  blocks: Array<{ text: string; bbox: { x: number; y: number; w: number; h: number }; confidence: number }>
+}
+
+export interface VisionUnderstanding {
+  description: string
+  elements: Array<{ type: 'button' | 'input' | 'text' | 'image' | 'icon' | 'unknown'; bbox: { x: number; y: number; w: number; h: number }; text?: string }>
+  /** 推断的"可点击区域" */
+  clickable: Array<{ x: number; y: number; label?: string }>
+}
+
+export interface AnalyzeOptions {
+  ocr?: boolean
+  understand?: boolean
+  model?: 'stub-rule-based' | 'ollama-llava' | 'openai-gpt4v'
 }
