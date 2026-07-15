@@ -115,6 +115,11 @@ const routes: RouteRecordRaw[] = [
     name: 'D3RemoteDemo',
     component: () => import('@/views/D3RemoteDemo.vue'),
     meta: { title: 'D3 远程', icon: 'Promotion' }
+  },
+  {
+    path: '/a5-demo',
+    name: 'A5ComputerUseDemo',
+    component: () => import('@/views/A5ComputerUseDemo.vue'),
   }
 ];
 
