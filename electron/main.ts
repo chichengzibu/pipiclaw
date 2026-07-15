@@ -18,6 +18,17 @@ import { ConfigStore } from './core/ConfigStore';
 import { OpenClawGateway } from './openclaw/OpenClawGateway';
 import { PermissionConfig } from './permissions/PermissionConfig';
 
+// ============ W7.0.1 boot wiring: 串接 W3+ 子系统 ============
+import { CapabilityRegistry } from './contracts/CapabilityRegistry';
+import { HermesAdapter } from './hermes/HermesAdapter';
+import { AgentBrainImpl, asAgentBrain } from './agent/AgentBrain';
+import { ChatManager } from './chat/ChatManager';
+import { IpcBridge } from './runtime/bridge/IpcBridge';
+import { Scheduler } from './runtime/scheduler/Scheduler';
+import { registerD1ScreenshotShortcut } from './core/GlobalShortcut';
+import { ensureD1SkillRegistered } from './skill/builtin/D1ScreenshotQA';
+import { registerD5RecordingToSkill } from './skill/builtin/D5RecordingToSkill';
+
 const log = LogManager.getInstance();
 
 let windowManager: WindowManager;
@@ -93,6 +104,32 @@ app.whenReady().then(async () => {
     // 10. 开发模式下打开DevTools
     if (isDev) {
       windowManager.getMainWindow()?.webContents.openDevTools();
+    }
+
+    // ============ W7.0.1 W3+ 子系统 wire ============
+    try {
+      // 1. IpcBridge: 注册 'runtime:ipc-bridge' channel
+      IpcBridge.getInstance().registerHandler();
+
+      // 2. HermesAdapter warmup(记忆检索桥接)
+      HermesAdapter.getInstance();
+
+      // 3. CapabilityRegistry: 标记初始化完成(W3.2 骨架)
+      CapabilityRegistry.getInstance().markInitialized();
+
+      // 4. AgentBrain → ChatManager 接入
+      ChatManager.getInstance().registerAgent(asAgentBrain(AgentBrainImpl.getInstance()));
+
+      // 5. D1 截屏问答 skill 注册 + 全局快捷键
+      registerD1ScreenshotShortcut();
+      ensureD1SkillRegistered();
+
+      // 6. D5 录屏转技能 skill 注册
+      registerD5RecordingToSkill();
+
+      log.info('[main] W3+ 子系统 wire 完成');
+    } catch (e) {
+      log.error('[main] W7.0.1 W3+ wire 失败(非致命)', e);
     }
 
     log.info('========== PiPiClaw应用启动完成 ==========');

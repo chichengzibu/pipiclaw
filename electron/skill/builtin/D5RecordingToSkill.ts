@@ -89,3 +89,13 @@ export const d5SkillHandler = {
     return runD5(args)
   },
 }
+
+/** W7.0.1:由 main.ts 调用,把 D5 skill 注册到 SkillRuntime */
+export function registerD5RecordingToSkill(): void {
+  const runtime = SkillRuntime.getInstance()
+  runtime.register({
+    name: D5_SKILL_NAME,
+    description: '录屏 + 描述触发 → SKILL.md',
+    handler: async (args: unknown) => runD5((args ?? {}) as { triggerPhrase: string; description?: string }),
+  })
+}
