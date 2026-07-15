@@ -10,7 +10,8 @@ import { EventBus } from '../runtime/bridge/EventBus'
 import { IMMessageStore } from './IMMessageStore'
 import { IMPermissionManager } from './IMPermissionManager'
 import { IMSecurityManager } from './IMSecurityManager'
-import type { ChannelMessage, ChannelKind, ProcessedMessage, RouteRule } from './ChannelTypes'
+import type { ChannelKind, ProcessedMessage, RouteRule } from './ChannelTypes'
+import type { ChannelMessage } from '../contracts/types'
 
 export interface RouteDecision {
   allowed: boolean

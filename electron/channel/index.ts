@@ -9,8 +9,8 @@ export type {
   RouteRule,
   ChannelAuditEntry,
   ProcessedMessage,
-  StoredMessage,
 } from './ChannelTypes'
+export type { StoredMessage } from './IMMessageStore'
 export { IMConfigStore } from './IMConfigStore'
 export type { IMConfig } from './IMConfigStore'
 export { IMMessageStore } from './IMMessageStore'

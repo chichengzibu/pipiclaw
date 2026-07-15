@@ -63,10 +63,11 @@ export class IMMessageStore {
   query(
     opts: { channelId?: string; direction?: 'in' | 'out'; sinceMs?: number; limit?: number } = {},
   ): StoredMessage[] {
+    const sinceMs = opts.sinceMs
     let result = [...this.messages]
     if (opts.channelId) result = result.filter(m => m.channelId === opts.channelId)
     if (opts.direction) result = result.filter(m => m.direction === opts.direction)
-    if (opts.sinceMs) result = result.filter(m => m.ts >= opts.sinceMs)
+    if (sinceMs !== undefined) result = result.filter(m => m.ts >= sinceMs)
     return result.slice(-(opts.limit ?? 50))
   }
 
