@@ -120,6 +120,11 @@ const routes: RouteRecordRaw[] = [
     path: '/a5-demo',
     name: 'A5ComputerUseDemo',
     component: () => import('@/views/A5ComputerUseDemo.vue'),
+  },
+  {
+    path: '/d2-prime-demo',
+    name: 'D2PrimeDemo',
+    component: () => import('@/views/D2PrimeDemo.vue'),
   }
 ];
 
