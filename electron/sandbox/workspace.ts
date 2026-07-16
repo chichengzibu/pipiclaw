@@ -118,6 +118,21 @@ export class WorkspaceManager {
     return path.join(w.hostPath, rel)
   }
 
+  /** 别名:workspaceId 优先语义(供测试 + 未来 API) */
+  hostToContainer(workspaceId: string, hostPath: string): string {
+    // 1. 把 hostPath 当成"相对于 workspace 的路径"处理
+    const w = this.workspaces.get(workspaceId)
+    if (!w) return hostPath
+    // 如果 hostPath 是 workspace hostPath 内的相对路径,直接 join
+    const rel = hostPath.startsWith('/') ? hostPath.replace(/^\//, '') : hostPath
+    return path.posix.join(w.containerPath, rel.split(path.sep).join(path.posix.sep))
+  }
+
+  /** 别名 */
+  containerToHost(workspaceId: string, containerPath: string): string {
+    return this.toHostPath(containerPath, workspaceId)
+  }
+
   private loadFromDisk(): void {
     try {
       if (fs.existsSync(this.indexPath)) {

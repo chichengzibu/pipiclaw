@@ -86,6 +86,11 @@ export class ChatManager {
     return ChatManager.instance;
   }
 
+  /** W12.1 测试 helper:重置单例(测试间隔离用,生产代码勿调) */
+  public static destroy(): void {
+    ChatManager.instance = null as any;
+  }
+
   // ============ 对话管理核心方法 ============
 
   public getAllConversations(): Conversation[] {

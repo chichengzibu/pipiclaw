@@ -71,16 +71,24 @@ export class NetworkPolicy {
 
   /** 判断某 host 是否被允许 */
   isAllowed(host: string): boolean {
-    if (this.config.blockAll) return false
+    // AI API 永远允许(即使 blockAll)
     if (this.config.aiApiDomains.includes(host)) return true
+    if (this.config.blockAll) return false
+    // 白名单
     return this.config.entries.some(e => e.enabled && e.domain === host)
   }
 
   /** 添加白名单 */
-  addEntry(entry: NetworkWhitelistEntry): void {
-    this.config.entries.push(entry)
+  addEntry(entry: NetworkWhitelistEntry): boolean {
+    const idx = this.config.entries.findIndex(e => e.domain === entry.domain)
+    if (idx >= 0) {
+      this.config.entries[idx] = entry
+    } else {
+      this.config.entries.push(entry)
+    }
     this.persistToDisk()
     this.log.info(`NetworkPolicy: add ${entry.domain}`)
+    return true
   }
 
   /** 移除白名单 */
@@ -88,6 +96,15 @@ export class NetworkPolicy {
     const idx = this.config.entries.findIndex(e => e.domain === domain)
     if (idx < 0) return false
     this.config.entries.splice(idx, 1)
+    this.persistToDisk()
+    return true
+  }
+
+  /** 切换启用状态 */
+  toggleEntry(domain: string, enabled?: boolean): boolean {
+    const entry = this.config.entries.find(e => e.domain === domain)
+    if (!entry) return false
+    entry.enabled = enabled ?? !entry.enabled
     this.persistToDisk()
     return true
   }

@@ -135,4 +135,10 @@ export class DockerDetector {
     }
     return { status: r.status, summary: summaryMap[r.status] }
   }
+
+  /** 别名:仅返回 boolean(供测试 + 简单健康检查) */
+  async checkHealth(): Promise<boolean> {
+    const r = await this.healthCheck()
+    return r.status === 'available'
+  }
 }

@@ -94,6 +94,11 @@ export class ResourceLimitsManager {
     return this.activeSandboxes.size
   }
 
+  /** 别名:列出所有活动 sandbox ids */
+  listActive(): string[] {
+    return [...this.activeSandboxes]
+  }
+
   /** 超时换算 */
   timeoutMs(): number {
     return this.limits.timeoutMinutes * 60 * 1000
