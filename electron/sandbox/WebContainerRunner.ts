@@ -62,9 +62,10 @@ export class WebContainerRunner {
 
   async boot(): Promise<{ ok: boolean; stub: boolean }> {
     if (this.booted) return { ok: true, stub: false }
-    this.log.warn('WebContainerRunner.boot: W11 stub,真实 boot 需 BrowserWindow 加载 webcontainer api,W12+ 评估')
+    this.log.warn('WebContainerRunner.boot: 主进程 stub,真实 boot 在 renderer 监听 webcontainer:ipc-request')
     this.booted = true
     void this.bus.publish('webcontainer:booted', { stub: true })
+    void this.bus.publish('webcontainer:ipc-request', { action: 'boot', ts: Date.now() })
     return { ok: true, stub: true }
   }
 
@@ -75,6 +76,7 @@ export class WebContainerRunner {
     const fileCount = await this.countFiles(ws.hostPath)
     this.log.info(`WebContainerRunner.mount: ${workspaceId} (${fileCount} files, stub)`)
     void this.bus.publish('webcontainer:mounted', { workspaceId, fileCount })
+    void this.bus.publish('webcontainer:ipc-request', { action: 'mount', workspaceId, ts: Date.now() })
     return { ok: true, fileCount, stub: true }
   }
 
@@ -84,6 +86,7 @@ export class WebContainerRunner {
     }
     this.log.warn(`WebContainerRunner.spawn: W11 stub (${cmd} ${args.join(' ')})`)
     void this.bus.publish('webcontainer:spawn', { cmd, args })
+    void this.bus.publish('webcontainer:ipc-request', { action: 'spawn', cmd, args, ts: Date.now() })
     return {
       ok: true,
       exitCode: 0,

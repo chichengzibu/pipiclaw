@@ -1062,6 +1062,11 @@ const electronAPI = {
       ipcRenderer.invoke(IpcChannels.LLM_CONFIG_TEST, args),
     chat: (args: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; model?: string; maxTokens?: number; provider?: 'openai' | 'anthropic' | 'zhipu' }): Promise<IpcResponse<any>> =>
       ipcRenderer.invoke(IpcChannels.LLM_CHAT, args)
+  },
+
+  // ========== W13: WebContainerRunner renderer bridge ==========
+  webcontainer: {
+    notifyRendererReady: () => ipcRenderer.invoke('webcontainer:renderer-ready')
   }
 };
 

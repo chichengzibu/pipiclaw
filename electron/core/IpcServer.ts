@@ -1873,7 +1873,20 @@ export class IpcServer {
         })
         return { success: result.ok, data: result, error: result.error }
       } catch (error) {
+        this.log.error('llm:chat 失败', error)
         return { success: false, error: String(error) }
+      }
+    })
+
+    // ============ W13: WebContainerRunner renderer-ready 接收(renderer 加载 @webcontainer/api 后回 ack) ============
+    ipcMain.handle('webcontainer:renderer-ready', async () => {
+      try {
+        const { EventBus } = await import('../runtime/bridge/EventBus')
+        void EventBus.getInstance().publish('webcontainer:renderer-acknowledged', { ts: Date.now() })
+        return { ok: true }
+      } catch (error) {
+        this.log.error('webcontainer:renderer-ready 失败', error)
+        return { ok: false, error: String(error) }
       }
     })
 
