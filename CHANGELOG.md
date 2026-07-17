@@ -2,6 +2,23 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [2.0.1] - 2026-07-17
+
+### Fixed
+- **Vue 整体白屏**:`src/styles/tokens.css` 嵌套注释触发 sass 500,移除嵌套 `/* */` 后 Vue app 恢复渲染
+- **ImAccounts.vue loadConfigs 索引错误**:`IMConfigStore.list()` 返回数组,旧代码当对象用导致索引 undefined,改为 `configs.find(c => c.channelKind === ...)`
+- **5 demo 是 W5-W8 阶段前端 stub**:D1/D2/D3/D5/A5 5 个 view 加 IPC wiring 调 main 进程的 `runD1/runD2Prime/runD3/runD5/runA5`,从假数据 → 真链路
+
+### Added
+- **B 子项目 IM 配置 UI**:`ImAccounts.vue` + `/settings/im-accounts` 路由 + IpcServer `channel-config:get/save/test` 3 handler + preload `electronAPI.channelConfig.{get, save, test}` 暴露
+- **ngrok-setup.md 引导文档**:6 步骤齐(安装 / 账号 / 启动 / IM 平台配 / 验证)
+- **B 准备就绪 retro**:`docs/superpowers/retros/2026-07-16-b-im-account-integration/ready-verification.md` 含 7 步凭证补全流程
+
+### Verified
+- Plan C 真实环境验证:P7 沙盒闭环(镜像 build + SandboxBuilder + PortForwarder + L1 + Lifecycle)
+- Plan A 真实环境验证:5 demo 截图归档(v2.0.1 修好前端 stub→IPC 后可正常跑)
+- Plan B 真实环境验证:无凭证下所有准备工作 100% 就位,用户加凭证后能立即跑通
+
 ## [2.0.0] - 2026-07-16
 
 ### Added
