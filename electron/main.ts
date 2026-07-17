@@ -120,6 +120,16 @@ app.whenReady().then(async () => {
       // 4. AgentBrain → ChatManager 接入
       ChatManager.getInstance().registerAgent(asAgentBrain(AgentBrainImpl.getInstance()));
 
+      // 4.bis W14: 优先用 LlmAgentBrain (基于 LlmClient)。当 LLM provider 未配置时,
+      //         LlmAgentBrain.think() 会 fallback 到 stub reply,不影响既有 ChatManager 流。
+      try {
+        const { LlmAgentBrain } = require('./agent/LlmAgentBrain')
+        ChatManager.getInstance().registerAgent(asAgentBrain(LlmAgentBrain.getInstance()))
+        log.info('[main] LlmAgentBrain registered')
+      } catch (e) {
+        log.warn('[main] LlmAgentBrain 注册失败,继续使用 AgentBrainImpl', e)
+      }
+
       // 5. D1 截屏问答 skill 注册 + 全局快捷键
       registerD1ScreenshotShortcut();
       ensureD1SkillRegistered();
