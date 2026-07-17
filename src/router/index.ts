@@ -125,6 +125,11 @@ const routes: RouteRecordRaw[] = [
     path: '/d2-prime-demo',
     name: 'D2PrimeDemo',
     component: () => import('@/views/D2PrimeDemo.vue'),
+  },
+  {
+    path: '/settings/im-accounts',
+    name: 'ImAccounts',
+    component: () => import('@/views/ImAccounts.vue'),
   }
 ];
 

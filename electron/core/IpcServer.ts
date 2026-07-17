@@ -1726,6 +1726,49 @@ export class IpcServer {
       }
     })
 
+    // ============ W12.B: IM 账号配置 IPC ============
+    ipcMain.handle('channel-config:get', async () => {
+      try {
+        const { IMConfigStore } = require('../channel/IMConfigStore')
+        const list = IMConfigStore.getInstance().list()
+        return { success: true, data: list }
+      } catch (error) {
+        this.log.error('channel-config:get 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('channel-config:save', async (_: any, args: { platform: string; config: any }) => {
+      try {
+        const { IMConfigStore } = require('../channel/IMConfigStore')
+        IMConfigStore.getInstance().set(args.platform as any, args.config)
+        return { success: true }
+      } catch (error) {
+        this.log.error('channel-config:save 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('channel-config:test', async (_: any, args: { platform: string; config: any }) => {
+      try {
+        const { IMConfigStore } = require('../channel/IMConfigStore')
+        IMConfigStore.getInstance().set(args.platform as any, args.config)
+        let testModule: any
+        if (args.platform === 'im-feishu') testModule = require('../channel/FeishuChannel')
+        else if (args.platform === 'im-dingtalk') testModule = require('../channel/DingTalkChannel')
+        else if (args.platform === 'im-wechat-work') testModule = require('../channel/WechatWorkChannel')
+        else return { success: false, message: 'unknown platform' }
+        const channel = new testModule.default('test-' + Date.now())
+        const health = await channel.healthCheck()
+        return {
+          success: health.healthy,
+          message: health.healthy ? `连接成功 (${health.latencyMs}ms)` : `连接失败: ${health.error}`,
+        }
+      } catch (error) {
+        return { success: false, message: String(error) }
+      }
+    })
+
     this.log.info('IPC处理器注册完成');
   }
 

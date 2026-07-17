@@ -192,7 +192,12 @@ const IpcChannels = {
   INSIGHT_COST_TODAY: 'insight:cost:today',
 
   // ========== W7.0.2: D5 录屏转技能 IPC ==========
-  D5_RUN: 'd5:run'
+  D5_RUN: 'd5:run',
+
+  // ========== W12.B: IM 账号配置 IPC ==========
+  CHANNEL_CONFIG_GET: 'channel-config:get',
+  CHANNEL_CONFIG_SAVE: 'channel-config:save',
+  CHANNEL_CONFIG_TEST: 'channel-config:test'
 } as const;
 
 type IpcCallback = (event: IpcRendererEvent, ...args: any[]) => void;
@@ -1011,6 +1016,13 @@ const electronAPI = {
   d5: {
     run: (input: { triggerPhrase: string; description?: string }): Promise<IpcResponse<{ ok: boolean; skillName?: string; frameCount?: number; durationMs?: number; error?: string }>> =>
       ipcRenderer.invoke(IpcChannels.D5_RUN, input)
+  },
+
+  // ========== W12.B: IM 账号配置 IPC ==========
+  channelConfig: {
+    get: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.CHANNEL_CONFIG_GET),
+    save: (args: { platform: string; config: any }): Promise<IpcResponse<void>> => ipcRenderer.invoke(IpcChannels.CHANNEL_CONFIG_SAVE, args),
+    test: (args: { platform: string; config: any }): Promise<IpcResponse<{ message: string }>> => ipcRenderer.invoke(IpcChannels.CHANNEL_CONFIG_TEST, args)
   }
 };
 
