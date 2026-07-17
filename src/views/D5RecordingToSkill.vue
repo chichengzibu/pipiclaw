@@ -134,9 +134,18 @@ async function stopAndGenerate(): Promise<void> {
   try {
     appendLog('录制结束,生成 skill...', 'info')
     isRecording.value = false
-    lastResult.value = {
-      ok: false,
-      error: 'W6 stub: 真实生成路径走 main 进程的 runD5(),W7 接 IPC 后此处显示结果',
+    if (!window.electronAPI) {
+      appendLog('当前非 Electron 环境', 'error')
+      lastResult.value = { ok: false, error: 'non-electron' }
+      return
+    }
+    const result = await (window as unknown as { electronAPI: { demo: { runD5: (args: { triggerPhrase: string; description?: string }) => Promise<{ success: boolean; data?: { ok: boolean; skillName?: string; frameCount?: number; durationMs?: number; error?: string }; error?: string }> } } }).electronAPI.demo.runD5({ triggerPhrase: triggerPhrase.value, description: description.value })
+    if (result.success && result.data) {
+      lastResult.value = result.data
+      appendLog(`D5 生成成功: skillName=${result.data.skillName ?? '(空)'}`, 'info')
+    } else {
+      lastResult.value = { ok: false, error: result.error ?? 'unknown' }
+      appendLog(`D5 失败: ${result.error ?? 'unknown'}`, 'error')
     }
   } finally {
     isGenerating.value = false

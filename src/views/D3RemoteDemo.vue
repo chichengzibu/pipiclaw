@@ -54,21 +54,11 @@ const canRun = computed(() => userMessage.value.trim().length > 0)
 async function runDemo() {
   isRunning.value = true
   try {
-    // W7 阶段:直接调本 view 内的 stub 模拟
-    // W8+ 改为通过 IPC 调 main 进程的 runD3()
-    if (/日程|schedule|today|今天/i.test(userMessage.value)) {
-      lastResult.value = {
-        ok: true,
-        reply: `今日日程(W7 stub):
-- 10:00-11:00 今日会议
-- 12:00-13:00 午休
-- 15:00-16:00 项目复盘`,
-      }
+    const result = await (window as unknown as { electronAPI: { demo: { runD3: (args: { userMessage: string; userId: string; channelId: string }) => Promise<{ success: boolean; data?: { ok: boolean; reply?: string; error?: string }; error?: string }> } } }).electronAPI.demo.runD3({ userMessage: userMessage.value, userId: userId.value, channelId: 'd3-demo' })
+    if (result.success && result.data) {
+      lastResult.value = result.data
     } else {
-      lastResult.value = {
-        ok: true,
-        reply: `(stub) AgentBrain 决策: action=reply, payload.text="${userMessage.value.slice(0, 50)}"`,
-      }
+      lastResult.value = { ok: false, error: result.error ?? 'unknown' }
     }
   } finally {
     isRunning.value = false

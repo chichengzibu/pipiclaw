@@ -71,37 +71,11 @@ const canRun = computed(() => instruction.value.trim().length > 0)
 async function runDemo() {
   isRunning.value = true
   try {
-    await new Promise(r => setTimeout(r, 200))
-    lastFrame.value = {
-      dataUrl: 'data:image/svg+xml;base64,' + btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="800" height="600" fill="#f0f0f0"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="24">[W8 stub screenshot]</text></svg>`),
-      width: 800,
-      height: 600,
-      byteSize: 0,
-    }
-
-    const stubSteps = []
-    for (let i = 0; i < maxSteps.value; i++) {
-      stubSteps.push({
-        stepIndex: i,
-        understanding: `Step ${i + 1}: 屏幕内容(W8 stub)`,
-        decision: { action: i === maxSteps.value - 1 ? 'reply' : 'screenshot', payload: {} },
-        actionResult: {
-          ok: true,
-          executed: autoExecute.value,
-          durationMs: 50 + i * 10,
-          note: autoExecute.value ? 'executed' : 'W8 沙箱模式:仅记录',
-        },
-      })
-    }
-
-    steps.value = stubSteps
-    lastResult.value = {
-      ok: true,
-      result: {
-        steps: stubSteps,
-        hitMaxSteps: stubSteps.length >= maxSteps.value,
-        totalDurationMs: stubSteps.reduce((s, x) => s + x.actionResult.durationMs, 0),
-      },
+    const result = await (window as unknown as { electronAPI: { demo: { runA5: (args: { instruction: string; maxSteps?: number; autoExecute?: boolean }) => Promise<{ success: boolean; data?: { ok: boolean; result?: { steps: Array<{ stepIndex: number; understanding: string; decision: { action: string; payload: unknown }; actionResult: { ok: boolean; executed: boolean; durationMs: number; note?: string; error?: string } }>; hitMaxSteps: boolean; totalDurationMs: number }; error?: string }; error?: string }> } } }).electronAPI.demo.runA5({ instruction: instruction.value, maxSteps: maxSteps.value, autoExecute: autoExecute.value })
+    if (result.success && result.data) {
+      lastResult.value = result.data
+    } else {
+      lastResult.value = { ok: false, error: result.error ?? 'unknown' }
     }
   } finally {
     isRunning.value = false

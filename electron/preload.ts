@@ -197,7 +197,14 @@ const IpcChannels = {
   // ========== W12.B: IM 账号配置 IPC ==========
   CHANNEL_CONFIG_GET: 'channel-config:get',
   CHANNEL_CONFIG_SAVE: 'channel-config:save',
-  CHANNEL_CONFIG_TEST: 'channel-config:test'
+  CHANNEL_CONFIG_TEST: 'channel-config:test',
+
+  // ========== W13.A: 5 demo IPC ==========
+  D1_DEMO_RUN: 'd1-demo:run',
+  D2_PRIME_DEMO_RUN: 'd2-prime-demo:run',
+  D3_DEMO_RUN: 'd3-demo:run',
+  D5_DEMO_RUN: 'd5-demo:run',
+  A5_DEMO_RUN: 'a5-demo:run'
 } as const;
 
 type IpcCallback = (event: IpcRendererEvent, ...args: any[]) => void;
@@ -1023,6 +1030,20 @@ const electronAPI = {
     get: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.CHANNEL_CONFIG_GET),
     save: (args: { platform: string; config: any }): Promise<IpcResponse<void>> => ipcRenderer.invoke(IpcChannels.CHANNEL_CONFIG_SAVE, args),
     test: (args: { platform: string; config: any }): Promise<IpcResponse<{ message: string }>> => ipcRenderer.invoke(IpcChannels.CHANNEL_CONFIG_TEST, args)
+  },
+
+  // ========== W13.A: 5 demo IPC ==========
+  demo: {
+    runD1: (args: { question: string; imageBase64?: string }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.D1_DEMO_RUN, args),
+    runD2Prime: (args: { prompt: string; useWebContainer?: boolean }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.D2_PRIME_DEMO_RUN, args),
+    runD3: (args: { userMessage: string; userId: string; channelId: string }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.D3_DEMO_RUN, args),
+    runD5: (args: { triggerPhrase: string; description?: string }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.D5_DEMO_RUN, args),
+    runA5: (args: { instruction: string; maxSteps?: number; autoExecute?: boolean }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.A5_DEMO_RUN, args)
   }
 };
 

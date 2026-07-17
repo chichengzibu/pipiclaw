@@ -77,18 +77,11 @@ const canRun = computed(() => prompt.value.trim().length > 0)
 async function runDemo() {
   isRunning.value = true
   try {
-    await new Promise(r => setTimeout(r, 200))
-    const matchedFrontend = /vite|react|next|前端|spa/i.test(prompt.value)
-    const templateId = matchedFrontend ? (useWebContainer.value ? 'vite-react-ts' : 'nextjs-app') : 'fastapi'
-    lastResult.value = {
-      ok: true,
-      workspaceId: 'ws-' + Date.now(),
-      templateId,
-      fileCount: 6,
-      forwardId: 'fwd-' + Date.now(),
-      forwardUrl: 'http://localhost:4000',
-      estimatedStartSeconds: useWebContainer.value ? 30 : 300,
-      durationMs: 180,
+    const result = await (window as unknown as { electronAPI: { demo: { runD2Prime: (args: { prompt: string; useWebContainer?: boolean }) => Promise<{ success: boolean; data?: { ok: boolean; workspaceId?: string; templateId?: string; fileCount?: number; forwardId?: string; forwardUrl?: string; estimatedStartSeconds?: number; durationMs?: number; error?: string }; error?: string }> } } }).electronAPI.demo.runD2Prime({ prompt: prompt.value, useWebContainer: useWebContainer.value })
+    if (result.success && result.data) {
+      lastResult.value = result.data as typeof lastResult.value
+    } else {
+      lastResult.value = { ok: false, error: result.error ?? 'unknown' }
     }
   } finally {
     isRunning.value = false

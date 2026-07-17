@@ -74,7 +74,12 @@ async function triggerScreenshot() {
   isCapturing.value = true
   appendLog('发起截屏请求...', 'info')
   try {
-    appendLog('(W5 阶段)请用快捷键 Cmd/Ctrl+Shift+S 触发', 'info')
+    const result = await (window as unknown as { electronAPI: { demo: { runD1: (args: { question: string }) => Promise<{ success: boolean; data?: { ok: boolean; stub?: boolean; answer?: string }; error?: string }> } } }).electronAPI.demo.runD1({ question: '请描述当前屏幕内容' })
+    if (result.success && result.data) {
+      appendLog(`D1 真实调用成功: ${result.data.answer ?? JSON.stringify(result.data)}`, 'answer')
+    } else {
+      appendLog(`D1 失败: ${result.error ?? 'unknown'}`, 'error')
+    }
   } finally {
     isCapturing.value = false
   }

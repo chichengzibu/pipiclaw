@@ -1769,6 +1769,67 @@ export class IpcServer {
       }
     })
 
+    // ============ W13.A: 5 demo IPC ============
+    ipcMain.handle('d1-demo:run', async (_: any, args: { question: string; imageBase64?: string }) => {
+      try {
+        const { d1SkillDefinition } = require('../skill/builtin/D1ScreenshotQA')
+        const { ScreenVision } = require('../computeruse/ScreenVision')
+        const vision = ScreenVision.getInstance()
+        await vision.startRecording(1)
+        const frame = await vision.captureFrame()
+        await vision.stopRecording()
+        const result = await d1SkillDefinition.handler({ question: args.question, imageDataUrl: frame?.dataUrl ?? args.imageBase64 })
+        return { success: true, data: result }
+      } catch (error) {
+        this.log.error('d1-demo:run 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('d2-prime-demo:run', async (_: any, args: { prompt: string; useWebContainer?: boolean }) => {
+      try {
+        const { runD2Prime } = require('../skill/builtin/D2PrimeScaffold')
+        const result = await runD2Prime(args)
+        return { success: true, data: result }
+      } catch (error) {
+        this.log.error('d2-prime-demo:run 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('d3-demo:run', async (_: any, args: { userMessage: string; userId: string; channelId: string }) => {
+      try {
+        const { runD3 } = require('../skill/builtin/D3RemoteCommand')
+        const result = await runD3(args)
+        return { success: true, data: result }
+      } catch (error) {
+        this.log.error('d3-demo:run 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('d5-demo:run', async (_: any, args: { triggerPhrase: string; description?: string }) => {
+      try {
+        const { runD5 } = require('../skill/builtin/D5RecordingToSkill')
+        const result = await runD5(args)
+        return { success: true, data: result }
+      } catch (error) {
+        this.log.error('d5-demo:run 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('a5-demo:run', async (_: any, args: { instruction: string; maxSteps?: number; autoExecute?: boolean }) => {
+      try {
+        const { runA5 } = require('../skill/builtin/A5ComputerUse')
+        const result = await runA5(args)
+        return { success: true, data: result }
+      } catch (error) {
+        this.log.error('a5-demo:run 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
     this.log.info('IPC处理器注册完成');
   }
 
