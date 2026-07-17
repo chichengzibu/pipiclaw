@@ -130,6 +130,12 @@ const routes: RouteRecordRaw[] = [
     path: '/settings/im-accounts',
     name: 'ImAccounts',
     component: () => import('@/views/ImAccounts.vue'),
+  },
+  {
+    path: '/settings/llm-config',
+    name: 'LlmConfig',
+    component: () => import('@/views/LlmConfig.vue'),
+    meta: { title: 'LLM 配置', icon: 'MagicStick' }
   }
 ];
 

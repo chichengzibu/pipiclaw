@@ -204,7 +204,13 @@ const IpcChannels = {
   D2_PRIME_DEMO_RUN: 'd2-prime-demo:run',
   D3_DEMO_RUN: 'd3-demo:run',
   D5_DEMO_RUN: 'd5-demo:run',
-  A5_DEMO_RUN: 'a5-demo:run'
+  A5_DEMO_RUN: 'a5-demo:run',
+
+  // ========== W14.A: LLM provider config IPC ==========
+  LLM_CONFIG_LIST: 'llm-config:list',
+  LLM_CONFIG_UPSERT: 'llm-config:upsert',
+  LLM_CONFIG_TEST: 'llm-config:test',
+  LLM_CHAT: 'llm:chat'
 } as const;
 
 type IpcCallback = (event: IpcRendererEvent, ...args: any[]) => void;
@@ -1044,6 +1050,18 @@ const electronAPI = {
       ipcRenderer.invoke(IpcChannels.D5_DEMO_RUN, args),
     runA5: (args: { instruction: string; maxSteps?: number; autoExecute?: boolean }): Promise<IpcResponse<any>> =>
       ipcRenderer.invoke(IpcChannels.A5_DEMO_RUN, args)
+  },
+
+  // ========== W14.A: LLM provider config ==========
+  llmConfig: {
+    list: (): Promise<IpcResponse<Array<{ provider: string; apiKey?: string; enabled: boolean; defaultModel?: string; apiBaseUrl?: string; updatedAt: number }>>> =>
+      ipcRenderer.invoke(IpcChannels.LLM_CONFIG_LIST),
+    upsert: (args: { provider: 'openai' | 'anthropic' | 'zhipu'; apiKey?: string; defaultModel?: string; apiBaseUrl?: string; enabled: boolean }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.LLM_CONFIG_UPSERT, args),
+    test: (args: { provider: 'openai' | 'anthropic' | 'zhipu'; prompt?: string }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.LLM_CONFIG_TEST, args),
+    chat: (args: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; model?: string; maxTokens?: number; provider?: 'openai' | 'anthropic' | 'zhipu' }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.LLM_CHAT, args)
   }
 };
 

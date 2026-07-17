@@ -6,6 +6,8 @@ import { ipcMain, app, dialog } from 'electron';
 import { LogManager } from './LogManager';
 import { WindowManager } from './WindowManager';
 import { ConfigStore } from './ConfigStore';
+import { LlmConfigStore } from '../llm/LlmConfigStore';
+
 import { ModelManager } from '../models/ModelManager';
 import { PermissionManager } from '../permissions/PermissionManager';
 import { ChatManager } from '../chat/ChatManager';
@@ -1826,6 +1828,51 @@ export class IpcServer {
         return { success: true, data: result }
       } catch (error) {
         this.log.error('a5-demo:run 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('llm-config:list', async () => {
+      try {
+        return { success: true, data: LlmConfigStore.getInstance().list() }
+      } catch (error) {
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('llm-config:upsert', async (_: any, args: { provider: 'openai' | 'anthropic' | 'zhipu'; apiKey?: string; defaultModel?: string; apiBaseUrl?: string; enabled: boolean }) => {
+      try {
+        LlmConfigStore.getInstance().set(args.provider, args)
+        return { success: true, data: LlmConfigStore.getInstance().get(args.provider) }
+      } catch (error) {
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('llm-config:test', async (_: any, args: { provider: 'openai' | 'anthropic' | 'zhipu'; prompt?: string }) => {
+      try {
+        const { LlmClient } = await import('../llm/LlmClient')
+        const result = await LlmClient.getInstance().complete(
+          args.prompt || 'ping',
+          { provider: args.provider, maxTokens: 64 }
+        )
+        return { success: result.ok, data: result, error: result.error }
+      } catch (error) {
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('llm:chat', async (_: any, args: { messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>; model?: string; maxTokens?: number; provider?: 'openai' | 'anthropic' | 'zhipu' }) => {
+      try {
+        const { LlmClient } = await import('../llm/LlmClient')
+        const result = await LlmClient.getInstance().chat({
+          model: args.model ?? '',
+          messages: args.messages,
+          maxTokens: args.maxTokens,
+          provider: args.provider,
+        })
+        return { success: result.ok, data: result, error: result.error }
+      } catch (error) {
         return { success: false, error: String(error) }
       }
     })
