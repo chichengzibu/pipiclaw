@@ -5,10 +5,10 @@
  * - variables.scss 负责颜色 + 主题切换 + Element Plus 集成
  * - tokens.css     负责 spacing / typography / motion / radius（Apple HIG 风格）
  *
- * 使用方式：
- *   /* CSS 中 */   padding: var(--space-md);
- *   /* Vue 中 */   :style="{ padding: `var(--space-md)` }"
- *   /* SCSS 中 */  @import './tokens.css'; padding: var(--space-md);
+ * 使用方式(sass 不允许注释内嵌):
+ *   padding: var(--space-md);
+ *   :style="{ padding: \`var(--space-md)\` }"
+ *   @import './tokens.css'; padding: var(--space-md);
  *
  * 暗色模式：
  *   默认跟随系统 prefers-color-scheme: dark，
