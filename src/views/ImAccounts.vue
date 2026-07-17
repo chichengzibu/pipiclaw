@@ -105,28 +105,26 @@ const isSaving = ref(false)
 async function loadConfigs() {
   try {
     const result = await (window as any).electronAPI.channelConfig.get()
-    const configs: Record<string, any> = {}
-    if (result && result.success && Array.isArray(result.data)) {
-      for (const c of result.data) {
-        configs[c.channelKind] = c
-      }
+    const configs: any[] = result && result.success && Array.isArray(result.data) ? result.data : []
+    const feishuConfig = configs.find((c: any) => c.channelKind === 'im-feishu')
+    if (feishuConfig) {
+      feishu.appId = feishuConfig.appId ?? ''
+      feishu.appSecret = feishuConfig.appSecret ?? ''
+      feishu.enabled = feishuConfig.enabled ?? false
     }
-    if (configs['im-feishu']) {
-      feishu.appId = configs['im-feishu'].appId ?? ''
-      feishu.appSecret = configs['im-feishu'].appSecret ?? ''
-      feishu.enabled = configs['im-feishu'].enabled ?? false
+    const dingtalkConfig = configs.find((c: any) => c.channelKind === 'im-dingtalk')
+    if (dingtalkConfig) {
+      dingtalk.appKey = dingtalkConfig.appKey ?? ''
+      dingtalk.appSecret = dingtalkConfig.appSecret ?? ''
+      dingtalk.webhookUrl = dingtalkConfig.webhookUrl ?? ''
+      dingtalk.enabled = dingtalkConfig.enabled ?? false
     }
-    if (configs['im-dingtalk']) {
-      dingtalk.appKey = configs['im-dingtalk'].appKey ?? ''
-      dingtalk.appSecret = configs['im-dingtalk'].appSecret ?? ''
-      dingtalk.webhookUrl = configs['im-dingtalk'].webhookUrl ?? ''
-      dingtalk.enabled = configs['im-dingtalk'].enabled ?? false
-    }
-    if (configs['im-wechat-work']) {
-      wechatwork.corpId = configs['im-wechat-work'].corpId ?? ''
-      wechatwork.corpSecret = configs['im-wechat-work'].corpSecret ?? ''
-      wechatwork.agentId = configs['im-wechat-work'].agentId ?? ''
-      wechatwork.enabled = configs['im-wechat-work'].enabled ?? false
+    const wechatConfig = configs.find((c: any) => c.channelKind === 'im-wechat-work')
+    if (wechatConfig) {
+      wechatwork.corpId = wechatConfig.corpId ?? ''
+      wechatwork.corpSecret = wechatConfig.corpSecret ?? ''
+      wechatwork.agentId = wechatConfig.agentId ?? ''
+      wechatwork.enabled = wechatConfig.enabled ?? false
     }
   } catch (e) {
     console.warn('loadConfigs failed', e)
