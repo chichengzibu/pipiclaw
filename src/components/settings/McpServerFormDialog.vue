@@ -66,7 +66,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, type FormInstance, type FormRules } from 'vue';
-import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 
 const props = defineProps<{

@@ -45,7 +45,7 @@ interface FileItem {
   content?: string;
 }
 
-const props = defineProps<{
+defineProps<{
   files: FileItem[];
 }>();
 

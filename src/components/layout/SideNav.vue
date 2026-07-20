@@ -34,7 +34,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { HomeFilled, ChatDotRound, Box, Setting } from '@element-plus/icons-vue';
 import GatewayStatusBadge from '@/components/common/GatewayStatusBadge.vue';
 import { useAppStore } from '@/stores/app';
 
@@ -67,7 +66,7 @@ const isActive = (path: string): boolean => {
   return route.path === path || route.path.startsWith(path + '/');
 };
 
-const startResize = (e: MouseEvent) => {
+const startResize = (_e: MouseEvent) => {
   isResizing = true;
   document.body.style.userSelect = 'none';
   document.addEventListener('mousemove', handleResize);

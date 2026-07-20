@@ -45,9 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage, ElMessageBox } from 'element-plus';
-
-const props = defineProps<{
+defineProps<{
   server: {
     name: string;
     command: string;

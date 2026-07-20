@@ -109,8 +109,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { ElMessage } from 'element-plus';
 
 interface StepPermissionCheck {
   category: string;
