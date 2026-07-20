@@ -6,7 +6,7 @@
       <div class="d5-row">
         <el-input
           v-model="triggerPhrase"
-          placeholder='触发短语(例如:批量重命名)'
+          placeholder="触发短语(例如:批量重命名)"
         ></el-input>
       </div>
       <div class="d5-row">

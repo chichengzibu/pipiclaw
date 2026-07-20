@@ -680,7 +680,7 @@ export class ChatManager {
           let buffer = '';
           let accumulatedContent = '';
           let accumulatedThinking = '';
-          let lastContentUpdate = 0;
+          const lastContentUpdate = 0;
           let lastThinkingUpdate = 0;
 
           res.on('data', chunk => {
@@ -771,11 +771,11 @@ export class ChatManager {
     messages: any[], settings: ChatSettings
   ): Promise<void> {
     return new Promise((resolve, reject) => {
-      let baseUrl = provider.baseUrl;
+      const baseUrl = provider.baseUrl;
       if (!baseUrl) { reject(new Error('缺少baseUrl')); return; }
 
       let url: URL;
-      let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
       if (provider.type === 'openai' || provider.type === 'deepseek' || provider.type === 'custom' || provider.type === 'volc_ark') {
         url = this.buildUrl(baseUrl, '/chat/completions');

@@ -163,7 +163,7 @@ export class InstructionGenerator {
       baseUrl = baseUrl.replace(/\/$/, '');
 
       let url: URL;
-      let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
       if (provider.type === 'openai' || provider.type === 'deepseek' || provider.type === 'custom' || provider.type === 'ollama') {
         let endpoint = '/chat/completions';
@@ -339,7 +339,7 @@ ${skillSummaries}
       baseUrl = baseUrl.replace(/\/$/, '');
 
       let url: URL;
-      let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       let body: any;
 
       if (provider.type === 'anthropic') {

@@ -130,7 +130,7 @@ test('模拟 AI 生成失败的降级处理 - 全部失败', () => {
   const providers = ['Provider1', 'Provider2'];
   const errors = [];
   for (let i = 0; i < providers.length; i++) {
-    errors.push(new Error(`${providers[i]} failed'));
+    errors.push(new Error(`${providers[i]} failed`));
   }
   assert(errors.length === 2, '应该有 2 个失败');
 });
@@ -139,13 +139,13 @@ test('模拟 AI 生成失败的降级处理 - 全部失败', () => {
 class MockContentValidator {
   sanitize(content) {
     const dangerousPatterns = [
-      /rm\s+-rf\s+[\/~]/, /mkfs/, /dd\s+if=/,
+      /rm\s+-rf\s+[\\/~]/, /mkfs/, /dd\s+if=/,
       /reg\s+(add|delete|edit|import|export)/i, /format\s+[a-z]:/i, /\.\.\//, /\.\.\\/
     ];
 
     for (const pattern of dangerousPatterns) {
       if (pattern.test(content)) {
-        return { safe: false, reason: `Dangerous content blocked' };
+        return { safe: false, reason: `Dangerous content blocked` };
       }
     }
 

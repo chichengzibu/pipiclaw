@@ -99,7 +99,7 @@ export class HermesAdapter implements HermesMemoryInterface {
 
   async curate(): Promise<CuratorReport> {
     let removed = 0
-    let promoted = 0
+    const promoted = 0
     const all = this.legacy.getAllMemories()
     for (const m of all) {
       if ((m.importance ?? 0) < 10) {

@@ -1284,7 +1284,7 @@ export class IpcServer {
     ipcMain.handle('mcp:update', (_, data: any) => {
       try {
         const configStore = ConfigStore.getInstance();
-        let mcpServers = configStore.get('mcp.servers') || [];
+        const mcpServers = configStore.get('mcp.servers') || [];
         
         // 查找并更新服务器
         const index = mcpServers.findIndex((server: any) => server.name === data.name);
@@ -1306,7 +1306,7 @@ export class IpcServer {
     ipcMain.handle('mcp:remove', (_, name: string) => {
       try {
         const configStore = ConfigStore.getInstance();
-        let mcpServers = configStore.get('mcp.servers') || [];
+        const mcpServers = configStore.get('mcp.servers') || [];
         
         // 查找并删除服务器
         const index = mcpServers.findIndex((server: any) => server.name === name);
@@ -1328,7 +1328,7 @@ export class IpcServer {
     ipcMain.handle('mcp:toggle', (_, name: string, enabled: boolean) => {
       try {
         const configStore = ConfigStore.getInstance();
-        let mcpServers = configStore.get('mcp.servers') || [];
+        const mcpServers = configStore.get('mcp.servers') || [];
         
         // 查找并更新服务器
         const index = mcpServers.findIndex((server: any) => server.name === name);

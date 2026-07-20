@@ -94,7 +94,7 @@ export interface ChatSettings {
 }
 
 // ========== 类型断言 ==========
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const electronAPI = window.electronAPI as any;
 
 // ========== Store 定义 ==========

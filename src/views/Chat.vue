@@ -1098,7 +1098,7 @@ watch(() => chatStore.currentConversation?.messages.length, () => {
 });
 
 // 监听每条消息的内容变化（针对流式输出）
-let lastContentLength = 0;
+const lastContentLength = 0;
 watch(() => {
   const conv = chatStore.currentConversation;
   if (!conv || conv.messages.length === 0) return null;
