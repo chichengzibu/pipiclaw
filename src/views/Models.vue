@@ -291,11 +291,11 @@ const newModelId = ref('');
 const editingModels = ref<any[]>([]);
 
 function isVolcEngineProvider(provider: ProviderConfig): boolean {
-  return provider.type === 'volc_ark' || (provider.baseUrl && provider.baseUrl.includes('coding/v3'));
+  return provider.type === 'volc_ark' || (!!provider.baseUrl && provider.baseUrl.includes('coding/v3'));
 }
 
 function isVolcEngineForm(): boolean {
-  return formData.type === 'volc_ark' || (formData.baseUrl && formData.baseUrl.includes('coding/v3'));
+  return formData.type === 'volc_ark' || (!!(formData as any).baseUrl && (formData as any).baseUrl.includes('coding/v3'));
 }
 
 function truncateText(text: string, maxLength: number): string {
@@ -508,6 +508,7 @@ async function handleSubmit(): Promise<void> {
       const models = formData.modelId ? [{
         id: formData.modelId,
         name: formData.modelId,
+        provider: formData.type,
         capabilities: ['chat']
       }] : [];
       
@@ -595,7 +596,8 @@ async function handleDelete(id: string, name: string): Promise<void> {
     if (success) {
       ElMessage.success('删除成功');
     }
-  } catch {
+  } catch (error) {
+    void error;
   }
 }
 </script>
