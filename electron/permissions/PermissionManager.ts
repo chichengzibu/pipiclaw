@@ -9,10 +9,9 @@
 
 import { LogManager } from '../core/LogManager';
 import { PermissionConfig } from './PermissionConfig';
-import { 
-  PermissionSet, 
-  PermissionRule, 
-  PermissionCategory, 
+import {
+  PermissionSet,
+  PermissionRule,
   PermissionLevel,
   PermissionCheckRequest,
   PermissionCheckResult,

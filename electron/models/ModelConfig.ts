@@ -10,7 +10,7 @@ import { app } from 'electron';
 import { join } from 'path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { LogManager } from '../core/LogManager';
-import { ProviderConfig, PROVIDER_DEFAULTS } from './ModelProvider';
+import { ProviderConfig } from './ModelProvider';
 
 export class ModelConfig {
   private static instance: ModelConfig;

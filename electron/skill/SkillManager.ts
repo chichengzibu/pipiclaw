@@ -8,7 +8,7 @@ import { app } from 'electron';
 import { LogManager } from '../core/LogManager';
 import { ConfigStore } from '../core/ConfigStore';
 import { PermissionManager } from '../permissions/PermissionManager';
-import type { Skill, SkillParameter, SkillExecutionResult } from '../../types/skill';
+import type { Skill, SkillExecutionResult } from '../../types/skill';
 
 export class SkillManager {
   private static instance: SkillManager;
@@ -145,7 +145,7 @@ export class SkillManager {
   /**
    * 执行技能
    */
-  public async executeSkill(skillId: string, parameters: Record<string, any>): Promise<SkillExecutionResult> {
+  public async executeSkill(skillId: string, _parameters: Record<string, any>): Promise<SkillExecutionResult> {
     const skill = this.skills.find(s => s.id === skillId);
     if (!skill) {
       throw new Error('技能不存在');
@@ -155,7 +155,7 @@ export class SkillManager {
     }
 
     // 权限校验
-    for (const perm of skill.requiredPermissions) {
+    for (const _perm of skill.requiredPermissions) {
       const check = this.permissionManager.checkPermission({
         category: 'filesystem',
         action: 'read'

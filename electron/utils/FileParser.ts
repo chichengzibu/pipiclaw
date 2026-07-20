@@ -9,7 +9,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { app, clipboard } from 'electron';
+import { clipboard } from 'electron';
 import { LogManager } from '../core/LogManager';
 import { PermissionManager } from '../permissions/PermissionManager';
 

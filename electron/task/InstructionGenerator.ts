@@ -456,22 +456,6 @@ ${skillSummaries}
                   resolve(null);
                 }
               } else {
-                let errorMsg = `请求失败: HTTP ${res.statusCode}`;
-                try {
-                  const errorJson = JSON.parse(data);
-                  errorMsg = errorJson.error?.message || errorJson.message || errorMsg;
-                } catch { /* ignore parse error */ }
-                
-                if (res.statusCode === 401) {
-                  if (provider.type === 'anthropic') {
-                    errorMsg = 'Anthropic API Key无效，请检查您的API Key';
-                  } else {
-                    errorMsg = 'API Key无效，请检查您的API Key';
-                  }
-                } else if (res.statusCode === 429) {
-                  errorMsg = '请求过于频繁，请稍后再试';
-                }
-                
                 this.log.error('[InstructionGenerator] 请求失败:', res.statusCode, data);
                 resolve(null);
               }

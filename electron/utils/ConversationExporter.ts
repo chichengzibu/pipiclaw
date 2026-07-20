@@ -11,7 +11,7 @@ import * as path from 'path';
 import { app } from 'electron';
 import { LogManager } from '../core/LogManager';
 import { PermissionManager } from '../permissions/PermissionManager';
-import type { Conversation, ChatMessage } from '../chat/ChatTypes';
+import type { Conversation } from '../chat/ChatTypes';
 
 export interface ExportOptions {
   format: 'markdown' | 'pdf' | 'word';

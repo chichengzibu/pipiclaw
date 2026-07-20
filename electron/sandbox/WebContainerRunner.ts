@@ -15,7 +15,6 @@
 import { LogManager } from '../core/LogManager'
 import { EventBus } from '../runtime/bridge/EventBus'
 import { Workspace, WorkspaceManager } from './workspace'
-import { randomUUID } from 'node:crypto'
 
 export interface WebContainerFile {
   path: string

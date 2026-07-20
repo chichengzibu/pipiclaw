@@ -2,7 +2,7 @@
  * PiPiClaw - 定时任务管理器
  */
 
-import { app, Notification } from 'electron';
+import { Notification } from 'electron';
 import { LogManager } from '../core/LogManager';
 import { TaskExecutor } from './TaskExecutor';
 import { TaskLog } from './TaskLog';
@@ -370,7 +370,7 @@ export class ScheduleTaskManager {
         }
 
         // 3. 执行任务（复用 TaskExecutor）
-        const result = await this.taskExecutor.executeTask({
+        await this.taskExecutor.executeTask({
           id: logId,
           conversationId: 'system_schedule',
           messageId: `msg_${Date.now()}`,

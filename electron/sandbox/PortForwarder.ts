@@ -105,7 +105,7 @@ export class PortForwarder {
     return this.proxy.forward(req, `http://localhost:${e.containerPort}`)
   }
 
-  private allocateHostPort(containerPort: number): number | null {
+  private allocateHostPort(_containerPort: number): number | null {
     let attempt = this.nextHostPort
     for (let i = 0; i < 1000; i++) {
       if (!this.usedHostPorts.has(attempt)) {

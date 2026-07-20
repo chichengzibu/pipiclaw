@@ -36,7 +36,7 @@ export function isWindowsJobAvailable(): boolean {
   return os.platform() === 'win32'
 }
 
-export function runWithWindowsJob(command: string[], config: WindowsJobConfig = {}): WindowsJobResult {
+export function runWithWindowsJob(command: string[], _config: WindowsJobConfig = {}): WindowsJobResult {
   const log = LogManager.getInstance()
   const startMs = Date.now()
   log.warn('WindowsJob: W9 stub,Windows 平台 W9 暂不实装,W10+ 评估')
