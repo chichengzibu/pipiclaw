@@ -49,3 +49,15 @@ tests/e2e/**/screenshots/
 sandbox/base/.cache/
 sandbox/runtime/
 
+# build temp / typecheck cache
+tsc-*.txt
+test-*.txt
+tsc-step*.txt
+untracked-step*.txt
+lint-step*.txt
+vtsc-step*.txt
+vitest-step*.txt
+
+# dev probes
+.smoke-tmp/
+
