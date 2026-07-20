@@ -33,20 +33,20 @@ jobs:
         run: npx tsc --noEmit -p tsconfig.node.json
 
       - name: Vue typecheck
-        run: npx vue-tsc --noEmit || echo "vue-tsc warnings OK"
+        run: npx vue-tsc --noEmit || echo "vue-tsc soft-fail Phase 2"
 
       - name: ESLint
-        run: npm run lint || echo "lint warnings OK"
+        run: npm run lint
 
       - name: Vitest unit
         run: npx vitest run --reporter=verbose
 
       - name: Build renderer (vite)
-        run: npm run build || echo "build may need electron env"
+        run: npm run build
 
       - name: Sandbox selfcheck
-        run: node scripts/sandbox-selfcheck.mjs || echo "sandbox selfcheck soft-fail (no docker in CI)"
+        run: node scripts/sandbox-selfcheck.mjs || echo "sandbox soft-fail no docker in CI"
 
       - name: Playwright e2e (ubuntu only)
         if: matrix.os == 'ubuntu-latest'
-        run: npx playwright install --with-deps chromium && npx playwright test --reporter=line || echo "e2e soft-fail"
+        run: npx playwright install --with-deps chromium && npx playwright test --reporter=line || echo "e2e soft-fail Phase 4"
