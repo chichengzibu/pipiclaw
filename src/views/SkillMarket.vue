@@ -118,7 +118,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus, Upload, Document, View, CircleCheck, Edit, Delete } from '@element-plus/icons-vue';
+import { Document, View, CircleCheck, Edit, Delete } from '@element-plus/icons-vue';
 import Breadcrumb from '@/components/layout/Breadcrumb.vue';
 import { useSkillStore, type Skill } from '@/stores/skill';
 

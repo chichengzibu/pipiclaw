@@ -58,7 +58,7 @@
 
             <div class="models-tag-cloud" v-if="provider.models && provider.models.length > 0">
               <el-tag
-                v-for="(model, index) in provider.models.slice(0, 8)"
+                v-for="model in provider.models.slice(0, 8)"
                 :key="model.id"
                 size="small"
                 effect="plain"

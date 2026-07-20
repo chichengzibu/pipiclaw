@@ -712,7 +712,7 @@
 import { ref, computed, reactive, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, MoreFilled, Setting, Promotion, VideoPause, CopyDocument, RefreshRight, DArrowRight, ArrowDown, Search, Download, Close, ChatLineSquare, Edit, MagicStick, Tools, Loading } from '@element-plus/icons-vue';
+import { Plus, MoreFilled, Promotion, VideoPause, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 
@@ -720,7 +720,7 @@ import FilePreview from '@/components/chat/FilePreview.vue';
 import TaskResultCard from '@/components/chat/TaskResultCard.vue';
 
 import { useChatStore } from '@/stores/chat';
-import { useModelsStore, type ProviderConfig, type ModelInfo } from '@/stores/models';
+import { useModelsStore } from '@/stores/models';
 import { useExecutionModeStore } from '@/stores/executionMode';
 import { useModelRouterStore } from '@/stores/modelRouter';
 import { useHermesMemoryStore } from '@/stores/hermesMemory';
@@ -748,17 +748,12 @@ const permissionsStore = usePermissionsStore();
 const route = useRoute();
 
 const inputMessage = ref('');
-const expandedTaskResults = reactive<Record<string, boolean>>({});
 const chatSidebarWidth = ref(280);
 const CHAT_SIDEBAR_MIN_WIDTH = 200;
 const CHAT_SIDEBAR_MAX_WIDTH = 400;
 let isChatSidebarResizing = false;
 
-function toggleTaskResult(messageId: string): void {
-  expandedTaskResults[messageId] = !expandedTaskResults[messageId];
-}
-
-function startChatSidebarResize(e: MouseEvent): void {
+function startChatSidebarResize(_e: MouseEvent): void {
   isChatSidebarResizing = true;
   document.body.style.userSelect = 'none';
   document.addEventListener('mousemove', handleChatSidebarResize);
@@ -810,7 +805,7 @@ const showSettings = ref(false);
 const messagesContainer = ref<HTMLElement | null>(null);
 const expandedThinking = reactive<Record<string, boolean>>({});
 const isAtBottom = ref(true); // 用户是否在聊天底部
-const debugInfo = ref<string>(''); // 调试信息显示
+
 
 // Phase 2: 任务预览确认状态
 const showPreviewDialog = ref(false);
@@ -966,37 +961,17 @@ function handleSearch(): void {
 /**
  * 当前选择的权限集ID
  */
-const currentPermissionSetId = computed({
-  get: () => chatStore.currentConversation?.permissionSetId || '',
-  set: (val: string) => {
-    if (chatStore.currentConversationId) {
-      chatStore.updateConversation(chatStore.currentConversationId, { permissionSetId: val || undefined });
-    }
-  }
-});
+// (currentPermissionSetId unused: was 用于 v-model 绑定,模板未使用)
 
 /**
  * 获取权限集图标
  */
-function getSetIcon(template: string): string {
-  const icons: Record<string, string> = {
-    safe: '🛡️',
-    standard: '⚖️',
-    permissive: '🔓',
-    custom: '✏️'
-  };
-  return icons[template] || '📋';
-}
+// (getSetIcon unused: 模板未使用)
 
 /**
  * 处理权限集变更
  */
-function handlePermissionSetChange(permissionSetId: string): void {
-  if (chatStore.currentConversationId) {
-    chatStore.updateConversation(chatStore.currentConversationId, { permissionSetId: permissionSetId || undefined });
-    ElMessage.success(permissionSetId ? '权限配置已更新' : '已切换为使用全局权限');
-  }
-}
+// (handlePermissionSetChange unused: 模板未使用)
 
 onMounted(async () => {
   chatStore.initialize();
@@ -1098,7 +1073,6 @@ watch(() => chatStore.currentConversation?.messages.length, () => {
 });
 
 // 监听每条消息的内容变化（针对流式输出）
-const lastContentLength = 0;
 watch(() => {
   const conv = chatStore.currentConversation;
   if (!conv || conv.messages.length === 0) return null;
@@ -1174,10 +1148,6 @@ async function handleContinue(): Promise<void> {
   // 执行前校验并启动网关
   await gatewayStore.ensureRunning();
   await chatStore.continueGeneration();
-}
-
-async function handleEditAndResend(message: any): Promise<void> {
-  await chatStore.editAndResendMessage(message.id, message.content);
 }
 
 async function toggleThinking(messageId: string): Promise<void> {
@@ -1280,11 +1250,6 @@ async function handleExportSingle(conv: any, format: string): Promise<void> {
   } catch (err: any) {
     ElMessage.error(err.message || '导出失败');
   }
-}
-
-async function handleExport(format: string): Promise<void> {
-  if (!chatStore.currentConversation) return;
-  await handleExportSingle(chatStore.currentConversation, format);
 }
 
 async function handleBatchDelete(): Promise<void> {
@@ -1417,13 +1382,6 @@ function handleProviderChange(): void {
   }
 }
 
-async function handleExecutionModeChange(mode: string): Promise<void> {
-  const success = await executionModeStore.setMode(mode as any);
-  if (success) {
-    ElMessage.success(`已切换到${executionModeStore.currentModeConfig?.name}`);
-  }
-}
-
 async function handleConfirmExecute(): Promise<void> {
   console.log('[Chat] 用户点击确认执行任务');
   // 执行前校验并启动网关
@@ -1489,56 +1447,9 @@ async function handleSend(): Promise<void> {
 
 function handleShiftEnter(): void {}
 
-async function handleTestDetection(): Promise<void> {
-  const content = inputMessage.value.trim();
-  if (!content) {
-    ElMessage.warning('请先输入要测试的指令');
-    return;
-  }
-  
-  let info = `=== 指令识别测试 ===\n`;
-  info += `输入指令: ${content}\n\n`;
-  
-  // 测试1：前端 isExecutableInstruction
-  const isExec1 = chatStore.isExecutableInstruction(content);
-  info += `1. 前端识别: ${isExec1 ? '✅ 是可执行指令' : '❌ 不是可执行指令'}\n`;
-  
-  if (isExec1) {
-    ElMessage.info('检测到可能的执行指令！');
-    
-    info += `\n💡 应该会弹出「确认执行任务」对话框\n`;
-  } else {
-    info += `\n💡 建议使用类似 "帮我创建一个文件" 这样的指令\n`;
-  }
-  
-  debugInfo.value = info;
-  console.log('[Chat.vue] 调试信息:', info);
-}
-
-function handleOpenDevTools(): void {
-  console.log('[Chat.vue] 尝试打开 DevTools');
-  ElMessage.info('正在打开开发者工具...');
-  
-  // 尝试通过 Electron API 打开
-  try {
-    // @ts-ignore
-    if (window.electron) {
-      // @ts-ignore
-      window.electron.ipcRenderer.send('open-devtools');
-    } else {
-      // 回退方案：尝试其他方式
-      ElMessage.warning('请按 F12 或 Ctrl+Shift+I 打开控制台');
-      console.log('[Chat.vue] window.electron not available');
-    }
-  } catch (e) {
-    console.error('[Chat.vue] 打开 DevTools 失败', e);
-    ElMessage.warning('请按 F12 或 Ctrl+Shift+I 打开控制台');
-  }
-}
-
-async function handleStop(): Promise<void> {
-  await chatStore.stopGeneration();
-}
+// (handleTestDetection unused: 测试入口未使用,功能可通过 dev tools 调用)
+// (handleOpenDevTools unused: 调试用,模板未绑定)
+// (handleStop unused: 模板未引用,功能可通过其他方式触发)
 
 async function handleSaveSettings(): Promise<void> {
   await chatStore.updateSettings(localSettings);

@@ -737,13 +737,6 @@ async function saveModels(): Promise<void> {
   }
 }
 
-async function handleSyncOllama(id: string): Promise<void> {
-  const success = await modelsStore.syncOllamaModels(id);
-  if (success) {
-    ElMessage.success('模型同步成功');
-  }
-}
-
 async function handleDeleteProvider(id: string, name: string): Promise<void> {
   try {
     await ElMessageBox.confirm(

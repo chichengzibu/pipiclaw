@@ -449,21 +449,6 @@ interface ExecutionCheckResult {
   guidance?: string;
 }
 
-interface ExecutionPlanStep {
-  order: number;
-  operation: string;
-  description: string;
-  params: Record<string, any>;
-  riskLevel: 'low' | 'medium' | 'high';
-  permissionCheck: {
-    category: string;
-    action: string;
-    resource?: string;
-    allowed: boolean;
-    reason?: string;
-  };
-}
-
 // ========== 任务日志类型 ==========
 
 type TaskLogStatus = 'pending' | 'running' | 'success' | 'failed' | 'cancelled';

@@ -105,14 +105,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { ElNotification } from 'element-plus';
+import { computed, onMounted } from 'vue';
 import GatewayStatusBadge from '@/components/common/GatewayStatusBadge.vue';
 import { useGatewayStore } from '@/stores/gateway';
 import { ChatDotRound, Box, Setting, ArrowRight, VideoPlay, VideoPause, Refresh } from '@element-plus/icons-vue';
 
-const router = useRouter();
 const gatewayStore = useGatewayStore();
 
 const statusTagType = computed(() => {

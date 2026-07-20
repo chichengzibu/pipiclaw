@@ -14,8 +14,7 @@ vi.mock('node:child_process', () => {
 })
 
 import { JupyterRunner } from '../../electron/sandbox/JupyterRunner'
-import { execSync, spawn } from 'node:child_process'
-import { EventEmitter } from 'node:events'
+import { execSync } from 'node:child_process'
 
 describe('JupyterRunner', () => {
   let runner: JupyterRunner
