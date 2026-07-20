@@ -2,6 +2,37 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [2.0.2] - 2026-07-17
+
+### Added
+- **ESLint flat config**: 完整 lint 规则(typescript-eslint + eslint-plugin-vue),`npm run lint` 真生效
+- **playwright.config.ts**: 正式 e2e 配置,支持 CI 与本地双模式,加载 10 spec / 20 test case
+- **CI hard-fail**: `npm run lint` / `npm run build` 改为 hard-fail(失败即红);vue-tsc / sandbox / e2e 保留 soft-fail 并标注 Phase 来源
+- **scripts/ 辅助脚本进 git**: `check-routes.mjs` / `demo-probe.mjs` / `demo-screenshots.mjs` / `sass-probe.mjs` / `screenshot.ps1`
+- **新 unit tests 进 git**: ChatManager / DockerDetector / NetworkPolicy / ResourceLimits / SandboxBuilder / Workspace (6 个 test 文件)
+- **src/shims.d.ts 进 git**: 解决 `vue-i18n` / `element-plus/dist/locale/*.mjs` 模块声明缺失
+- **docs/CHANGELOG-INDEX.md**: 7 retro + 7 plan + 4 spec 统一索引
+- **README 同步**: LLM provider 改为 OpenAI/Anthropic/智谱 GLM 3 种(删除 Azure/Ollama 占位),加 `/settings/llm-config` 与 `/settings/im-accounts` 路由说明,加 P7 沙盒与 retro/plan 链接
+
+### Changed
+- **.gitignore 扩展**: `tsc-*.txt` / `test-*.txt` / `lint-step*.txt` / `vtsc-step*.txt` / `vitest-step*.txt` / `.smoke-tmp/` 进忽略列表
+
+### Verified
+- `npm run lint`: exit 0, 0 errors / 104 warnings
+- `npx tsc --noEmit -p tsconfig.node.json`: exit 0
+- `npx vitest run --reporter=dot`: 192/192 passed (22 test files)
+- `npx playwright test --list`: 10 spec loaded / 20 test cases
+- `npx vue-tsc --noEmit`: 41 errors(soft-fail,已 de-scope 到 Phase 2 follow-up)
+
+### Out of Phase 1 scope
+- vue-tsc 0 错完整修复(留给 Phase 2,需回填 stores 字段 + 扩 types)
+- WebContainerRunner renderer 真接(Phase 2)
+- LLM SSE 流式输出 / Provider fallback(Phase 2)
+- Hermes 自我学习 AutoCreator 闭环(Phase 3)
+- LlmConfigStore / IMConfigStore safeStorage 加密(Phase 3)
+- 真实 docker e2e CI(Phase 4)
+- coverage > 70%(Phase 3)
+
 ## [2.0.1] - 2026-07-17
 
 ### Fixed

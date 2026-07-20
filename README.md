@@ -26,7 +26,9 @@
 - **自动提案** - 发现新操作模式时自动显示提案
 
 ### ⚙️ 系统配置
-- **模型管理** - 支持 OpenAI、Anthropic、Azure、Ollama、自定义
+- **模型管理** - 支持 OpenAI、Anthropic、智谱 GLM 3 种 LLM provider,通过 `/settings/llm-config` 配置 apiKey
+- **IM 账号** - 飞书、钉钉、企业微信 3 个真实通道 + 8 个 placeholder(微信/QQ/Telegram/Slack/Discord/WhatsApp/Lark/Rocket),通过 `/settings/im-accounts` 配置
+- **P7 沙盒** - Docker base 镜像 + SandboxBuilder 4 模板(Vite-React-TS / Next.js / FastAPI / Go HTTP) + PortForwarder + WebContainerRunner + JupyterRunner
 - **权限管理** - 安全模式/标准模式/开放模式/自定义
 - **MCP 配置** - 管理 Model Context Protocol 服务器
 - **记忆管理** - Hermes 记忆系统
@@ -69,7 +71,7 @@ npm run build:win
 
 ### 1. 首次启动
 1. 启动应用后，进入「设置」页面
-2. 配置你的 AI 模型（支持 OpenAI、Ollama 等）
+2. 配置你的 AI 模型（支持 OpenAI、Anthropic、智谱 GLM）
 3. 根据需要配置权限（首次建议使用「标准模式」）
 4. 返回「对话」页面开始使用
 
@@ -158,17 +160,14 @@ npm run build:win
 #### 支持的供应商
 - OpenAI (GPT-4, GPT-3.5)
 - Anthropic (Claude 3)
-- Azure OpenAI
-- Ollama (本地模型)
-- 自定义 OpenAI 兼容接口
+- 智谱 GLM (GLM-4, GLM-3-Turbo)
 
 #### 配置步骤
-1. 在「设置 → 模型管理」页面
-2. 点击「添加模型提供商」
-3. 选择供应商类型
-4. 填写 API Key 和其他配置
-5. 测试连接成功后保存
-6. 选择默认模型
+1. 进入「设置 → LLM 配置」页面(`/settings/llm-config`)
+2. 选择供应商类型(OpenAI / Anthropic / 智谱 GLM)
+3. 填写 API Key、Base URL、模型名
+4. 测试连接成功后保存
+5. 选择默认模型用于对话路由
 
 ### 7. MCP 服务器配置
 
@@ -302,6 +301,31 @@ MIT License
 1. 应用内「帮助」页面
 2. 查看日志文件
 3. 提交 Issue
+
+## 📚 文档索引
+
+### Retros(阶段回顾)
+- [W1-W6 retro](docs/superpowers/retros/2026-07-15-w1-w6-retro.md)
+- [A 5 demo real-env validation](docs/superpowers/retros/2026-07-16-a5demo-real-env/retros.md)
+- [B IM account integration](docs/superpowers/retros/2026-07-16-b-im-account-integration/retros.md)
+- [C sandbox validation](docs/superpowers/retros/2026-07-16-c-sandbox-validation/retros.md)
+- [real LLM integration](docs/superpowers/retros/2026-07-17-real-llm-integration/retro.md)
+- [real proxy wc jupyter](docs/superpowers/retros/2026-07-17-real-proxy-wc-jupyter/retro.md)
+- [Phase 1 engineering hygiene](docs/superpowers/retros/2026-07-17-phase1-engineering-hygiene/retro.md)
+
+### Plans(实施计划)
+- [v2 plan](docs/superpowers/plans/2026-07-10-pipiclaw-v2-plan.md)
+- [real LLM integration](docs/superpowers/plans/2026-07-17-real-llm-integration.md)
+- [real proxy wc jupyter](docs/superpowers/plans/2026-07-17-real-proxy-wc-jupyter.md)
+- [Phase 1 engineering hygiene](docs/superpowers/plans/2026-07-17-phase1-engineering-hygiene.md)
+
+### Specs(设计文档)
+- [v2 design](docs/superpowers/specs/2026-07-10-pipiclaw-v2-design.md)
+- [A demo validation design](docs/superpowers/specs/2026-07-16-a-5demo-real-env-validation-design.md)
+- [B IM integration design](docs/superpowers/specs/2026-07-16-b-real-im-account-integration-design.md)
+- [C sandbox validation design](docs/superpowers/specs/2026-07-16-c-sandbox-validation-design.md)
+
+完整索引见 [docs/CHANGELOG-INDEX.md](docs/CHANGELOG-INDEX.md)。
 
 ---
 
