@@ -1,9 +1,0 @@
-node_modules/
-dist/
-dist-electron/
-release/
-coverage/
-sandbox/runtime/
-sandbox/base/.cache/
-tests/e2e-report/
-tests/e2e/**/screenshots/
