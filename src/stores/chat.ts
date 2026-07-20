@@ -156,9 +156,6 @@ export const useChatStore = defineStore('chat', () => {
   const loading = ref(false);
   const sending = ref(false);
 
-  const executingTask = ref(false);
-  const currentTaskResult = ref<TaskExecutionResult | null>(null);
-
   const quotedMessage = ref<ChatMessage | null>(null);
   const searchKeyword = ref('');
   const selectedConversations = ref<string[]>([]);
@@ -801,7 +798,6 @@ export const useChatStore = defineStore('chat', () => {
    * - 如果会话没有模型配置，自动继承全局最后使用的模型
    */
   function selectConversation(id: string): void {
-    const previousId = currentConversationId.value;
     currentConversationId.value = id;
     
     const conv = conversations.value.find(c => c.id === id);

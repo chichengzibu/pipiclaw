@@ -224,9 +224,6 @@ export const useOpenClawStore = defineStore('openclaw', () => {
     console.log('[OpenClaw Store] 资源:', request.resource);
     
     try {
-      // 首先检查前端权限 store
-      const permissionsStore = (await import('./permissions')).usePermissionsStore();
-      
       // 权限映射
       const permMap: Record<OpenClawOperationType, { category: string; action: string }> = {
         read_file: { category: 'filesystem', action: 'read' },

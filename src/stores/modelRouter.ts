@@ -81,7 +81,7 @@ export const useModelRouterStore = defineStore('modelRouter', () => {
     return 'simple';
   }
 
-  function getModelForMessage(content: string, hasAttachments: boolean): { providerId: string; modelId: string } | null {
+  function getModelForMessage(_content: string, _hasAttachments: boolean): { providerId: string; modelId: string } | null {
     const enabledProviders = modelsStore.enabledProviders;
     
     // 筛选出可用的提供商：有API配置且有可用模型
@@ -95,8 +95,6 @@ export const useModelRouterStore = defineStore('modelRouter', () => {
       return null;
     }
 
-    const complexity = analyzeMessageComplexity(content, hasAttachments);
-    
     // 使用第一个可用的 provider 和其第一个可用 model
     const defaultProvider = availableProviders[0];
     const defaultModel = defaultProvider.models.find(m => !m.disabled && m.connected !== false);
