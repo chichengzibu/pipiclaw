@@ -1,7 +1,6 @@
 import { LogManager } from '../core/LogManager'
 import { EventBus } from '../runtime/bridge/EventBus'
 import type { Memory } from '../contracts/types'
-import { randomUUID } from 'node:crypto'
 
 export interface VectorEntry {
   id: string

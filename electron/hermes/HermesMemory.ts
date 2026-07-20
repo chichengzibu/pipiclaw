@@ -180,7 +180,6 @@ export class HermesMemory {
    */
   public buildMemoryPrompt(query: string): string {
     const coreMemory = this.getCoreMemory();
-    const experienceMemory = this.getExperienceMemory();
     const relevant = this.retrieveRelevantMemories(query);
     
     let prompt = '';

@@ -121,13 +121,6 @@ export class OpenClawServer {
     } catch (error: any) {
       const errorMsg = error.message || '启动失败';
       this.log.error('[OpenClawServer] 网关服务启动失败', error);
-      
-      let guidance = '请检查端口18789是否被占用';
-      if (error.code === 'EADDRINUSE') {
-        guidance = '端口18789已被占用，请关闭占用该端口的程序或修改配置';
-      } else if (error.code === 'EACCES') {
-        guidance = '权限不足，请使用管理员/root权限运行或修改端口';
-      }
 
       return {
         port: this.config.port,

@@ -9,14 +9,13 @@
 import https from 'https';
 import http from 'http';
 import { URL } from 'url';
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow } from 'electron';
 import { LogManager } from '../core/LogManager';
 import { ChatConfig } from './ChatConfig';
 import { ModelManager } from '../models/ModelManager';
 import { HermesMemory } from '../hermes/HermesMemory';
 import { TaskExecutor } from '../task/TaskExecutor';
 import { InstructionGenerator } from '../task/InstructionGenerator';
-import { OpenClawGateway } from '../openclaw/OpenClawGateway';
 import { SelfLearner } from '../learning/SelfLearner';
 import type { Conversation, ChatMessage, ChatSettings, MessageRole, StreamChunk } from './ChatTypes';
 import type { AgentBrain, Disposable } from '../contracts/types';
@@ -390,7 +389,7 @@ export class ChatManager {
     providerId?: string,
     modelId?: string,
     settings?: Partial<ChatSettings>,
-    traceId?: string
+    _traceId?: string
   ): Promise<ChatMessage> {
     const conversation = this.config.getConversation(conversationId);
     if (!conversation) throw new Error('会话不存在');
@@ -650,7 +649,7 @@ export class ChatManager {
 
   private async streamOllama(
     conversationId: string, messageId: string, provider: any, modelId: string,
-    messages: any[], settings: ChatSettings
+    messages: any[], _settings: ChatSettings
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       let baseUrl = provider.baseUrl || 'http://localhost:11434';

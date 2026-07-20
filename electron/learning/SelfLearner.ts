@@ -1,4 +1,4 @@
-﻿
+
 /**
  * PiPiClaw - Hermes 自我学习引擎（重构版）
  * 
@@ -111,7 +111,7 @@ export class SelfLearner {
   /**
    * 观察执行过程（简化版 - 只存入观察列表）
    */
-  public observeExecution(instruction: string, steps: any[], result: any): void {
+  public observeExecution(instruction: string, steps: any[], _result: any): void {
     try {
       // 检查是否是重复指令（忽略大小写和标点符号）
       const normalizedInstruction = this.normalizeInstruction(instruction);
@@ -817,14 +817,14 @@ export class SelfLearner {
   /**
    * [兼容] 保持原来的checkPatternThreshold接口（始终返回false）
    */
-  public checkPatternThreshold(fingerprint: string): boolean {
+  public checkPatternThreshold(_fingerprint: string): boolean {
     return false;
   }
 
   /**
    * [兼容] 保持原来的generateSkillProposal接口
    */
-  public generateSkillProposal(fingerprint: string): SkillProposal | null {
+  public generateSkillProposal(_fingerprint: string): SkillProposal | null {
     return this.pendingProposal;
   }
 }

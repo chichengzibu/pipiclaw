@@ -23,7 +23,6 @@ import { BrowserManager } from '../browser/BrowserManager';
 const DEFAULT_OPENCLAW_PORT = 18789;
 import type {
   OpenClawOperationType,
-  OpenClawOperationStatus,
   OpenClawOperationRequest,
   OpenClawOperationResult,
   OpenClawPermissionCheckRequest,
@@ -332,7 +331,7 @@ export class OpenClawGateway {
   /**
    * 格式化错误消息，提供友好的用户提示
    */
-  private formatErrorMessage(error: any, operationType: string): { message: string; guidance?: string; errorCode: string } {
+  private formatErrorMessage(error: any, _operationType: string): { message: string; guidance?: string; errorCode: string } {
     let message = '操作执行失败';
     let guidance: string | undefined;
     let errorCode = 'OPERATION_FAILED';
@@ -408,57 +407,53 @@ export class OpenClawGateway {
 
     // 2. 执行操作（带超时）
     try {
-      let resultData: any;
-
-      const operationPromise = (async () => {
-        switch (operationType) {
-          case 'read_file':
-            return await this.readFile(params as FileOperationParams);
-          case 'write_file':
-          case 'create_file':
-            return await this.writeFile(params as FileOperationParams);
-          case 'delete_file':
-            return await this.deleteFile(params as FileOperationParams);
-          case 'rename_file':
-            return await this.renameFile(params as FileOperationParams);
-          case 'list_directory':
-            return await this.listDirectory(params as FileOperationParams);
-          case 'create_directory':
-            return await this.createDirectory(params as FileOperationParams);
-          case 'delete_directory':
-            return await this.deleteDirectory(params as FileOperationParams);
-          case 'file_exists':
-            return this.fileExists(params as FileOperationParams);
-          case 'run_command':
-            return await this.runCommand(params as CommandOperationParams);
-          case 'open_url':
-            return await this.openUrl(params as any);
-          case 'clipboard_read':
-            return this.readClipboard();
-          case 'clipboard_write':
-            return this.writeClipboard(params as any);
-          // 浏览器操作
-          case 'browser_open':
-            return await this.openBrowser(params as any);
-          case 'browser_navigate':
-            return await this.navigateBrowser(params as any);
-          case 'browser_click':
-            return await this.clickBrowser(params as any);
-          case 'browser_type':
-            return await this.typeBrowser(params as any);
-          case 'browser_get_text':
-            return await this.getBrowserText(params as any);
-          case 'browser_wait_for':
-            return await this.waitBrowserElement(params as any);
-          case 'browser_screenshot':
-            return await this.takeScreenshot(params as any);
-          default:
-            throw new Error(`不支持的操作类型: ${operationType}`);
-        }
-      })();
-
-      resultData = await this.executeWithTimeout(
-        operationPromise,
+      const resultData: any = await this.executeWithTimeout(
+        (async () => {
+          switch (operationType) {
+            case 'read_file':
+              return await this.readFile(params as FileOperationParams);
+            case 'write_file':
+            case 'create_file':
+              return await this.writeFile(params as FileOperationParams);
+            case 'delete_file':
+              return await this.deleteFile(params as FileOperationParams);
+            case 'rename_file':
+              return await this.renameFile(params as FileOperationParams);
+            case 'list_directory':
+              return await this.listDirectory(params as FileOperationParams);
+            case 'create_directory':
+              return await this.createDirectory(params as FileOperationParams);
+            case 'delete_directory':
+              return await this.deleteDirectory(params as FileOperationParams);
+            case 'file_exists':
+              return this.fileExists(params as FileOperationParams);
+            case 'run_command':
+              return await this.runCommand(params as CommandOperationParams);
+            case 'open_url':
+              return await this.openUrl(params as any);
+            case 'clipboard_read':
+              return this.readClipboard();
+            case 'clipboard_write':
+              return this.writeClipboard(params as any);
+            // 浏览器操作
+            case 'browser_open':
+              return await this.openBrowser(params as any);
+            case 'browser_navigate':
+              return await this.navigateBrowser(params as any);
+            case 'browser_click':
+              return await this.clickBrowser(params as any);
+            case 'browser_type':
+              return await this.typeBrowser(params as any);
+            case 'browser_get_text':
+              return await this.getBrowserText(params as any);
+            case 'browser_wait_for':
+              return await this.waitBrowserElement(params as any);
+            case 'browser_screenshot':
+              return await this.takeScreenshot(params as any);
+            default:
+              throw new Error(`不支持的操作类型: ${operationType}`);
+          }
+        })(),
         TIMEOUT_MS,
         `执行超时：${operationType}操作超过30秒未完成`
       );
@@ -820,7 +815,7 @@ export class OpenClawGateway {
     }
     
     this.log.info('[OpenClawGateway] 截图');
-    const buffer = await this.browserManager.screenshot(sessionId, params.path);
+    await this.browserManager.screenshot(sessionId, params.path);
     
     return { 
       path: params.path, 
