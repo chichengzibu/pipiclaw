@@ -10,7 +10,6 @@
 import { Tray, Menu, nativeImage, app, BrowserWindow } from 'electron';
 import { join } from 'path';
 import { LogManager } from './LogManager';
-import { GlobalShortcut } from './GlobalShortcut';
 
 export class TrayManager {
   private static instance: TrayManager;

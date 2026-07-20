@@ -438,26 +438,9 @@ interface ToolCallResult {
   error?: string;
 }
 
-interface ParsedInstruction {
-  isExecutable: boolean;
-  confidence: number;
-  steps: Omit<TaskStep, 'id' | 'status' | 'result' | 'error' | 'startTime' | 'endTime'>[];
-  originalInstruction: string;
-  explanation?: string;
-}
-
 // ========== 执行模式类型 ==========
 
 type ExecutionMode = 'safe' | 'plan' | 'craft';
-
-interface ExecutionModeConfig {
-  mode: ExecutionMode;
-  name: string;
-  description: string;
-  icon: string;
-  allowExecution: boolean;
-  requireConfirmation: boolean;
-}
 
 interface ExecutionCheckResult {
   allowed: boolean;
@@ -479,18 +462,6 @@ interface ExecutionPlanStep {
     allowed: boolean;
     reason?: string;
   };
-}
-
-interface ExecutionPlan {
-  taskId: string;
-  instruction: string;
-  mode: ExecutionMode;
-  steps: ExecutionPlanStep[];
-  totalSteps: number;
-  executableSteps: number;
-  blockedSteps: number;
-  estimatedDuration?: number;
-  createdAt: number;
 }
 
 // ========== 任务日志类型 ==========

@@ -13,7 +13,7 @@ import { PermissionManager } from '../permissions/PermissionManager';
 import { ChatManager } from '../chat/ChatManager';
 import { TaskExecutor } from '../task/TaskExecutor';
 import { TaskLog } from '../task/TaskLog';
-import { ExecutionMode, EXECUTION_MODE_CONFIGS, RISK_LEVEL_MAP, HIGH_RISK_OPERATIONS } from '../task/TaskExecutionMode';
+import { RISK_LEVEL_MAP, HIGH_RISK_OPERATIONS } from '../task/TaskExecutionMode';
 import { FileParser } from '../utils/FileParser';
 import { ConversationExporter } from '../utils/ConversationExporter';
 import { OpenClawGateway } from '../openclaw/OpenClawGateway';
@@ -21,7 +21,7 @@ import { OpenClawExecutor } from '../openclaw/OpenClawExecutor';
 import { HermesMemory } from '../hermes/HermesMemory';
 import { SkillLoader } from '../skill/SkillLoader';
 import { SelfLearner } from '../learning/SelfLearner';
-import type { Task, TaskStep, StepType, TaskStatus, StepStatus } from '../task/TaskTypes';
+import type { TaskStep, StepType, TaskStatus, StepStatus } from '../task/TaskTypes';
 import type {
   OpenClawOperationRequest,
   OpenClawBatchRequest,
@@ -888,7 +888,7 @@ export class IpcServer {
       }
     });
 
-    ipcMain.handle('execution:mode:check', (_, operation: string, params: any) => {
+    ipcMain.handle('execution:mode:check', (_, operation: string, _params: any) => {
       try {
         const configStore = ConfigStore.getInstance();
         const mode = configStore.get('execution.mode') || 'craft';
@@ -906,7 +906,7 @@ export class IpcServer {
           };
         }
 
-        const riskLevel = RISK_LEVEL_MAP[operation] || 'medium';
+        const _riskLevel = RISK_LEVEL_MAP[operation] || 'medium';
         const isHighRisk = HIGH_RISK_OPERATIONS.includes(operation);
 
         if (isHighRisk && mode === 'craft') {

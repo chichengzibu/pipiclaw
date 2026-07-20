@@ -173,7 +173,7 @@ export class GlobalShortcut {
     try {
       this.configStore.set(`shortcuts.${key}`, accelerator);
       
-      const config = this.getShortcutConfig();
+      this.getShortcutConfig();
       
       if (key === 'toggleWindow') {
         this.unregisterAll();

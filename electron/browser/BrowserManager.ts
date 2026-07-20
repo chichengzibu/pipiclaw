@@ -8,8 +8,6 @@
  */
 
 import { LogManager } from '../core/LogManager';
-import * as fs from 'fs';
-import * as path from 'path';
 
 // 动态导入 Playwright
 let pw: any = null;

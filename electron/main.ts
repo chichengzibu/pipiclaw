@@ -24,7 +24,6 @@ import { HermesAdapter } from './hermes/HermesAdapter';
 import { AgentBrainImpl, asAgentBrain } from './agent/AgentBrain';
 import { ChatManager } from './chat/ChatManager';
 import { IpcBridge } from './runtime/bridge/IpcBridge';
-import { Scheduler } from './runtime/scheduler/Scheduler';
 import { registerD1ScreenshotShortcut } from './core/GlobalShortcut';
 import { ensureD1SkillRegistered } from './skill/builtin/D1ScreenshotQA';
 import { registerD5RecordingToSkill } from './skill/builtin/D5RecordingToSkill';
