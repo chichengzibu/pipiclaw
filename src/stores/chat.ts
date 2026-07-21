@@ -40,6 +40,14 @@ export interface TaskExecutionResult {
   duration?: number;
 }
 
+export interface TaskExecutionPlan {
+  planId: string;
+  instruction: string;
+  steps: TaskStepResult[];
+  estimatedDuration?: number;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
 export interface TaskStepResult {
   order: number;
   description: string;
@@ -159,6 +167,13 @@ export const useChatStore = defineStore('chat', () => {
   const quotedMessage = ref<ChatMessage | null>(null);
   const searchKeyword = ref('');
   const selectedConversations = ref<string[]>([]);
+
+  // ========== 任务执行相关状态 ==========
+  const executingTask = ref(false);
+  const currentTaskResult = ref<TaskExecutionResult | null>(null);
+  const isGenerating = ref(false);
+  const showTaskConfirmDialog = ref(false);
+  const pendingTaskPlan = ref<TaskExecutionPlan | null>(null);
 
   // ========== 计算属性 ==========
   
@@ -538,6 +553,25 @@ export const useChatStore = defineStore('chat', () => {
    */
   function setSearchKeyword(keyword: string): void {
     searchKeyword.value = keyword;
+  }
+
+  /**
+   * 取消任务执行
+   */
+  function cancelExecuteTask(): void {
+    executingTask.value = false;
+    isGenerating.value = false;
+    pendingTaskPlan.value = null;
+  }
+
+  /**
+   * 确认执行任务计划
+   */
+  async function confirmExecuteTask(): Promise<void> {
+    if (!pendingTaskPlan.value) return;
+    executingTask.value = true;
+    showTaskConfirmDialog.value = false;
+    // 实际执行逻辑由 TaskExecutor 接管,这里只切换状态
   }
 
   /**
@@ -1074,6 +1108,7 @@ export const useChatStore = defineStore('chat', () => {
     quotedMessage,
     selectedConversations,
     searchConversations: setSearchKeyword,
+    setSearchKeyword,
     quoteMessage,
     clearQuotedMessage,
     editAndResendMessage,
@@ -1081,6 +1116,15 @@ export const useChatStore = defineStore('chat', () => {
     batchDeleteConversations,
     toggleConversationSelection,
     clearConversationSelection,
-    selectAllConversations
+    selectAllConversations,
+
+    // 任务执行状态
+    executingTask,
+    currentTaskResult,
+    isGenerating,
+    showTaskConfirmDialog,
+    pendingTaskPlan,
+    cancelExecuteTask,
+    confirmExecuteTask
   };
 });

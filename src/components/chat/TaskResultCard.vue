@@ -59,22 +59,14 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-
-interface TaskStep {
-  order: number;
-  description: string;
-  status: 'success' | 'failed' | 'running' | 'pending';
-  duration?: number;
-  error?: string | null;
-  params?: Record<string, any>;
-}
+import type { TaskStepResult } from '@/stores/chat';
 
 interface Props {
   success: boolean;
   duration?: number;
   summary?: string;
   error?: string;
-  steps: TaskStep[];
+  steps: TaskStepResult[];
   defaultExpanded?: boolean;
 }
 
