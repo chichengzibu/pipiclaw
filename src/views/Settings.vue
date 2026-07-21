@@ -422,11 +422,11 @@ const editingModels = ref<any[]>([]);
 const newModelId = ref('');
 
 function isVolcEngineProvider(provider: ProviderConfig): boolean {
-  return provider.type === 'volc_ark' || (provider.baseUrl && provider.baseUrl.includes('coding/v3'));
+  return provider.type === 'volc_ark' || Boolean(provider.baseUrl && provider.baseUrl.includes('coding/v3'));
 }
 
 function isVolcEngineForm(): boolean {
-  return modelFormData.type === 'volc_ark' || (modelFormData.baseUrl && modelFormData.baseUrl.includes('coding/v3'));
+  return modelFormData.type === 'volc_ark' || Boolean(modelFormData.baseUrl && modelFormData.baseUrl.includes('coding/v3'));
 }
 
 const modelFormRules = {

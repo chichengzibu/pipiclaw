@@ -116,7 +116,7 @@
                 <div class="rule-control">
                   <el-select
                     :model-value="rule.level"
-                    @change="(val) => handleLevelChange(rule.id, val)"
+                    @change="(val: 'allow' | 'deny' | 'ask') => handleLevelChange(rule.id, val)"
                     :disabled="selectedSet.template !== 'custom'"
                     size="small"
                   >
@@ -337,9 +337,20 @@ function handleCreateSet(): void {
   createDialogVisible.value = true;
 }
 
+async function handleRemovePath(rule: { allowedDomains?: string[]; deniedDomains?: string[] }, field: 'allowed' | 'denied', idx: number): Promise<void> {
+  if (!selectedSet.value) return;
+  if (field === 'allowed') {
+    rule.allowedDomains?.splice(idx, 1);
+  } else {
+    rule.deniedDomains?.splice(idx, 1);
+  }
+  await permissionsStore.updatePermissionSet(selectedSet.value.id, { rules: selectedSet.value.rules });
+  ElMessage.success('已移除路径');
+}
+
 async function handleCreateSubmit(): Promise<void> {
   if (!createFormRef.value) return;
-  await createFormRef.value.validate(async (valid) => {
+  await createFormRef.value.validate(async (valid: boolean) => {
     if (!valid) return;
     submitting.value = true;
     try {

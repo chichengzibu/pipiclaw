@@ -147,11 +147,20 @@ import { useScheduleStore, type ScheduleTask } from '@/stores/schedule';
 
 const scheduleStore = useScheduleStore();
 
-const formData = reactive({
+type ScheduleType = 'daily' | 'weekly' | 'monthly' | 'cron';
+
+const formData = reactive<{
+  name: string;
+  description: string;
+  instruction: string;
+  scheduleType: ScheduleType;
+  scheduleValue: string;
+  maxRetries: number;
+}>({
   name: '',
   description: '',
   instruction: '',
-  scheduleType: 'daily' as const,
+  scheduleType: 'daily',
   scheduleValue: '',
   maxRetries: 3
 });
