@@ -65,7 +65,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, type FormInstance, type FormRules } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
+import type { FormInstance, FormRules } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 
 const props = defineProps<{
@@ -168,7 +169,7 @@ function handleDialogClose(): void {
 }
 
 function handleSubmit(): void {
-  formRef.value?.validate(async (valid) => {
+  formRef.value?.validate(async (valid: boolean) => {
     if (!valid) return;
 
     submitting.value = true;

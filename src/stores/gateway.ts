@@ -73,6 +73,9 @@ export const useGatewayStore = defineStore('gateway', () => {
   
   /** 是否启动中 */
   const isStarting = computed(() => status.value.state === 'starting');
+
+  /** 是否停止中 */
+  const isStopping = computed(() => status.value.state === 'stopping');
   
   /** 是否已停止 */
   const isStopped = computed(() => status.value.state === 'stopped');
@@ -291,6 +294,7 @@ export const useGatewayStore = defineStore('gateway', () => {
     // 计算属性
     isRunning,
     isStarting,
+    isStopping,
     isStopped,
     isFailed,
     canStart,

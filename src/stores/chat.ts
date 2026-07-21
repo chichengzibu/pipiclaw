@@ -171,7 +171,6 @@ export const useChatStore = defineStore('chat', () => {
   // ========== 任务执行相关状态 ==========
   const executingTask = ref(false);
   const currentTaskResult = ref<TaskExecutionResult | null>(null);
-  const isGenerating = ref(false);
   const showTaskConfirmDialog = ref(false);
   const pendingTaskPlan = ref<TaskExecutionPlan | null>(null);
 

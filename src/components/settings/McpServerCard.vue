@@ -20,7 +20,7 @@
     <div class="card-body">
       <div class="meta-row">
         <span class="meta-label">参数:</span>
-        <span class="meta-value">{{ server.args?.length > 0 ? server.args.join(', ') : '-' }}</span>
+        <span class="meta-value">{{ argsDisplay }}</span>
       </div>
       <div class="meta-row" v-if="server.env && Object.keys(server.env).length > 0">
         <span class="meta-label">环境变量:</span>
@@ -45,15 +45,22 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  server: {
-    name: string;
-    command: string;
-    args?: string[];
-    env?: Record<string, string>;
-    enabled: boolean;
-  };
-}>();
+import { computed } from 'vue';
+
+interface McpServer {
+  name: string;
+  command: string;
+  args?: string[];
+  env?: Record<string, string>;
+  enabled: boolean;
+}
+
+const props = defineProps<{ server: McpServer }>();
+
+const argsDisplay = computed<string>(() => {
+  const args = props.server.args;
+  return args && args.length > 0 ? args.join(', ') : '-';
+});
 
 const emit = defineEmits<{
   edit: [];

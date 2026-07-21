@@ -116,7 +116,7 @@
                 <div class="rule-control">
                   <el-select
                     :model-value="rule.level"
-                    @change="(val: 'allow' | 'deny' | 'ask') => handleLevelChange(rule.id, val)"
+                    @change="(val: PermissionLevel) => handleLevelChange(rule.id, val)"
                     :disabled="selectedSet.template !== 'custom'"
                     size="small"
                   >

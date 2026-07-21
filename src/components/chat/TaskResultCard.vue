@@ -44,7 +44,7 @@
                 </span>
               </div>
             </div>
-            <span v-if="step.duration > 0" class="step-duration">{{ step.duration }}ms</span>
+            <span v-if="(step.duration ?? 0) > 0" class="step-duration">{{ step.duration }}ms</span>
           </div>
         </div>
 
