@@ -14,7 +14,7 @@ import { ElMessage } from 'element-plus';
 // ========== 类型定义 ==========
 
 export type MessageRole = 'user' | 'assistant' | 'system';
-export type MessageStatus = 'sending' | 'streaming' | 'sent' | 'error';
+export type MessageStatus = 'sending' | 'streaming' | 'sent' | 'error' | 'stopped';
 export type ConversationStatus = 'active' | 'archived';
 
 export interface ChatMessage {

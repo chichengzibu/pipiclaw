@@ -19,6 +19,7 @@ export interface ModelInfo {
   outputCost?: number;
   description?: string;
   disabled?: boolean;
+  connected?: boolean;
 }
 
 export interface ProviderConfig {

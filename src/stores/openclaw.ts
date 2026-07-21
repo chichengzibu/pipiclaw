@@ -40,6 +40,7 @@ export interface OpenClawOperationRequest {
   operationType: OpenClawOperationType;
   params: Record<string, any>;
   operationId?: string;
+  resource?: string;
 }
 
 export interface OpenClawOperationResult {
