@@ -4,7 +4,9 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Skill } from '../../types/skill';
+import type { Skill, SkillParameter } from '../../types/skill';
+
+export type { Skill, SkillParameter };
 
 // 内置预设技能模板
 const PRESET_SKILLS: Omit<Skill, 'createdAt' | 'updatedAt' | 'usageCount' | 'successRate'>[] = [
