@@ -33,7 +33,7 @@ jobs:
         run: npx tsc --noEmit -p tsconfig.node.json
 
       - name: Vue typecheck
-        run: npx vue-tsc --noEmit || echo "vue-tsc soft-fail Phase 2"
+        run: npx vue-tsc --noEmit
 
       - name: ESLint
         run: npm run lint
