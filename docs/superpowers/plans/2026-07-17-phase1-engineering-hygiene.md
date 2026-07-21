@@ -596,6 +596,8 @@ git commit -m "docs(retro) Phase 1 engineering hygiene 4.5/5 baseline"
 ## 不在 Phase 1 范围(留给 Phase 2/3/4)
 
 ### Phase 2 — 产品质量
+- ✅ vue-tsc 52 errors → 0 errors ([plan](2026-07-21-phase2-vue-tsc-zero-errors.md) + [retro](../retros/2026-07-21-phase2-vue-tsc-zero/retro.md)) — **2026-07-21 完成**
+- ✅ CI 上 vue-tsc 升 hard-fail — **2026-07-21 完成**
 - WebContainerRunner renderer 真接 `@webcontainer/api`
 - LLM 流式输出 SSE
 - LLM Provider 自动 fallback
