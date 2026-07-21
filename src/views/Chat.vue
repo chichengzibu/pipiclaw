@@ -728,15 +728,20 @@ import { useGatewayStore } from '@/stores/gateway';
 import { usePermissionsStore } from '@/stores/permissions';
 
 marked.setOptions({
-  highlight: function(code: string, lang: string) {
-    if (lang && hljs.getLanguage(lang)) {
-      return hljs.highlight(code, { language: lang }).value;
-    }
-    return hljs.highlightAuto(code).value;
-  },
   breaks: true,
   gfm: true
 });
+// marked v18+ 不再支持 highlight 字段,改用扩展 hook
+marked.use({
+  renderer: {
+    code(code: string, lang?: string): string {
+      if (lang && hljs.getLanguage(lang)) {
+        return `<pre><code class="hljs language-${lang}">${hljs.highlight(code, { language: lang }).value}</code></pre>`;
+      }
+      return `<pre><code class="hljs">${hljs.highlightAuto(code).value}</code></pre>`;
+    }
+  }
+} as unknown as Parameters<typeof marked.use>[0]);
 
 const chatStore = useChatStore();
 const modelsStore = useModelsStore();
@@ -1364,8 +1369,9 @@ function clearAllAttachedFiles(): void {
 function handleProviderChange(): void {
   // 切换 Provider 时自动清空 Model 选择
   currentModelId.value = null;
-  
+
   // 获取当前 provider
+  if (!currentProviderId.value) return;
   const provider = modelsStore.getProviderById(currentProviderId.value);
   
   // 如果该 provider 有模型并且有默认模型，则自动选择
@@ -1436,7 +1442,7 @@ async function handleSend(): Promise<void> {
   }
   
   // 发送消息
-  await chatStore.sendMessage(fullContent || '请查看附件', providerId, modelId);
+  await chatStore.sendMessage(fullContent || '请查看附件', providerId ?? '', modelId ?? undefined);
   
   // 强制滚动到底部（发送新消息后）
   scrollToBottom(true);
