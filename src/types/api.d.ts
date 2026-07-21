@@ -49,9 +49,37 @@ declare global {
         onMaximizeChange: (callback: (isMaximized: boolean) => void) => () => void;
       };
       app: {
-        getVersion: () => Promise<string>;
+        getVersion: () => Promise<IpcResponse<string>>;
         getPlatform: () => string;
       };
+      config: {
+        get: (key: string) => Promise<IpcResponse<any>>;
+        set: (key: string, value: any) => Promise<IpcResponse<any>>;
+        getAll: () => Promise<IpcResponse<any>>;
+      };
+      // 其他 namespace 用 any 兜底,避免类型遗漏
+      models?: any;
+      permissions?: any;
+      gateway?: any;
+      task?: any;
+      conversation?: any;
+      llmConfig?: any;
+      chat?: any;
+      skills?: any;
+      schedule?: any;
+      mcp?: any;
+      im?: any;
+      channelConfig?: any;
+      feedback?: any;
+      sandbox?: any;
+      learning?: any;
+      hermes?: any;
+      voice?: any;
+      file?: any;
+      fs?: any;
+      path?: any;
+      shell?: any;
+      env?: any;
     };
   }
 }

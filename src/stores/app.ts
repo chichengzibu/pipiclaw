@@ -85,8 +85,9 @@ export const useAppStore = defineStore('app', () => {
         }
       }
       
-      // 设置环境
-      env.value = import.meta.env.MODE as 'development' | 'production';
+      // 设置环境(Vite 模式下用 import.meta.env.MODE,fallback 到 development)
+      const mode = (import.meta as { env?: { MODE?: string } })?.env?.MODE;
+      env.value = (mode === 'production' ? 'production' : 'development');
       
       // 初始化主题
       initTheme();
