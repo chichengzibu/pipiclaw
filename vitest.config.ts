@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
 import { fileURLToPath } from 'node:url'
 
 /**
@@ -15,6 +16,7 @@ import { fileURLToPath } from 'node:url'
  * 环境：jsdom（Vue / DOM API 友好）
  */
 export default defineConfig({
+  plugins: [vue()],
   test: {
     environment: 'jsdom',
     globals: false,
