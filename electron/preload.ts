@@ -211,7 +211,16 @@ const IpcChannels = {
   LLM_CONFIG_LIST: 'llm-config:list',
   LLM_CONFIG_UPSERT: 'llm-config:upsert',
   LLM_CONFIG_TEST: 'llm-config:test',
-  LLM_CHAT: 'llm:chat'
+  LLM_CHAT: 'llm:chat',
+
+  // ========== Phase 4 Task 4: Auto-updater IPC ==========
+  AUTO_UPDATER_CHECK: 'autoUpdater:check',
+  AUTO_UPDATER_DOWNLOAD: 'autoUpdater:download',
+  AUTO_UPDATER_INSTALL: 'autoUpdater:install',
+  AUTO_UPDATER_GET_VERSION: 'autoUpdater:getVersion',
+  AUTO_UPDATER_ON_UPDATE_AVAILABLE: 'autoUpdater:onUpdateAvailable',
+  AUTO_UPDATER_ON_UPDATE_DOWNLOADED: 'autoUpdater:onUpdateDownloaded',
+  AUTO_UPDATER_ON_ERROR: 'autoUpdater:onError'
 } as const;
 
 type IpcCallback = (event: IpcRendererEvent, ...args: any[]) => void;
@@ -1027,6 +1036,39 @@ const electronAPI = {
   // ========== W13: WebContainerRunner renderer bridge ==========
   webcontainer: {
     notifyRendererReady: () => ipcRenderer.invoke('webcontainer:renderer-ready')
+  },
+
+  // ========== Phase 4 Task 4: Auto-updater API ==========
+  autoUpdater: {
+    check: (): Promise<IpcResponse<{ version: string | null }>> =>
+      ipcRenderer.invoke(IpcChannels.AUTO_UPDATER_CHECK),
+
+    download: (): Promise<IpcResponse<void>> =>
+      ipcRenderer.invoke(IpcChannels.AUTO_UPDATER_DOWNLOAD),
+
+    install: (): Promise<IpcResponse<void>> =>
+      ipcRenderer.invoke(IpcChannels.AUTO_UPDATER_INSTALL),
+
+    getVersion: (): Promise<IpcResponse<string>> =>
+      ipcRenderer.invoke(IpcChannels.AUTO_UPDATER_GET_VERSION),
+
+    onUpdateAvailable: (callback: (data: { version: string; releaseDate?: string; releaseNotes?: string | null }) => void) => {
+      const handler: IpcCallback = (_, data) => callback(data);
+      ipcRenderer.on(IpcChannels.AUTO_UPDATER_ON_UPDATE_AVAILABLE, handler);
+      return () => ipcRenderer.removeListener(IpcChannels.AUTO_UPDATER_ON_UPDATE_AVAILABLE, handler);
+    },
+
+    onUpdateDownloaded: (callback: (data: { version: string }) => void) => {
+      const handler: IpcCallback = (_, data) => callback(data);
+      ipcRenderer.on(IpcChannels.AUTO_UPDATER_ON_UPDATE_DOWNLOADED, handler);
+      return () => ipcRenderer.removeListener(IpcChannels.AUTO_UPDATER_ON_UPDATE_DOWNLOADED, handler);
+    },
+
+    onError: (callback: (data: { message: string }) => void) => {
+      const handler: IpcCallback = (_, data) => callback(data);
+      ipcRenderer.on(IpcChannels.AUTO_UPDATER_ON_ERROR, handler);
+      return () => ipcRenderer.removeListener(IpcChannels.AUTO_UPDATER_ON_ERROR, handler);
+    }
   }
 };
 

@@ -195,12 +195,12 @@
             <el-card class="settings-card">
               <el-form label-width="120px">
                 <el-form-item label="核心记忆">
-                  <el-input 
-                    v-model="hermesMemoryStore.editingCoreMemory" 
-                    type="textarea" 
+                  <el-input
+                    v-model="hermesMemoryStore.editingCoreMemory"
+                    type="textarea"
                     :rows="6"
                     placeholder="存储用户偏好、习惯、固定规则"
-                    @input="handleCoreMemoryChange" 
+                    @input="handleCoreMemoryChange"
                   />
                 </el-form-item>
                 <el-form-item>
@@ -210,6 +210,49 @@
                   <el-button size="small" type="danger" @click="clearAllMemories">
                     清空所有记忆
                   </el-button>
+                </el-form-item>
+              </el-form>
+            </el-card>
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane label="关于" name="about">
+          <div class="tab-content">
+            <el-card class="settings-card">
+              <template #header><span>应用信息</span></template>
+              <el-form label-width="120px">
+                <el-form-item label="当前版本">
+                  <span class="version-text">{{ appVersion || '加载中…' }}</span>
+                </el-form-item>
+                <el-form-item label="更新状态">
+                  <el-tag v-if="updateStatus === 'idle'" type="info" effect="plain">未检查</el-tag>
+                  <el-tag v-else-if="updateStatus === 'checking'" type="info" effect="plain">检查中…</el-tag>
+                  <el-tag v-else-if="updateStatus === 'up-to-date'" type="success" effect="plain">已是最新版本</el-tag>
+                  <el-tag v-else-if="updateStatus === 'available'" type="warning" effect="plain">发现新版本 v{{ availableVersion }}</el-tag>
+                  <el-tag v-else-if="updateStatus === 'downloading'" type="warning" effect="plain">下载中…</el-tag>
+                  <el-tag v-else-if="updateStatus === 'downloaded'" type="success" effect="plain">已下载,可重启安装</el-tag>
+                  <el-tag v-else-if="updateStatus === 'error'" type="danger" effect="plain">检查失败</el-tag>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" :loading="isChecking" @click="handleCheckUpdate">检查更新</el-button>
+                  <el-button
+                    v-if="updateStatus === 'available'"
+                    type="primary"
+                    :loading="isDownloading"
+                    @click="handleDownloadUpdate"
+                  >
+下载新版本 v{{ availableVersion }}
+</el-button>
+                  <el-button
+                    v-if="updateStatus === 'downloaded'"
+                    type="success"
+                    @click="handleInstallUpdate"
+                  >
+立即重启安装
+</el-button>
+                </el-form-item>
+                <el-form-item v-if="updateError" label=" ">
+                  <div class="error-text">{{ updateError }}</div>
                 </el-form-item>
               </el-form>
             </el-card>
@@ -448,6 +491,15 @@ const allProviderOptions = computed(() => {
 const mcpServers = ref<any[]>([]);
 const mcpDialogVisible = ref(false);
 const editingServer = ref<any>(null);
+
+// 关于 / 自动更新
+const appVersion = ref('');
+type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'downloaded' | 'error';
+const updateStatus = ref<UpdateStatus>('idle');
+const availableVersion = ref('');
+const updateError = ref('');
+const isChecking = ref(false);
+const isDownloading = ref(false);
 
 const handleThemeChange = (themeKey: string): void => {
   appStore.setTheme(themeKey);
@@ -767,6 +819,119 @@ async function loadMcpServers(): Promise<void> {
   }
 }
 
+// ============ 关于 / 自动更新 ============
+
+async function loadAppVersion(): Promise<void> {
+  try {
+    const result = await (window as any).electronAPI?.autoUpdater?.getVersion?.();
+    if (result?.success && typeof result.data === 'string') {
+      appVersion.value = result.data;
+    } else {
+      const v = await (window as any).electronAPI?.app?.getVersion?.();
+      if (v?.success && typeof v.data === 'string') {
+        appVersion.value = v.data;
+      }
+    }
+  } catch (e) {
+    console.error('加载版本号失败:', e);
+  }
+}
+
+async function handleCheckUpdate(): Promise<void> {
+  const api = (window as any).electronAPI?.autoUpdater;
+  if (!api?.check) {
+    ElMessage.warning('当前环境不支持自动更新');
+    return;
+  }
+  isChecking.value = true;
+  updateError.value = '';
+  updateStatus.value = 'checking';
+  try {
+    const result = await api.check();
+    if (!result?.success) {
+      updateStatus.value = 'error';
+      updateError.value = result?.error || '检查失败';
+      ElMessage.error(updateError.value);
+    } else {
+      const version = result?.data?.version;
+      if (version && version !== appVersion.value) {
+        availableVersion.value = version;
+        updateStatus.value = 'available';
+        ElMessage.success(`发现新版本 v${version}`);
+      } else {
+        updateStatus.value = 'up-to-date';
+        ElMessage.success('已是最新版本');
+      }
+    }
+  } catch (e: any) {
+    updateStatus.value = 'error';
+    updateError.value = String(e?.message || e);
+    ElMessage.error(updateError.value);
+  } finally {
+    isChecking.value = false;
+  }
+}
+
+async function handleDownloadUpdate(): Promise<void> {
+  const api = (window as any).electronAPI?.autoUpdater;
+  if (!api?.download) {
+    ElMessage.warning('当前环境不支持自动更新');
+    return;
+  }
+  isDownloading.value = true;
+  updateStatus.value = 'downloading';
+  try {
+    const result = await api.download();
+    if (result?.success) {
+      ElMessage.success('下载已开始');
+    } else {
+      updateStatus.value = 'available';
+      ElMessage.error(result?.error || '下载失败');
+    }
+  } catch (e: any) {
+    updateStatus.value = 'error';
+    updateError.value = String(e?.message || e);
+    ElMessage.error(updateError.value);
+  } finally {
+    isDownloading.value = false;
+  }
+}
+
+async function handleInstallUpdate(): Promise<void> {
+  const api = (window as any).electronAPI?.autoUpdater;
+  if (!api?.install) {
+    ElMessage.warning('当前环境不支持自动更新');
+    return;
+  }
+  try {
+    await api.install();
+  } catch (e: any) {
+    ElMessage.error(String(e?.message || e));
+  }
+}
+
+function bindAutoUpdaterEvents(): void {
+  const api = (window as any).electronAPI?.autoUpdater;
+  if (!api) return;
+  api.onUpdateAvailable?.((data: { version: string }) => {
+    availableVersion.value = data.version;
+    if (data.version !== appVersion.value) {
+      updateStatus.value = 'available';
+    }
+  });
+  api.onUpdateDownloaded?.((data: { version: string }) => {
+    availableVersion.value = data.version;
+    updateStatus.value = 'downloaded';
+    ElMessage.success(`v${data.version} 已下载,稍后重启`);
+  });
+  api.onError?.((data: { message: string }) => {
+    if (updateStatus.value === 'checking' || updateStatus.value === 'downloading') {
+      updateStatus.value = 'error';
+      updateError.value = data.message;
+    }
+  });
+}
+
 function openAddDialog(): void {
   editingServer.value = null;
   mcpDialogVisible.value = true;
@@ -841,6 +1006,8 @@ onMounted(async () => {
     modelsStore.fetchProviderTemplates()
   ]);
   await loadMcpServers();
+  loadAppVersion();
+  bindAutoUpdaterEvents();
 });
 </script>
 
@@ -1070,5 +1237,17 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: var(--content-padding);
+}
+
+.version-text {
+  font-family: monospace;
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+}
+
+.error-text {
+  color: var(--el-color-danger);
+  font-size: var(--font-size-caption-1);
+  word-break: break-all;
 }
 </style>

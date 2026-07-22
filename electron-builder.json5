@@ -48,6 +48,13 @@
     "synopsis": "PiPiClaw - Desktop AI Automation Assistant",
     "description": "国产桌面AI自动化助手,基于 Electron + OpenClaw"
   },
+  "publish": {
+    "provider": "github",
+    "repo": "pipiclaw",
+    "owner": "chichengzibu",
+    "releaseType": "release",
+    "channel": "latest"
+  },
   "nsis": {
     "oneClick": false,
     "perMachine": false,

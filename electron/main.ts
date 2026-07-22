@@ -17,6 +17,7 @@ import { MiniWindow } from './core/MiniWindow';
 import { ConfigStore } from './core/ConfigStore';
 import { OpenClawGateway } from './openclaw/OpenClawGateway';
 import { PermissionConfig } from './permissions/PermissionConfig';
+import { AutoUpdater } from './core/AutoUpdater';
 
 // ============ W7.0.1 boot wiring: 串接 W3+ 子系统 ============
 import { CapabilityRegistry } from './contracts/CapabilityRegistry';
@@ -103,6 +104,19 @@ app.whenReady().then(async () => {
     // 10. 开发模式下打开DevTools
     if (isDev) {
       windowManager.getMainWindow()?.webContents.openDevTools();
+    }
+
+    // 11. 自动更新检查 — 在窗口 ready-to-show 之后启动
+    const mainWindow = windowManager.getMainWindow();
+    if (mainWindow) {
+      mainWindow.once('ready-to-show', () => {
+        try {
+          new AutoUpdater().initialize(mainWindow);
+          log.info('[main] AutoUpdater 初始化完成');
+        } catch (e) {
+          log.error('[main] AutoUpdater 初始化失败(非致命)', e);
+        }
+      });
     }
 
     // ============ W7.0.1 W3+ 子系统 wire ============
