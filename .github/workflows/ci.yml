@@ -44,6 +44,9 @@ jobs:
       - name: Build renderer (vite)
         run: npm run build
 
+      - name: Smoke test (build artifacts + IPC surface)
+        run: npm run smoke
+
       - name: Sandbox selfcheck
         run: node scripts/sandbox-selfcheck.mjs || echo "sandbox soft-fail no docker in CI"
 

@@ -16,6 +16,8 @@
     "test:coverage": "vitest run --coverage",
     "sandbox:build-base": "node scripts/sandbox-base-build.mjs",
     "sandbox:selfcheck": "node scripts/sandbox-selfcheck.mjs",
+    "smoke": "node scripts/smoke-test.mjs",
+    "smoke:full": "npm run build && node scripts/smoke-test.mjs",
     "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
