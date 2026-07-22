@@ -2,17 +2,18 @@ import { test, expect } from '@playwright/test'
 
 /**
  * D3: 飞书远程指令
- * W12 阶段:全部 skip,需真实 appId/appSecret
+ *
+ * 跳过原因:
+ *   - 需要真实飞书 bot 凭证(LARK_APP_ID / LARK_APP_SECRET)
+ *   - 需要公网回调地址(ngrok / cloudflared)
+ *   - 需要 IMConfigStore 写入凭证并触发 token refresh
+ *
+ * 启用条件:见 doctring,需 sandbox appId + ngrok webhook
+ * 已有覆盖:tests/integration/channel-to-agent.test.ts(IM message routing)
  */
-test.describe('D3 Feishu remote', () => {
-  test.skip('true e2e requires Feishu bot credentials', async () => {
-    // 真实测试:
-    // 1. 飞书 bot 收到 "ping PiPiClaw"
-    // 2. 验证指令路由到 PiPiClaw
-    // 3. 验证回复内容
-  })
-
-  test('placeholder assertion', async () => {
-    expect('feishu').toBe('feishu')
+test.describe.skip('D3 Feishu remote', () => {
+  test('飞书 bot 收到 ping 并路由到 ChatManager', () => {
+    // 占位实现 — 等真实凭证就绪后填充
+    expect(true).toBe(true)
   })
 })

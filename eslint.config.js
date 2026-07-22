@@ -110,6 +110,7 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       'no-empty': 'off',
+      'no-empty-pattern': 'off',
       'no-undef': 'off',
     },
   },
