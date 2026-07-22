@@ -712,6 +712,66 @@ describe('useChatStore', () => {
     expect(ok).toBe(false)
   })
 
+  // ============ Phase 3 Task 1: 流式分块累积测试 ============
+
+  it('handleStreamChunkEvent accumulates content deltas into existing message', () => {
+    const store = useChatStore()
+    let onStreamCb: any = null
+    api.chat.onStreamUpdate.mockImplementation((cb: any) => { onStreamCb = cb; return () => {} })
+    store.initialize()
+    expect(onStreamCb).not.toBeNull()
+
+    // 准备一个流式 assistant 消息
+    store.conversations = [{
+      ...makeConv(),
+      messages: [
+        { id: 'u1', role: 'user', content: 'hi', timestamp: now, status: 'sent' },
+        { id: 'a1', role: 'assistant', content: '', timestamp: now, status: 'streaming' },
+      ],
+    }]
+
+    // 模拟 5 个增量逐 token 到达
+    const deltas = ['He', 'llo', ' ', 'wor', 'ld']
+    deltas.forEach(d => {
+      onStreamCb({ conversationId: 'conv-1', messageId: 'a1', delta: d, type: 'content' })
+    })
+
+    expect(store.conversations[0].messages[1].content).toBe('Hello world')
+    expect(store.conversations[0].messages[1].status).toBe('streaming')
+  })
+
+  it('handleStreamChunkEvent routes thinking deltas to msg.thinking', () => {
+    const store = useChatStore()
+    let onStreamCb: any = null
+    api.chat.onStreamUpdate.mockImplementation((cb: any) => { onStreamCb = cb; return () => {} })
+    store.initialize()
+
+    store.conversations = [{
+      ...makeConv(),
+      messages: [
+        { id: 'a1', role: 'assistant', content: '', thinking: '', timestamp: now, status: 'streaming' },
+      ],
+    }]
+
+    onStreamCb({ conversationId: 'conv-1', messageId: 'a1', delta: '思考 ', type: 'thinking' })
+    onStreamCb({ conversationId: 'conv-1', messageId: 'a1', delta: '过程...', type: 'thinking' })
+    onStreamCb({ conversationId: 'conv-1', messageId: 'a1', delta: 'Hi', type: 'content' })
+
+    expect(store.conversations[0].messages[0].thinking).toBe('思考 过程...')
+    expect(store.conversations[0].messages[0].content).toBe('Hi')
+  })
+
+  it('handleStreamChunkEvent is a no-op for unknown conversationId or messageId', () => {
+    const store = useChatStore()
+    let onStreamCb: any = null
+    api.chat.onStreamUpdate.mockImplementation((cb: any) => { onStreamCb = cb; return () => {} })
+    store.initialize()
+    store.conversations = [makeConv()]
+    expect(() => onStreamCb({ conversationId: 'missing', messageId: 'a1', delta: 'x', type: 'content' })).not.toThrow()
+    expect(() => onStreamCb({ conversationId: 'conv-1', messageId: 'missing', delta: 'x', type: 'content' })).not.toThrow()
+    expect(store.conversations[0].messages.length).toBe(0)
+  })
+
   it('editAndResendMessage returns false when message is not user role', async () => {
     const store = useChatStore()
     store.conversations = [{

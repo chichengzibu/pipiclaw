@@ -724,7 +724,7 @@ const electronAPI = {
       return () => ipcRenderer.removeListener(IpcChannels.CHAT_ON_CONVERSATION_UPDATE, handler);
     },
 
-    onStreamUpdate: (callback: (data: { conversationId: string; message: ChatMessage }) => void) => {
+    onStreamUpdate: (callback: (data: { conversationId: string; messageId: string; delta: string; type: 'content' | 'thinking' }) => void) => {
       const handler: IpcCallback = (_, data) => callback(data);
       ipcRenderer.on(IpcChannels.CHAT_ON_STREAM_UPDATE, handler);
       return () => ipcRenderer.removeListener(IpcChannels.CHAT_ON_STREAM_UPDATE, handler);

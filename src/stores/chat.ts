@@ -970,11 +970,54 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   /**
+   * 处理流式分块事件
+   *
+   * 新的流式协议：后端推送分块数据 { conversationId, messageId, delta, type }
+   * - type: 'content' 表示追加到 content
+   * - type: 'thinking' 表示追加到 thinking
+   * - 直接修改现有消息对象，避免重复创建消息
+   */
+  function handleStreamChunkEvent(data: {
+    conversationId: string;
+    messageId: string;
+    delta: string;
+    type: 'content' | 'thinking';
+  }): void {
+    const { conversationId, messageId, delta, type } = data;
+
+    // 查找会话
+    const conv = conversations.value.find(c => c.id === conversationId);
+    if (!conv) {
+      console.log('[ChatStore] 流式分块: 未找到会话:', conversationId);
+      return;
+    }
+
+    // 查找目标消息
+    const msg = conv.messages.find(m => m.id === messageId);
+    if (!msg) {
+      console.log('[ChatStore] 流式分块: 未找到消息:', messageId);
+      return;
+    }
+
+    // 根据 type 将 delta 追加到对应字段
+    if (type === 'thinking') {
+      msg.thinking = (msg.thinking || '') + delta;
+    } else {
+      msg.content = (msg.content || '') + delta;
+    }
+
+    // 确保消息状态为 streaming
+    if (msg.status !== 'streaming') {
+      msg.status = 'streaming';
+    }
+  }
+
+  /**
    * 处理会话更新事件
    */
   function handleConversationUpdate(data: { conversation: Conversation }): void {
     const { conversation } = data;
-    
+
     const index = conversations.value.findIndex(c => c.id === conversation.id);
     if (index !== -1) {
       conversations.value[index] = conversation;
@@ -1040,9 +1083,9 @@ export const useChatStore = defineStore('chat', () => {
       handleConversationUpdate(data);
     }) || null;
 
-    unsubscribeStream = electronAPI?.chat?.onStreamUpdate?.((data: { conversationId: string; message: ChatMessage }) => {
-      console.log('[ChatStore] 收到 onStreamUpdate 事件:', data.conversationId, data.message.id, '内容长度:', data.message.content.length);
-      handleMessageEvent(data);
+    unsubscribeStream = electronAPI?.chat?.onStreamUpdate?.((data: { conversationId: string; messageId: string; delta: string; type: 'content' | 'thinking' }) => {
+      console.log('[ChatStore] 收到 onStreamUpdate 事件:', data.conversationId, data.messageId, 'delta:', data.delta?.length, 'type:', data.type);
+      handleStreamChunkEvent(data);
     }) || null;
 
     console.log('[ChatStore] 初始化完成，监听器已注册');

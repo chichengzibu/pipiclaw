@@ -598,6 +598,8 @@ export class ChatManager {
                   if (delta.type === 'text_delta' && delta.text) {
                     accumulatedContent += delta.text;
                     this.config.appendStreamingContent(conversationId, messageId, accumulatedContent, '');
+                    // Phase 3 Task 1: 逐 token 推送
+                    this.broadcastStreamChunk(conversationId, messageId, delta.text, 'content');
                     const updated = this.config.getMessage(conversationId, messageId);
                     if (updated) this.broadcastMessage(conversationId, updated);
                   }
@@ -692,7 +694,10 @@ export class ChatManager {
               try {
                 const data = JSON.parse(line);
                 if (this.isThinkingSupportedModel(modelId) && data.message?.think) {
-                  accumulatedThinking += data.message.think;
+                  const thinkChunk = data.message.think;
+                  accumulatedThinking += thinkChunk;
+                  // Phase 3 Task 1: 逐 token 推送 thinking
+                  this.broadcastStreamChunk(conversationId, messageId, thinkChunk, 'thinking');
                   const now = Date.now();
                   if (now - lastThinkingUpdate > 100) {
                     lastThinkingUpdate = now;
@@ -702,7 +707,10 @@ export class ChatManager {
                   }
                 }
                 if (data.message?.content) {
-                  accumulatedContent += data.message.content;
+                  const contentChunk = data.message.content;
+                  accumulatedContent += contentChunk;
+                  // Phase 3 Task 1: 逐 token 推送 content
+                  this.broadcastStreamChunk(conversationId, messageId, contentChunk, 'content');
                   const now = Date.now();
                   if (now - lastContentUpdate > 50) {
                     lastThinkingUpdate = now;
@@ -827,10 +835,14 @@ export class ChatManager {
 
                 if (provider.type === 'deepseek' && delta.thinking) {
                   accumulatedThinking += delta.thinking;
+                  // Phase 3 Task 1: 逐 token 推送 deepseek thinking
+                  this.broadcastStreamChunk(conversationId, messageId, delta.thinking, 'thinking');
                 }
 
                 if (delta.content) {
                   accumulatedContent += delta.content;
+                  // Phase 3 Task 1: 逐 token 推送 content
+                  this.broadcastStreamChunk(conversationId, messageId, delta.content, 'content');
                   this.config.appendStreamingContent(conversationId, messageId, accumulatedContent, accumulatedThinking);
                   const updated = this.config.getMessage(conversationId, messageId);
                   if (updated) this.broadcastMessage(conversationId, updated);
@@ -887,6 +899,26 @@ export class ChatManager {
     windows.forEach(w => {
       if (!w.isDestroyed()) {
         w.webContents.send('chat:onMessage', { conversationId, message });
+      }
+    });
+  }
+
+  /**
+   * Phase 3 Task 1: 真 LLM SSE 增量推送
+   * 每收到一个 SSE data 行就立即广播一个增量 chunk 到 chat:streamUpdate,
+   * 渲染进程 store 通过订阅 onStreamUpdate 把 delta 累积到消息 content,
+   * 实现逐 token 平滑滚动而非节流整条消息重发。
+   */
+  private broadcastStreamChunk(
+    conversationId: string,
+    messageId: string,
+    delta: string,
+    type: 'content' | 'thinking' = 'content'
+  ): void {
+    const windows = BrowserWindow.getAllWindows();
+    windows.forEach(w => {
+      if (!w.isDestroyed()) {
+        w.webContents.send('chat:streamUpdate', { conversationId, messageId, delta, type });
       }
     });
   }

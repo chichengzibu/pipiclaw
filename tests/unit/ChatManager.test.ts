@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { BrowserWindow } from 'electron'
 
 vi.mock('electron', () => ({
   app: {
@@ -80,5 +81,79 @@ describe('ChatManager', () => {
     unsub.dispose()
     ;(cm as any)._emitStreamChunk({ conversationId: 'x', content: 'b', type: 'text' })
     expect(count).toBe(1)
+  })
+
+  // ============ Phase 3 Task 1: 真 LLM SSE 增量推送测试 ============
+
+  describe('broadcastStreamChunk IPC (Phase 3 Task 1)', () => {
+    let mockSend: ReturnType<typeof vi.fn>
+    let mockWindow: { isDestroyed: ReturnType<typeof vi.fn>; webContents: { send: ReturnType<typeof vi.fn> } }
+
+    beforeEach(() => {
+      mockSend = vi.fn()
+      mockWindow = {
+        isDestroyed: vi.fn(() => false),
+        webContents: { send: mockSend },
+      }
+      vi.spyOn(BrowserWindow, 'getAllWindows').mockReturnValue([mockWindow] as any)
+    })
+
+    it('broadcastStreamChunk sends chat:streamUpdate IPC with delta + type', () => {
+      ;(cm as any).broadcastStreamChunk('conv-1', 'msg-1', 'hello', 'content')
+      expect(mockSend).toHaveBeenCalledWith('chat:streamUpdate', {
+        conversationId: 'conv-1',
+        messageId: 'msg-1',
+        delta: 'hello',
+        type: 'content',
+      })
+    })
+
+    it('broadcastStreamChunk supports thinking delta type', () => {
+      ;(cm as any).broadcastStreamChunk('conv-1', 'msg-1', 'reasoning...', 'thinking')
+      expect(mockSend).toHaveBeenCalledWith('chat:streamUpdate', {
+        conversationId: 'conv-1',
+        messageId: 'msg-1',
+        delta: 'reasoning...',
+        type: 'thinking',
+      })
+    })
+
+    it('broadcastStreamChunk emits per-chunk without throttling (true per-token)', () => {
+      const deltas = ['He', 'llo', ' ', 'world', '!']
+      deltas.forEach(d => {
+        ;(cm as any).broadcastStreamChunk('conv-1', 'msg-1', d, 'content')
+      })
+      expect(mockSend).toHaveBeenCalledTimes(deltas.length)
+      // 验证每个 delta 都按顺序独立发送
+      deltas.forEach((d, i) => {
+        expect(mockSend).toHaveBeenNthCalledWith(i + 1, 'chat:streamUpdate', {
+          conversationId: 'conv-1',
+          messageId: 'msg-1',
+          delta: d,
+          type: 'content',
+        })
+      })
+    })
+
+    it('broadcastStreamChunk skips destroyed windows', () => {
+      vi.spyOn(BrowserWindow, 'getAllWindows').mockReturnValue([
+        { isDestroyed: () => true, webContents: { send: mockSend } } as any,
+        mockWindow as any,
+      ])
+      ;(cm as any).broadcastStreamChunk('conv-1', 'msg-1', 'x', 'content')
+      expect(mockSend).toHaveBeenCalledTimes(1)
+    })
+
+    it('broadcastStreamChunk + broadcastMessage both fire (compat layer)', () => {
+      // 模拟 stream 方法内同时调用 broadcastMessage + broadcastStreamChunk
+      const conv = cm.createConversation({ title: 'stream-test' })
+      const message = cm.config.createStreamingMessage(conv.id, { role: 'assistant' })
+      ;(cm as any).broadcastMessage(conv.id, message)
+      ;(cm as any).broadcastStreamChunk(conv.id, message.id, 'tok', 'content')
+      // 两条独立 IPC
+      const channels = mockSend.mock.calls.map(c => c[0])
+      expect(channels).toContain('chat:onMessage')
+      expect(channels).toContain('chat:streamUpdate')
+    })
   })
 })
