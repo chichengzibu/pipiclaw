@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "sandbox:build-base": "node scripts/sandbox-base-build.mjs",
-    "sandbox:selfcheck": "node scripts/sandbox-selfcheck.mjs"
+    "sandbox:selfcheck": "node scripts/sandbox-selfcheck.mjs",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

@@ -17,7 +17,36 @@
         "arch": ["x64"]
       }
     ],
-    "artifactName": "${productName}-${version}-Setup.${ext}"
+    "artifactName": "${productName}-${version}-Setup.${ext}",
+    "icon": "resources/icon.ico"
+  },
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "category": "public.app-category.productivity",
+    "icon": "resources/icon.icns",
+    "identity": null,
+    "hardenedRuntime": false,
+    "gatekeeperAssess": false,
+    "darkModeSupport": true
+  },
+  "linux": {
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "category": "Office",
+    "icon": "resources/icon.png",
+    "synopsis": "PiPiClaw - Desktop AI Automation Assistant",
+    "description": "国产桌面AI自动化助手,基于 Electron + OpenClaw"
   },
   "nsis": {
     "oneClick": false,

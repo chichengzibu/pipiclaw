@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#c026d3"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#g)"/>
+  <!-- 三个 claw 点 -->
+  <g fill="white" stroke="white" stroke-width="8" stroke-linejoin="round">
+    <path d="M 168 168 L 220 220 L 196 244 L 144 192 Z" opacity="0.95"/>
+    <path d="M 256 144 L 308 196 L 284 220 L 232 168 Z" opacity="0.85"/>
+    <path d="M 312 232 L 364 284 L 340 308 L 288 256 Z" opacity="0.75"/>
+    <!-- 中心核 -->
+    <circle cx="256" cy="256" r="40" fill="white" opacity="1"/>
+  </g>
+  <!-- 文字 -->
+  <text x="256" y="400" font-family="Arial,sans-serif" font-size="80" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="-2">PiPiClaw</text>
+</svg>
