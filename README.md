@@ -312,12 +312,14 @@ MIT License
 - [real LLM integration](docs/superpowers/retros/2026-07-17-real-llm-integration/retro.md)
 - [real proxy wc jupyter](docs/superpowers/retros/2026-07-17-real-proxy-wc-jupyter/retro.md)
 - [Phase 1 engineering hygiene](docs/superpowers/retros/2026-07-17-phase1-engineering-hygiene/retro.md)
+- [Phase 2 vue-tsc zero errors](docs/superpowers/retros/2026-07-21-phase2-vue-tsc-zero/retro.md)
 
 ### Plans(实施计划)
 - [v2 plan](docs/superpowers/plans/2026-07-10-pipiclaw-v2-plan.md)
 - [real LLM integration](docs/superpowers/plans/2026-07-17-real-llm-integration.md)
 - [real proxy wc jupyter](docs/superpowers/plans/2026-07-17-real-proxy-wc-jupyter.md)
 - [Phase 1 engineering hygiene](docs/superpowers/plans/2026-07-17-phase1-engineering-hygiene.md)
+- [Phase 3 product quality](docs/superpowers/plans/2026-07-21-phase3-product-quality.md)
 
 ### Specs(设计文档)
 - [v2 design](docs/superpowers/specs/2026-07-10-pipiclaw-v2-design.md)

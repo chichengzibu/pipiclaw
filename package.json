@@ -1,6 +1,6 @@
 {
   "name": "pipiclaw",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "国产桌面AI自动化助手 - 基于Electron+OpenClaw",
   "main": "dist-electron/main.js",
   "scripts": {

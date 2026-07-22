@@ -2,6 +2,38 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [2.0.3] - 2026-07-21
+
+### Added
+- **electronAPI 类型补全** (Phase 2): src/types/api.d.ts 23 namespace 用 ?: any 兜底,前端可拿准确类型
+- **chat store 8 个 task 字段** (Phase 2): executingTask / currentTaskResult / isGenerating / showTaskConfirmDialog / pendingTaskPlan / cancelExecuteTask / confirmExecuteTask / setSearchKeyword
+
+### Fixed
+- **vue-tsc 52 → 0 errors** (Phase 2): 全量 strict 通过,CI hard-fail
+- **marked v18+ 移除 highlight 字段** (Phase 2): Chat.vue 改用 marked.use({ renderer })
+- **store 重声明 isGenerating** (Phase 2): chat store 字段去重
+- **McpServerCard args 模板 narrowing** (Phase 2): 改 computed
+- **McpServerFormDialog FormInstance 导入路径** (Phase 2): 从 element-plus 而非 vue
+
+### Changed
+- **CI vue-tsc 升 hard-fail** (Phase 2): .github/workflows/ci.yml 去 soft-fail
+- **store 字段补全**: chat MessageStatus 加 'stopped' / models ModelInfo 加 connected / openclaw OpenClawRequest 加 resource
+
+### Verified
+- `npm run lint`: exit 0, 0 errors / 0 warnings
+- `npx tsc --noEmit -p tsconfig.node.json`: exit 0
+- `npx vue-tsc --noEmit`: **0 errors** (Phase 1 时 52 errors)
+- `npx vitest run --reporter=dot`: 192/192 passed (22 test files)
+- `npm run build`: electron-builder 成功生成 release/PiPiClaw-2.0.3-Setup.exe
+
+### Known Issues
+- src/views + src/stores coverage 0%(留给 Phase 3 Task 4-5)
+- electron/llm coverage 0%(留给 Phase 3 Task 6)
+- LLM 流式 token-by-token 推送链路断一环(留给 Phase 3 Task 1)
+- TaskExecutor 业务执行 stub(留给 Phase 3 Task 2)
+- apiKey 明文存盘(留给 Phase 3 Task 3)
+- E2E 全 placeholder(留给 Phase 4 Task 3)
+
 ## [2.0.2] - 2026-07-17
 
 ### Added
