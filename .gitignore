@@ -61,3 +61,4 @@ vitest-step*.txt
 # dev probes
 .smoke-tmp/
 
+.electron-cache/
