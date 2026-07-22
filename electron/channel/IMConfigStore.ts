@@ -1,13 +1,13 @@
 /**
  * PiPiClaw - Channel / IMConfigStore (W7.1)
  *
- * 各 IM 通道鉴权信息存储:持久化到 userData/im-config.json。
+ * 各 IM 通道鉴权信息存储:持久化到 userData/im-config.json.enc(safeStorage 加密)。
  */
 
 import { LogManager } from '../core/LogManager'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { app } from 'electron'
+import { app, safeStorage } from 'electron'
 import type { ChannelKind } from './ChannelTypes'
 
 export interface IMConfig {
@@ -28,7 +28,7 @@ export interface IMConfig {
 
 /**
  * IMConfigStore: 各 IM 通道鉴权信息存储
- * 持久化到 userData/im-config.json
+ * 持久化到 userData/im-config.json.enc(safeStorage 加密)
  * 提供 get(key) / set(key, config) / list() / remove(key)
  */
 export class IMConfigStore {
@@ -38,7 +38,7 @@ export class IMConfigStore {
   private configs: Map<string, IMConfig> = new Map()
 
   private constructor() {
-    this.storePath = path.join(app.getPath('userData'), 'im-config.json')
+    this.storePath = path.join(app.getPath('userData'), 'im-config.json.enc')
     this.loadFromDisk()
   }
 
@@ -75,21 +75,48 @@ export class IMConfigStore {
 
   private loadFromDisk(): void {
     try {
+      if (!safeStorage.isEncryptionAvailable()) {
+        this.log.warn('IMConfigStore: safeStorage encryption not available, falling back to plain read')
+      }
       if (fs.existsSync(this.storePath)) {
-        const data = fs.readFileSync(this.storePath, 'utf-8')
-        const arr = JSON.parse(data) as IMConfig[]
+        const buf = fs.readFileSync(this.storePath)
+        const plain = safeStorage.isEncryptionAvailable()
+          ? safeStorage.decryptString(buf)
+          : buf.toString('utf-8')
+        const arr = JSON.parse(plain) as IMConfig[]
         for (const c of arr) this.configs.set(c.channelKind, c)
+      } else {
+        this.migrateFromLegacyPlaintext()
       }
     } catch (e) {
       this.log.warn('IMConfigStore: load failed', e)
     }
   }
 
+  private migrateFromLegacyPlaintext(): void {
+    const legacyPath = path.join(app.getPath('userData'), 'im-config.json')
+    if (!fs.existsSync(legacyPath)) return
+    try {
+      const data = fs.readFileSync(legacyPath, 'utf-8')
+      const arr = JSON.parse(data) as IMConfig[]
+      for (const c of arr) this.configs.set(c.channelKind, c)
+      this.log.info(`IMConfigStore: migrated ${arr.length} entries from legacy plaintext file`)
+      this.persistToDisk()
+      fs.unlinkSync(legacyPath)
+    } catch (e) {
+      this.log.warn('IMConfigStore: legacy migration failed', e)
+    }
+  }
+
   private persistToDisk(): void {
     try {
-      const arr = [...this.configs.values()]
       fs.mkdirSync(path.dirname(this.storePath), { recursive: true })
-      fs.writeFileSync(this.storePath, JSON.stringify(arr, null, 2))
+      const arr = [...this.configs.values()]
+      const plain = JSON.stringify(arr, null, 2)
+      const buf = safeStorage.isEncryptionAvailable()
+        ? safeStorage.encryptString(plain)
+        : Buffer.from(plain, 'utf-8')
+      fs.writeFileSync(this.storePath, buf)
     } catch (e) {
       this.log.warn('IMConfigStore: persist failed', e)
     }
