@@ -20,6 +20,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: false,
+    // 每个测试文件独立 mock 模块(避免共享 userData 路径污染)
+    pool: 'forks',
+    isolate: true,
     include: [
       'tests/unit/**/*.test.ts',
       'tests/integration/**/*.test.ts'
