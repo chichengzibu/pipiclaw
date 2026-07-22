@@ -93,6 +93,7 @@ const IpcChannels = {
 
   // 任务执行
   TASK_EXECUTE: 'task:execute',
+  TASK_CANCEL: 'task:cancel',
   TASK_EXECUTE_TOOL: 'task:executeTool',
   TASK_TOOLS_GET: 'task:toolsGet',
   TASK_GATEWAY_CHECK: 'task:gatewayCheck',
@@ -735,6 +736,9 @@ const electronAPI = {
   task: {
     execute: (task: Task): Promise<IpcResponse<TaskResult>> =>
       ipcRenderer.invoke(IpcChannels.TASK_EXECUTE, task),
+
+    cancelExecution: (taskId: string): Promise<IpcResponse<boolean>> =>
+      ipcRenderer.invoke(IpcChannels.TASK_CANCEL, taskId),
 
     executeTool: (request: ToolCallRequest): Promise<IpcResponse<ToolCallResult>> =>
       ipcRenderer.invoke(IpcChannels.TASK_EXECUTE_TOOL, request),

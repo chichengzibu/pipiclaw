@@ -788,20 +788,32 @@ export class IpcServer {
     ipcMain.handle('task:execute', async (_, task: any) => {
       try {
         this.log.info('[IpcServer] 收到任务执行请求');
-        
+
         // 安全反序列化，确保没有问题
         const safeTask = JSON.parse(JSON.stringify(task));
         this.log.info('[IpcServer] 安全序列化完成');
-        
+
         const taskExecutor = TaskExecutor.getInstance();
         const result = await taskExecutor.executeTask(safeTask);
-        
+
         // 安全序列化返回结果
         const safeResult = JSON.parse(JSON.stringify(result));
-        
+
         return { success: true, data: safeResult };
       } catch (error) {
         this.log.error('task:execute 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('task:cancel', async (_, taskId: string) => {
+      try {
+        this.log.info(`[IpcServer] 收到任务取消请求: ${taskId}`);
+        const taskExecutor = TaskExecutor.getInstance();
+        const cancelled = taskExecutor.cancel(taskId);
+        return { success: true, data: cancelled };
+      } catch (error) {
+        this.log.error('task:cancel 失败', error);
         return { success: false, error: String(error) };
       }
     });

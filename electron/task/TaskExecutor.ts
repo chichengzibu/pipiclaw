@@ -11,6 +11,7 @@ export class TaskExecutor {
   private static instance: TaskExecutor;
   private log = LogManager.getInstance();
   private gateway = OpenClawGateway.getInstance();
+  private runningTasks: Map<string, AbortController> = new Map();
 
   private constructor() {
     this.log.info('[TaskExecutor] 初始化');
@@ -36,66 +37,88 @@ export class TaskExecutor {
     const startTime = Date.now();
     this.log.info(`[TaskExecutor] 开始执行任务: ${task.instruction}`);
 
+    const abortController = new AbortController();
+    this.runningTasks.set(task.id, abortController);
+
     const steps = task.steps;
     const results = [];
     let allSuccess = true;
 
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
-      
-      // 确保步骤有描述
-      if (!step.description) {
-        switch (step.type as string) {
-          case 'write_file':
-            step.description = '写入文件';
-            break;
-          case 'read_file':
-            step.description = '读取文件';
-            break;
-          case 'create_file':
-            step.description = '创建文件';
-            break;
-          case 'delete_file':
-            step.description = '删除文件';
-            break;
-          case 'list_directory':
-            step.description = '列出目录';
-            break;
-          case 'create_directory':
-            step.description = '创建目录';
-            break;
-          case 'delete_directory':
-            step.description = '删除目录';
-            break;
-          case 'rename_file':
-            step.description = '重命名文件';
-            break;
-          default:
-            step.description = '执行操作';
-            break;
+    try {
+      for (let i = 0; i < steps.length; i++) {
+        if (abortController.signal.aborted) {
+          this.log.info(`[TaskExecutor] 任务 ${task.id} 已被取消`);
+          allSuccess = false;
+          results.push({
+            status: 'cancelled',
+            error: 'Task cancelled by user'
+          });
+          break;
+        }
+
+        const step = steps[i];
+
+        // 确保步骤有描述
+        if (!step.description) {
+          switch (step.type as string) {
+            case 'write_file':
+              step.description = '写入文件';
+              break;
+            case 'read_file':
+              step.description = '读取文件';
+              break;
+            case 'create_file':
+              step.description = '创建文件';
+              break;
+            case 'delete_file':
+              step.description = '删除文件';
+              break;
+            case 'list_directory':
+              step.description = '列出目录';
+              break;
+            case 'create_directory':
+              step.description = '创建目录';
+              break;
+            case 'delete_directory':
+              step.description = '删除目录';
+              break;
+            case 'rename_file':
+              step.description = '重命名文件';
+              break;
+            default:
+              step.description = '执行操作';
+              break;
+          }
+        }
+
+        this.log.info(`[TaskExecutor] 执行步骤 ${i + 1}/${steps.length}: ${step.description}`);
+
+        try {
+          const result = await this.executeStep(step);
+          results.push({
+            status: 'success',
+            result
+          });
+        } catch (error) {
+          this.log.error(`[TaskExecutor] 步骤失败: ${error}`);
+          allSuccess = false;
+          results.push({
+            status: 'failed',
+            error: error instanceof Error ? error.message : String(error)
+          });
         }
       }
-      
-      this.log.info(`[TaskExecutor] 执行步骤 ${i + 1}/${steps.length}: ${step.description}`);
-
-      try {
-        const result = await this.executeStep(step);
-        results.push({
-          status: 'success',
-          result
-        });
-      } catch (error) {
-        this.log.error(`[TaskExecutor] 步骤失败: ${error}`);
-        allSuccess = false;
-        results.push({
-          status: 'failed',
-          error: error instanceof Error ? error.message : String(error)
-        });
-      }
+    } finally {
+      this.runningTasks.delete(task.id);
     }
 
     const duration = Date.now() - startTime;
-    const summary = allSuccess ? '任务执行完成' : '任务部分执行失败';
+    const cancelled = abortController.signal.aborted;
+    const summary = cancelled
+      ? '任务已取消'
+      : allSuccess
+        ? '任务执行完成'
+        : '任务部分执行失败';
 
     this.log.info(`[TaskExecutor] 任务完成，耗时 ${duration}ms`);
 
@@ -329,6 +352,20 @@ export class TaskExecutor {
       default:
         throw new Error(`不支持的操作类型: ${step.type}`);
     }
+  }
+
+  /**
+   * 取消正在执行的任务
+   */
+  public cancel(taskId: string): boolean {
+    const controller = this.runningTasks.get(taskId);
+    if (!controller) {
+      this.log.warn(`[TaskExecutor] 未找到任务 ${taskId} 的执行控制器`);
+      return false;
+    }
+    controller.abort();
+    this.log.info(`[TaskExecutor] 取消任务 ${taskId}`);
+    return true;
   }
 
   /**

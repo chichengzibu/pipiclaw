@@ -102,8 +102,32 @@ export interface ChatSettings {
 }
 
 // ========== 类型断言 ==========
- 
+
 const electronAPI = window.electronAPI as any;
+
+// ========== 适配函数 ==========
+
+/**
+ * 将前端 TaskExecutionPlan 适配为 TaskExecutor 所需的 Task 结构
+ */
+function planToTask(plan: TaskExecutionPlan, conversationId: string, messageId: string): Task {
+  return {
+    id: plan.planId,
+    conversationId,
+    messageId,
+    instruction: plan.instruction,
+    steps: plan.steps.map((s, idx) => ({
+      id: `${plan.planId}-step-${idx}`,
+      order: s.order ?? idx,
+      type: (s as any).type ?? 'result',
+      description: s.description,
+      params: (s.params as Record<string, any>) ?? {},
+      status: s.status === 'success' ? 'success' : s.status === 'failed' ? 'failed' : 'pending',
+    })),
+    status: 'pending',
+    createdAt: Date.now(),
+  };
+}
 
 // ========== Store 定义 ==========
 
@@ -557,20 +581,69 @@ export const useChatStore = defineStore('chat', () => {
   /**
    * 取消任务执行
    */
-  function cancelExecuteTask(): void {
+  async function cancelExecuteTask(): Promise<void> {
+    const plan = pendingTaskPlan.value;
     executingTask.value = false;
     isGenerating.value = false;
+    if (plan) {
+      try {
+        await electronAPI?.task?.cancelExecution?.(plan.planId);
+      } catch (err) {
+        console.error('[ChatStore] 取消任务失败:', err);
+      }
+    }
     pendingTaskPlan.value = null;
+    showTaskConfirmDialog.value = false;
   }
 
   /**
    * 确认执行任务计划
+   * 真正调用 TaskExecutor 执行任务
    */
   async function confirmExecuteTask(): Promise<void> {
-    if (!pendingTaskPlan.value) return;
+    const plan = pendingTaskPlan.value;
+    if (!plan) return;
     executingTask.value = true;
     showTaskConfirmDialog.value = false;
-    // 实际执行逻辑由 TaskExecutor 接管,这里只切换状态
+
+    try {
+      const conversationId = currentConversationId.value ?? '';
+      const messageId = `${plan.planId}-msg`;
+      const task = planToTask(plan, conversationId, messageId);
+
+      const resp = await electronAPI?.task?.execute?.(task);
+      if (resp?.success && resp.data) {
+        const result = resp.data as {
+          success: boolean;
+          summary?: string;
+          result?: { steps?: Array<{ status: string; result?: any; error?: string }> };
+          duration?: number;
+        };
+        currentTaskResult.value = {
+          success: result.success,
+          status: result.success ? 'completed' : 'failed',
+          steps: (result.result?.steps ?? []) as TaskStepResult[],
+          summary: result.summary,
+          duration: result.duration,
+        };
+      } else {
+        currentTaskResult.value = {
+          success: false,
+          status: 'failed',
+          error: resp?.error ?? '执行失败',
+        };
+      }
+    } catch (err) {
+      console.error('[ChatStore] 任务执行失败:', err);
+      currentTaskResult.value = {
+        success: false,
+        status: 'failed',
+        error: err instanceof Error ? err.message : String(err),
+      };
+    } finally {
+      executingTask.value = false;
+      pendingTaskPlan.value = null;
+    }
   }
 
   /**

@@ -44,6 +44,14 @@ const { api } = vi.hoisted(() => {
     onConversationUpdate: vi.fn(() => () => {}),
     onStreamUpdate: vi.fn(() => () => {}),
   }
+  api.task = {
+    execute: vi.fn(),
+    cancel: vi.fn(),
+    cancelExecution: vi.fn(),
+    executeTool: vi.fn(),
+    getTools: vi.fn(),
+    isGatewayRunning: vi.fn(),
+  }
   api.permissions = {
     list: vi.fn(),
     active: vi.fn(),
@@ -508,30 +516,77 @@ describe('useChatStore', () => {
     expect(api.chat.onStreamUpdate).toHaveBeenCalledTimes(1)
   })
 
-  it('cancelExecuteTask resets all task flags', () => {
+  it('cancelExecuteTask resets all task flags and calls task.cancelExecution IPC', async () => {
     const store = useChatStore()
     store.executingTask = true
     store.isGenerating = true
     store.pendingTaskPlan = { planId: 'p', instruction: 'x', steps: [], riskLevel: 'low' }
-    store.cancelExecuteTask()
+    api.task.cancelExecution.mockResolvedValue({ success: true, data: true })
+    await store.cancelExecuteTask()
     expect(store.executingTask).toBe(false)
     expect(store.isGenerating).toBe(false)
     expect(store.pendingTaskPlan).toBeNull()
+    expect(api.task.cancelExecution).toHaveBeenCalledWith('p')
   })
 
-  it('confirmExecuteTask flips showTaskConfirmDialog and sets executingTask', async () => {
+  it('cancelExecuteTask is a safe no-op when no pending plan', async () => {
     const store = useChatStore()
-    store.pendingTaskPlan = { planId: 'p1', instruction: 'do', steps: [], riskLevel: 'low' }
-    store.showTaskConfirmDialog = true
+    await store.cancelExecuteTask()
+    expect(api.task.cancelExecution).not.toHaveBeenCalled()
+    expect(store.executingTask).toBe(false)
+  })
+
+  it('confirmExecuteTask invokes electronAPI.task.execute with planToTask result', async () => {
+    const store = useChatStore()
+    store.conversations = [{ ...makeConv({ id: 'conv-1' }) }]
+    store.currentConversationId = 'conv-1'
+    store.pendingTaskPlan = {
+      planId: 'plan-1',
+      instruction: '列出目录',
+      steps: [
+        { order: 1, description: '列出', status: 'pending', params: { path: '/tmp' } },
+      ],
+      riskLevel: 'low',
+    }
+    api.task.execute.mockResolvedValue({
+      success: true,
+      data: { success: true, summary: 'ok', result: { steps: [] }, duration: 10 },
+    })
     await store.confirmExecuteTask()
-    expect(store.executingTask).toBe(true)
-    expect(store.showTaskConfirmDialog).toBe(false)
+    expect(api.task.execute).toHaveBeenCalledTimes(1)
+    const sentTask = api.task.execute.mock.calls[0][0]
+    expect(sentTask.id).toBe('plan-1')
+    expect(sentTask.conversationId).toBe('conv-1')
+    expect(sentTask.instruction).toBe('列出目录')
+    expect(sentTask.steps.length).toBe(1)
+    expect(sentTask.steps[0].id).toBe('plan-1-step-0')
+    expect(sentTask.steps[0].order).toBe(1)
+    expect(sentTask.steps[0].params).toEqual({ path: '/tmp' })
+    expect(store.currentTaskResult?.success).toBe(true)
+    expect(store.currentTaskResult?.status).toBe('completed')
+  })
+
+  it('confirmExecuteTask sets currentTaskResult error on failure', async () => {
+    const store = useChatStore()
+    store.pendingTaskPlan = {
+      planId: 'plan-2',
+      instruction: '失败的任务',
+      steps: [],
+      riskLevel: 'low',
+    }
+    api.task.execute.mockResolvedValue({ success: false, error: 'boom' })
+    await store.confirmExecuteTask()
+    expect(store.currentTaskResult?.success).toBe(false)
+    expect(store.currentTaskResult?.status).toBe('failed')
+    expect(store.currentTaskResult?.error).toBe('boom')
+    expect(store.pendingTaskPlan).toBeNull()
   })
 
   it('confirmExecuteTask is a no-op when no pending plan', async () => {
     const store = useChatStore()
     store.showTaskConfirmDialog = true
     await store.confirmExecuteTask()
+    expect(api.task.execute).not.toHaveBeenCalled()
     expect(store.executingTask).toBe(false)
     expect(store.showTaskConfirmDialog).toBe(true)
   })
