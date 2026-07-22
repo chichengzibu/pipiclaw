@@ -37,8 +37,8 @@
     "@vitest/coverage-v8": "^1.6.0",
     "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/test-utils": "^2.4.6",
-    "electron": "^28.2.0",
-    "electron-builder": "^24.9.1",
+    "electron": "^30.5.1",
+    "electron-builder": "^26.15.7",
     "eslint": "^9.39.5",
     "eslint-plugin-vue": "^9.33.0",
     "globals": "^15.15.0",
@@ -54,5 +54,11 @@
     "vue-tsc": "^3.3.7"
   },
   "author": "PiPiClaw Team",
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "brace-expansion": "^2.1.2",
+    "@tootallnate/once": "^2.0.1",
+    "form-data": "^4.0.6",
+    "immutable": "^5.1.8"
+  }
 }
