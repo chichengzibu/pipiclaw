@@ -2,6 +2,27 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [2.1.0] - 2026-07-22
+
+### Added
+- **macOS dmg + Linux AppImage build** (Phase 4): electron-builder.json5 加 mac (x64+arm64) 和 linux (x64 AppImage) target,3 平台图标生成脚本 `npm run icons`
+- **Electron auto-update** (Phase 4): electron-updater ^6.8.9 集成,AutoUpdater.ts 自动检查 / 下载 / 提示重启,Settings.vue "关于" tab UI,GitHub publish provider 配置
+- **真 e2e 测试** (Phase 4): 4 个核心 spec 从 placeholder 改为真 Playwright Electron 测试 (chat-agent / settings-p7 / a5-computer-use / d2prime-30s),6 个 placeholder spec 明确 skip 原因,docs/e2e-testing.md
+- **端到端冒烟测试** (Phase 4): `npm run smoke` 22 项检查(< 10ms),验证 build 产物 / 配置完整性 / IPC surface / 源码完整性,CI step hard-fail
+- **dist-electron/main.js 含 107 个 ipcMain.handle** (实测): IPC server 桥接层厚度
+
+### Verified
+- `npm run lint`: 0 errors / 0 warnings
+- `npx tsc --noEmit`: 0 errors
+- `npx vue-tsc --noEmit`: 0 errors
+- `npx vitest run`: **37 files / 456 tests passed**
+- `npm run smoke`: **22/22 passed**
+
+### Known Issues
+- macOS / Linux build 需要对应平台 CI runner(Windows 上不能 cross-build)
+- electron-updater 首次启动会 checkForUpdates 失败(无 latest.yml),本地 dev 用 `PIPICLAW_SKIP_UPDATE_CHECK=1` 跳过
+- 4 个真 e2e spec 需要 `E2E_ELECTRON=1` 主动启用,CI 默认 skip
+
 ## [2.0.3] - 2026-07-21
 
 ### Added

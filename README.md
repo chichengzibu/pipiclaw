@@ -313,6 +313,8 @@ MIT License
 - [real proxy wc jupyter](docs/superpowers/retros/2026-07-17-real-proxy-wc-jupyter/retro.md)
 - [Phase 1 engineering hygiene](docs/superpowers/retros/2026-07-17-phase1-engineering-hygiene/retro.md)
 - [Phase 2 vue-tsc zero errors](docs/superpowers/retros/2026-07-21-phase2-vue-tsc-zero/retro.md)
+- [Phase 3 product quality](docs/superpowers/retros/2026-07-22-phase3-product-quality/retro.md)
+- [Phase 4 cross-platform + auto-update](docs/superpowers/retros/2026-07-22-phase4-cross-platform/retro.md)
 
 ### Plans(实施计划)
 - [v2 plan](docs/superpowers/plans/2026-07-10-pipiclaw-v2-plan.md)
