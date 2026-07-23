@@ -244,3 +244,113 @@ describe('P0-02/03 状态 + 消息', () => {
     expect(vm.filteredMessages.length).toBe(1)
   })
 })
+
+describe('P2-01: ImManagement 快速回复', () => {
+  it('QUICK_REPLY_TEMPLATES 至少 5 个模板', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    expect(Array.isArray(vm.QUICK_REPLY_TEMPLATES)).toBe(true)
+    expect(vm.QUICK_REPLY_TEMPLATES.length).toBeGreaterThanOrEqual(5)
+  })
+
+  it('初始 selectedMessage 和 replyText 为空', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    expect(vm.selectedMessage).toBeNull()
+    expect(vm.replyText).toBe('')
+  })
+
+  it('selectMessageForReply → 选中消息 + 清空 replyText', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    vm.selectMessageForReply({ id: 'm1', channel: 'im-feishu', sender: 'u1', content: 'hi' })
+    expect(vm.selectedMessage.id).toBe('m1')
+    expect(vm.replyText).toBe('')
+  })
+
+  it('applyTemplate → 填入 replyText', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    vm.applyTemplate('好的,稍等')
+    expect(vm.replyText).toBe('好的,稍等')
+  })
+
+  it('clearMessageSelection → 清空选中 + replyText', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    vm.selectMessageForReply({ id: 'm1', channel: 'im-feishu', sender: 'u1' })
+    vm.replyText = '回复内容'
+    vm.clearMessageSelection()
+    expect(vm.selectedMessage).toBeNull()
+    expect(vm.replyText).toBe('')
+  })
+
+  it('sendQuickReply: 无选中消息时直接 return', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    const spy = vi.fn()
+    ;(window as any).electronAPI.channel.send = spy
+    await vm.sendQuickReply()
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('sendQuickReply: 空文本时直接 return', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    vm.selectedMessage = { id: 'm1', channel: 'im-feishu', channelId: 'im-feishu', sender: 'u1' }
+    vm.replyText = '   '
+    const spy = vi.fn()
+    ;(window as any).electronAPI.channel.send = spy
+    await vm.sendQuickReply()
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('sendQuickReply 成功 → 调 channel.send + 清空', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    vm.selectedMessage = { id: 'm1', channel: 'im-feishu', channelId: 'im-feishu-1', sender: 'u1' }
+    vm.replyText = '好的稍等'
+    const spy = vi.fn().mockResolvedValue({ success: true, data: { messageId: 'msg-1' } })
+    ;(window as any).electronAPI.channel.send = spy
+    await vm.sendQuickReply()
+    expect(spy).toHaveBeenCalledWith({
+      channelId: 'im-feishu-1',
+      to: 'u1',
+      text: '好的稍等',
+      replyToId: 'm1',
+    })
+    expect(vm.selectedMessage).toBeNull()
+    expect(vm.replyText).toBe('')
+  })
+
+  it('sendQuickReply 失败 → 保留选中', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    vm.selectedMessage = { id: 'm1', channel: 'im-feishu', channelId: 'im-feishu-1', sender: 'u1' }
+    vm.replyText = 'hello'
+    const spy = vi.fn().mockResolvedValue({ success: false, error: '网络错误' })
+    ;(window as any).electronAPI.channel.send = spy
+    await vm.sendQuickReply()
+    expect(vm.selectedMessage).not.toBeNull()
+    expect(vm.replyText).toBe('hello')
+  })
+
+  it('messageRowClass → 选中行返回特殊 class', async () => {
+    const wrapper = mount(ImManagement, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = wrapper.vm as any
+    const row = { id: 'row-1' }
+    expect(vm.messageRowClass({ row })).toBe('')
+    vm.selectedMessage = { id: 'row-1' }
+    expect(vm.messageRowClass({ row })).toBe('message-row-selected')
+  })
+})

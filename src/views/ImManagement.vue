@@ -88,8 +88,15 @@
           </el-select>
           <el-input v-model="messageFilter.keyword" placeholder="搜索关键词" clearable />
           <el-button @click="reloadMessages">刷新</el-button>
+          <el-button @click="clearMessageSelection" :disabled="!selectedMessage">取消选择</el-button>
         </div>
-        <el-table :data="filteredMessages" stripe max-height="500">
+        <el-table
+          :data="filteredMessages"
+          stripe
+          max-height="500"
+          @row-click="selectMessageForReply"
+          :row-class-name="messageRowClass"
+        >
           <el-table-column label="时间" prop="timestamp" width="180" />
           <el-table-column label="通道" prop="channel" width="120" />
           <el-table-column label="发送方" prop="sender" width="120" />
@@ -109,6 +116,42 @@
             :total="filteredMessages.length"
             layout="total, prev, pager, next"
           />
+        </div>
+
+        <!-- 快速回复面板 (P2-01) -->
+        <div class="quick-reply-panel" v-if="selectedMessage">
+          <h3>💬 快速回复</h3>
+          <div class="reply-target">
+            <el-tag size="small" type="info">{{ selectedMessage.channel }}</el-tag>
+            <span class="reply-from">来自: <strong>{{ selectedMessage.sender }}</strong></span>
+            <span class="reply-content">内容: {{ selectedMessage.content }}</span>
+          </div>
+          <div class="reply-templates">
+            <span class="reply-templates-label">模板:</span>
+            <el-tag
+              v-for="tpl in QUICK_REPLY_TEMPLATES"
+              :key="tpl"
+              class="reply-template-tag"
+              @click="applyTemplate(tpl)"
+              :effect="replyText === tpl ? 'dark' : 'plain'"
+            >
+              {{ tpl }}
+            </el-tag>
+          </div>
+          <div class="reply-input">
+            <el-input
+              v-model="replyText"
+              type="textarea"
+              :rows="3"
+              placeholder="输入回复内容,或点击上方模板"
+            />
+            <div class="reply-actions">
+              <el-button @click="clearMessageSelection">取消</el-button>
+              <el-button type="primary" :loading="replySending" :disabled="!replyText.trim()" @click="sendQuickReply">
+                发送回复
+              </el-button>
+            </div>
+          </div>
         </div>
       </el-tab-pane>
 
@@ -351,6 +394,61 @@ const ruleForm = reactive({ priority: 50, trigger: '', targetChannel: '', target
 const permissions = ref<any[]>([])
 const permissionDialogVisible = ref(false)
 const permissionForm = reactive({ subject: '', level: 'member', scope: [] })
+
+// P2-01 快速回复
+const QUICK_REPLY_TEMPLATES = [
+  '好的,稍等',
+  '已完成 ✅',
+  '需要更多信息,请补充',
+  '已收到,谢谢',
+  '已转交相关同事处理',
+  '抱歉,这个问题我帮不了',
+]
+const selectedMessage = ref<any | null>(null)
+const replyText = ref('')
+const replySending = ref(false)
+
+function selectMessageForReply(row: any): void {
+  selectedMessage.value = row
+  replyText.value = ''
+}
+
+function clearMessageSelection(): void {
+  selectedMessage.value = null
+  replyText.value = ''
+}
+
+function applyTemplate(tpl: string): void {
+  replyText.value = tpl
+}
+
+function messageRowClass({ row }: { row: any }): string {
+  return selectedMessage.value && selectedMessage.value.id === row.id ? 'message-row-selected' : ''
+}
+
+async function sendQuickReply(): Promise<void> {
+  if (!selectedMessage.value || !replyText.value.trim()) return
+  replySending.value = true
+  try {
+    const m = selectedMessage.value
+    const r = await (window as any).electronAPI.channel.send({
+      channelId: m.channelId || m.channel,
+      to: m.sender,
+      text: replyText.value.trim(),
+      replyToId: m.id,
+    })
+    if (r?.success) {
+      ElMessage.success('已发送回复')
+      clearMessageSelection()
+    } else {
+      ElMessage.error('发送失败: ' + (r?.error || '未知错误'))
+    }
+  } catch (e) {
+    ElMessage.error('发送失败: ' + String(e))
+  } finally {
+    replySending.value = false
+  }
+}
 
 async function loadRoutingRules(): Promise<void> {
   try {
@@ -685,6 +783,63 @@ onMounted(() => {
 .message-pagination {
   margin-top: 16px;
   text-align: right;
+}
+
+/* P2-01 快速回复 */
+.quick-reply-panel {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--card-bg, #f8f9fa);
+  border: 1px solid var(--border-color, #ebeef5);
+  border-radius: 8px;
+}
+.quick-reply-panel h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.reply-target {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+}
+.reply-content {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reply-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.reply-templates-label {
+  font-size: 12px;
+  color: var(--text-secondary, #999);
+  margin-right: 4px;
+}
+.reply-template-tag {
+  cursor: pointer;
+  user-select: none;
+}
+.reply-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reply-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+:deep(.message-row-selected) {
+  background-color: var(--el-color-primary-light-9, #ecf5ff) !important;
 }
 .empty-state {
   padding: 40px;

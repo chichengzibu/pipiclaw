@@ -26,6 +26,7 @@ import { IMMessageStore } from '../channel/IMMessageStore';
 import { FileTransferManager } from '../channel/FileTransferManager';
 import { IMMessageRouter } from '../channel/IMMessageRouter';
 import { IMPermissionManager } from '../channel/IMPermissionManager';
+import { ChannelRouter } from '../channel/ChannelRouter';
 import { ClawHubManager } from '../skill/ClawHubManager';
 import { ModelRatingManager } from '../models/ModelRatingManager';
 import { ModelUsageTracker } from '../models/ModelUsageTracker';
@@ -1933,15 +1934,25 @@ export class IpcServer {
       }
     })
 
-    ipcMain.handle('channel:send', async (_, msg: { channelId: string; to: string; text?: string }) => {
+    ipcMain.handle('channel:send', async (_, msg: { channelId: string; to: string; text?: string; replyToId?: string }) => {
       try {
-        this.log.debug('channel:send stub', { msg });
-        return { success: true, data: { messageId: `msg-stub-${Date.now()}`, stub: true } };
+        if (!msg?.channelId || !msg?.to) {
+          return { success: false, error: 'channelId 和 to 必填' }
+        }
+        const router = ChannelRouter.getInstance()
+        const result = await router.send(msg.channelId, {
+          to: msg.to,
+          text: msg.text || '',
+        })
+        if (!result.ok) {
+          return { success: false, error: result.error || 'send failed' }
+        }
+        return { success: true, data: { messageId: `msg-${Date.now()}` } }
       } catch (error) {
-        this.log.error('channel:send 失败', error);
-        return { success: false, error: String(error) };
+        this.log.error('channel:send 失败', error)
+        return { success: false, error: String(error) }
       }
-    });
+    })
 
     // ========== P7 Sandbox 能力域 (W3 新增) ==========
     ipcMain.handle('sandbox:detect', async () => {
