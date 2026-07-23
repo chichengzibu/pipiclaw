@@ -199,6 +199,13 @@ const IpcChannels = {
   // 权限
   PERMISSION_LIST: 'permission:list',
 
+  // ClawHub 技能市场
+  CLAWHUB_PUBLISH: 'clawhub:publish',
+  CLAWHUB_REVIEW: 'clawhub:review',
+  CLAWHUB_SEARCH: 'clawhub:search',
+  CLAWHUB_RATE: 'clawhub:rate',
+  CLAWHUB_LIST_PENDING: 'clawhub:list-pending',
+
   // ========== P7 Sandbox 能力域 (W3 新增) ==========
   SANDBOX_DETECT: 'sandbox:detect',
   SANDBOX_RUN: 'sandbox:run',
@@ -1016,6 +1023,14 @@ const electronAPI = {
 
     // P0-05 权限
     permissionList: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.PERMISSION_LIST),
+
+    // P1-03~06 ClawHub 技能市场
+    clawhubPublish: (args: any): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_PUBLISH, args),
+    clawhubReview: (args: { skillId: string; approve: boolean; reviewerId: string; reason?: string }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.CLAWHUB_REVIEW, args),
+    clawhubSearch: (opts?: any): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_SEARCH, opts || {}),
+    clawhubRate: (args: any): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_RATE, args),
+    clawhubListPending: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_LIST_PENDING),
     health: (channelId: string): Promise<IpcResponse<{ healthy: boolean; latencyMs: number; stub: boolean; channelId: string }>> =>
       ipcRenderer.invoke(IpcChannels.CHANNEL_HEALTH, channelId),
     send: (msg: { channelId: string; to: string; text?: string }): Promise<IpcResponse<{ messageId: string; stub: boolean }>> =>

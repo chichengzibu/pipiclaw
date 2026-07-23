@@ -138,6 +138,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'IM 管理', icon: 'ChatDotRound' },
   },
   {
+    path: '/clawhub',
+    name: 'ClawHub',
+    component: () => import('@/views/ClawHub.vue'),
+    meta: { title: 'ClawHub 技能市场', icon: 'Goods' },
+  },
+  {
     path: '/settings/llm-config',
     name: 'LlmConfig',
     component: () => import('@/views/LlmConfig.vue'),

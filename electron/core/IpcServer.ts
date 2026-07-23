@@ -26,6 +26,7 @@ import { IMMessageStore } from '../channel/IMMessageStore';
 import { FileTransferManager } from '../channel/FileTransferManager';
 import { IMMessageRouter } from '../channel/IMMessageRouter';
 import { IMPermissionManager } from '../channel/IMPermissionManager';
+import { ClawHubManager } from '../skill/ClawHubManager';
 import type { RouteRule } from '../channel/ChannelTypes';
 import type { TaskStep, StepType, TaskStatus, StepStatus } from '../task/TaskTypes';
 import type {
@@ -1784,6 +1785,60 @@ export class IpcServer {
         return { success: true, data: list }
       } catch (error) {
         this.log.error('permission:list 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    // P1-03~06 ClawHub 技能市场
+    ipcMain.handle('clawhub:publish', (_, args: any) => {
+      try {
+        const mgr = ClawHubManager.getInstance()
+        const skill = mgr.publish(args)
+        return { success: true, data: skill }
+      } catch (error) {
+        this.log.error('clawhub:publish 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('clawhub:review', (_, args: { skillId: string; approve: boolean; reviewerId: string; reason?: string }) => {
+      try {
+        const mgr = ClawHubManager.getInstance()
+        const skill = mgr.review(args.skillId, args.approve, args.reviewerId, args.reason)
+        return { success: !!skill, data: skill }
+      } catch (error) {
+        this.log.error('clawhub:review 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('clawhub:search', (_, opts: any = {}) => {
+      try {
+        const mgr = ClawHubManager.getInstance()
+        return { success: true, data: mgr.search(opts) }
+      } catch (error) {
+        this.log.error('clawhub:search 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('clawhub:rate', (_, args: any) => {
+      try {
+        const mgr = ClawHubManager.getInstance()
+        const review = mgr.rate(args)
+        return { success: !!review, data: review }
+      } catch (error) {
+        this.log.error('clawhub:rate 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('clawhub:list-pending', () => {
+      try {
+        const mgr = ClawHubManager.getInstance()
+        return { success: true, data: mgr.listPending() }
+      } catch (error) {
+        this.log.error('clawhub:list-pending 失败', error)
         return { success: false, error: String(error) }
       }
     })
