@@ -1,5 +1,8 @@
 import { test as base, _electron as electron, type ElectronApplication, type Page } from '@playwright/test'
 import path from 'node:path'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 /**
  * 共享 Electron Fixture
@@ -17,6 +20,8 @@ import path from 'node:path'
  * - 工作目录为仓库根(相对 __dirname 解析)
  * - 启动时加 --no-sandbox,Windows / Linux CI 容器需要
  * - 超时 30s(electron 冷启动 5-15s,首窗加载再加 3-5s)
+ * - P0-T0.4: 默认 fresh=true,每次测试用全新 userData 目录,
+ *   避免 localStorage / ConfigStore 跨测试污染
  *
  * 跳过策略:
  * - E2E_ELECTRON=1 才跑(默认 CI 不跑,本地手动跑)
@@ -28,10 +33,21 @@ const mainEntry = path.join(repoRoot, 'dist-electron', 'main.js')
 
 export const shouldRunElectronE2E = !!process.env.E2E_ELECTRON
 
+// 跨测试共享一个 fresh userData 目录(同一 spec 内复用,跨 spec 隔离)
+const sharedUserDataDir = shouldRunElectronE2E
+  ? mkdtempSync(join(tmpdir(), 'pipiclaw-e2e-'))
+  : ''
+
 export const test = base.extend<{
   electronApp: ElectronApplication
   window: Page
+  freshUserData: string
 }>({
+  // 暴露当前 spec 的 userData 路径,供需要直接读 localStorage 的测试用
+  freshUserData: async ({}, use) => {
+    await use(sharedUserDataDir)
+  },
+
   electronApp: async ({}, use) => {
     if (!shouldRunElectronE2E) {
       throw new Error(
@@ -42,6 +58,8 @@ export const test = base.extend<{
     const app = await electron.launch({
       args: [mainEntry, '--no-sandbox'],
       cwd: repoRoot,
+      // P0-T0.4: userData 用临时目录,跨 spec 隔离,localStorage 干净
+      userDataDir: sharedUserDataDir,
       env: {
         ...process.env,
         // 强制 WindowManager 走 prod 路径(loadFile dist/index.html),
@@ -66,5 +84,16 @@ export const test = base.extend<{
     await use(window)
   },
 })
+
+// 测试套件结束后清理临时目录
+if (shouldRunElectronE2E) {
+  process.on('exit', () => {
+    try {
+      rmSync(sharedUserDataDir, { recursive: true, force: true })
+    } catch {
+      // best-effort
+    }
+  })
+}
 
 export { expect } from '@playwright/test'
