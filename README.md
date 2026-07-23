@@ -315,6 +315,16 @@ MIT License
 - [Phase 2 vue-tsc zero errors](docs/superpowers/retros/2026-07-21-phase2-vue-tsc-zero/retro.md)
 - [Phase 3 product quality](docs/superpowers/retros/2026-07-22-phase3-product-quality/retro.md)
 - [Phase 4 cross-platform + auto-update](docs/superpowers/retros/2026-07-22-phase4-cross-platform/retro.md)
+- [Phase 5 GA public release](docs/superpowers/retros/2026-07-22-phase5-ga/retro.md)
+
+### 公开文档站点
+- [docs/site/README.md](docs/site/README.md) - 文档中心入口
+- [新手入门](docs/site/user-guide/getting-started.md)
+- [用户手册](docs/site/user-guide/user-guide.md)
+- [FAQ](docs/site/user-guide/faq.md)
+- [故障排查](docs/site/user-guide/troubleshooting.md)
+- [架构总览](docs/site/architecture/overview.md)
+- [性能基准](docs/perf/baseline.md)
 
 ### Plans(实施计划)
 - [v2 plan](docs/superpowers/plans/2026-07-10-pipiclaw-v2-plan.md)

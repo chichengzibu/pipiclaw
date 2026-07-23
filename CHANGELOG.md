@@ -2,6 +2,30 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [3.0.0] - 2026-07-22 (GA)
+
+### Added
+- **Vue i18n 全量接入** (Phase 5): vue-i18n 9.14.5 + 12 namespace (270 keys × 2 locale),8 个 view + 1 layout 组件 i18n 化,SideNav 语言切换器 + localStorage 持久化
+- **性能基准脚本** (Phase 5): scripts/perf-benchmark.mjs 4 维度 (build 性能 / IPC surface / bundle size / SSE 延迟),docs/perf/baseline.md 自动生成
+- **公开文档站点** (Phase 5): docs/site/ 完整结构 (9 markdown) + 25 FAQ + 8 domain how-to + 18 troubleshooting + architecture/ 3 docs + contributing
+- **文档守护测试** (Phase 5): tests/unit/docs-structure.test.ts 20 case,防止 documentation rot
+
+### Verified
+- `npm run lint`: 0 errors
+- `npx vue-tsc --noEmit`: 0 errors
+- `npx tsc --noEmit`: 0 errors
+- `npx vitest run`: **39 files / 481 tests passed**
+- `npm run smoke`: 22/22 passed
+- `npm run perf`: 8 指标实测 + 阈值对比
+
+### Known Limitations
+- Chat.vue (83 KB) 主聊天消息区仍部分硬编码中文 — namespace 已预留,后续 i18n 化
+- 部分 demo 视图 (A5/D2/D3) 保留中文硬编码(plan 允许)
+- 性能基准 SSE mock 留 stub(需要真 LLM server)
+- macOS / Linux build 需 CI runner 验证(本地只能验配置完整性)
+- 6 个 placeholder e2e spec 需凭证或外部资源 (d3-feishu / docker / sandbox)
+- 性能基准未接入 CI hard-fail(波动大,仅供本地对比)
+
 ## [2.1.0] - 2026-07-22
 
 ### Added
