@@ -24,6 +24,9 @@ import { SelfLearner } from '../learning/SelfLearner';
 import { CrashReportCollector } from '../insight/CrashReport';
 import { IMMessageStore } from '../channel/IMMessageStore';
 import { FileTransferManager } from '../channel/FileTransferManager';
+import { IMMessageRouter } from '../channel/IMMessageRouter';
+import { IMPermissionManager } from '../channel/IMPermissionManager';
+import type { RouteRule } from '../channel/ChannelTypes';
 import type { TaskStep, StepType, TaskStatus, StepStatus } from '../task/TaskTypes';
 import type {
   OpenClawOperationRequest,
@@ -1736,6 +1739,51 @@ export class IpcServer {
         const mgr = FileTransferManager.getInstance()
         return { success: true, data: mgr.listSupportedPlatforms() }
       } catch (error) {
+        return { success: false, error: String(error) }
+      }
+    })
+
+    // P0-04 路由规则 CRUD
+    ipcMain.handle('routing:list', () => {
+      try {
+        const router = IMMessageRouter.getInstance()
+        return { success: true, data: router.listRules() }
+      } catch (error) {
+        this.log.error('routing:list 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('routing:add', (_, rule: RouteRule) => {
+      try {
+        const router = IMMessageRouter.getInstance()
+        router.addRule(rule)
+        return { success: true }
+      } catch (error) {
+        this.log.error('routing:add 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('routing:remove', (_, id: string) => {
+      try {
+        const router = IMMessageRouter.getInstance()
+        const ok = router.removeRule(id)
+        return { success: ok, data: { removed: ok } }
+      } catch (error) {
+        this.log.error('routing:remove 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    // P0-05 权限 CRUD(IMPermissionManager 已有 isAllowed;补 list/add/remove)
+    ipcMain.handle('permission:list', () => {
+      try {
+        const mgr = IMPermissionManager.getInstance() as any
+        const list = typeof mgr.listRules === 'function' ? mgr.listRules() : []
+        return { success: true, data: list }
+      } catch (error) {
+        this.log.error('permission:list 失败', error)
         return { success: false, error: String(error) }
       }
     })

@@ -191,6 +191,14 @@ const IpcChannels = {
   CHANNEL_MESSAGE_STATS: 'channel:message-stats',
   CHANNEL_MESSAGE_HISTORY: 'channel:message-history',
 
+  // 路由规则
+  ROUTING_LIST: 'routing:list',
+  ROUTING_ADD: 'routing:add',
+  ROUTING_REMOVE: 'routing:remove',
+
+  // 权限
+  PERMISSION_LIST: 'permission:list',
+
   // ========== P7 Sandbox 能力域 (W3 新增) ==========
   SANDBOX_DETECT: 'sandbox:detect',
   SANDBOX_RUN: 'sandbox:run',
@@ -999,6 +1007,15 @@ const electronAPI = {
     }>> => ipcRenderer.invoke(IpcChannels.CHANNEL_MESSAGE_STATS),
     messageHistory: (opts?: { channelId?: string; limit?: number }): Promise<IpcResponse<any[]>> =>
       ipcRenderer.invoke(IpcChannels.CHANNEL_MESSAGE_HISTORY, opts || {}),
+
+    // P0-04 路由规则
+    routingList: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.ROUTING_LIST),
+    routingAdd: (rule: any): Promise<IpcResponse<void>> => ipcRenderer.invoke(IpcChannels.ROUTING_ADD, rule),
+    routingRemove: (id: string): Promise<IpcResponse<{ removed: boolean }>> =>
+      ipcRenderer.invoke(IpcChannels.ROUTING_REMOVE, id),
+
+    // P0-05 权限
+    permissionList: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.PERMISSION_LIST),
     health: (channelId: string): Promise<IpcResponse<{ healthy: boolean; latencyMs: number; stub: boolean; channelId: string }>> =>
       ipcRenderer.invoke(IpcChannels.CHANNEL_HEALTH, channelId),
     send: (msg: { channelId: string; to: string; text?: string }): Promise<IpcResponse<{ messageId: string; stub: boolean }>> =>

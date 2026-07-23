@@ -352,6 +352,24 @@ const permissions = ref<any[]>([])
 const permissionDialogVisible = ref(false)
 const permissionForm = reactive({ subject: '', level: 'member', scope: [] })
 
+async function loadRoutingRules(): Promise<void> {
+  try {
+    const result = await (window as any).electronAPI.channel.routingList()
+    if (result?.success) routingRules.value = result.data || []
+  } catch (e) {
+    console.warn('loadRoutingRules failed', e)
+  }
+}
+
+async function loadPermissions(): Promise<void> {
+  try {
+    const result = await (window as any).electronAPI.channel.permissionList()
+    if (result?.success) permissions.value = result.data || []
+  } catch (e) {
+    console.warn('loadPermissions failed', e)
+  }
+}
+
 // P0-03 消息
 const messageFilter = reactive({ channel: '', keyword: '' })
 const allMessages = ref<any[]>([])
@@ -493,17 +511,30 @@ function handleSaveRule(): void {
     ElMessage.warning('触发词和目标通道必填')
     return
   }
-  if (editingRule.value) {
-    Object.assign(editingRule.value, ruleForm)
-  } else {
-    routingRules.value.push({ id: `rule-${Date.now()}`, ...ruleForm })
+  const rule = {
+    id: editingRule.value?.id ?? `rule-${Date.now()}`,
+    ...ruleForm,
   }
+  if (editingRule.value) {
+    Object.assign(editingRule.value, rule)
+  } else {
+    routingRules.value.push(rule)
+  }
+  // 真接 IMMessageRouter
+  ;(window as any).electronAPI.channel.routingAdd(rule).catch((e: any) => {
+    console.warn('routingAdd failed', e)
+  })
   ruleDialogVisible.value = false
   ElMessage.success('规则已保存')
 }
 
-function deleteRule(rule: any): void {
+async function deleteRule(rule: any): Promise<void> {
   routingRules.value = routingRules.value.filter((r) => r.id !== rule.id)
+  try {
+    await (window as any).electronAPI.channel.routingRemove(rule.id)
+  } catch (e) {
+    console.warn('routingRemove failed', e)
+  }
 }
 
 // P0-05 权限
@@ -552,6 +583,8 @@ async function loadMessageStats(): Promise<void> {
 onMounted(() => {
   loadChannels()
   loadMessageStats()
+  loadRoutingRules()
+  loadPermissions()
 })
 </script>
 

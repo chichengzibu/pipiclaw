@@ -42,6 +42,10 @@ const mockChannelConfigs = [
   channel: {
     messageStats: vi.fn().mockResolvedValue({ success: true, data: { total: 0, byChannel: {}, sinceMs: 0 } }),
     messageHistory: vi.fn().mockResolvedValue({ success: true, data: [] }),
+    routingList: vi.fn().mockResolvedValue({ success: true, data: [] }),
+    routingAdd: vi.fn().mockResolvedValue({ success: true }),
+    routingRemove: vi.fn().mockResolvedValue({ success: true, data: { removed: true } }),
+    permissionList: vi.fn().mockResolvedValue({ success: true, data: [] }),
   },
 }
 
