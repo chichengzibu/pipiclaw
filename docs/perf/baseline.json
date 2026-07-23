@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-07-23T02:34:44.717Z",
+  "commit": "local",
+  "results": [
+    {
+      "name": "B1.ipcMain.handle count (main.js)",
+      "value": 107,
+      "unit": "个",
+      "threshold": {
+        "min": 100,
+        "max": 5000
+      },
+      "status": "✅ pass"
+    },
+    {
+      "name": "B2.ipcRenderer.invoke count (preload.js)",
+      "value": 111,
+      "unit": "个",
+      "threshold": {
+        "min": 100,
+        "max": 5000
+      },
+      "status": "✅ pass"
+    },
+    {
+      "name": "B3.main.js size",
+      "value": 310,
+      "unit": "KB",
+      "threshold": {
+        "min": 1,
+        "max": 8192
+      },
+      "status": "✅ pass"
+    },
+    {
+      "name": "B4.preload.js size",
+      "value": 19,
+      "unit": "KB",
+      "threshold": {
+        "min": 1,
+        "max": 2048
+      },
+      "status": "✅ pass"
+    },
+    {
+      "name": "C1.renderer js total",
+      "value": 2216,
+      "unit": "KB",
+      "threshold": {
+        "min": 1,
+        "max": 16384
+      },
+      "status": "✅ pass"
+    },
+    {
+      "name": "C2.renderer css total",
+      "value": 661,
+      "unit": "KB",
+      "threshold": {
+        "min": 1,
+        "max": 4096
+      },
+      "status": "✅ pass"
+    },
+    {
+      "name": "C3.largest chunk size",
+      "value": 1042,
+      "unit": "KB",
+      "threshold": {
+        "min": 1,
+        "max": 4096
+      },
+      "status": "✅ pass"
+    },
+    {
+      "name": "C4.js chunk count",
+      "value": 24,
+      "unit": "个",
+      "threshold": {
+        "min": 1,
+        "max": 200
+      },
+      "status": "✅ pass"
+    }
+  ]
+}

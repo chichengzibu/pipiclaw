@@ -18,6 +18,9 @@
     "sandbox:selfcheck": "node scripts/sandbox-selfcheck.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "smoke:full": "npm run build && node scripts/smoke-test.mjs",
+    "perf": "node scripts/perf-benchmark.mjs",
+    "perf:full": "cross-env PERF_FULL=1 node scripts/perf-benchmark.mjs",
+    "perf:sse": "cross-env PERF_SSE=1 node scripts/perf-benchmark.mjs",
     "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
