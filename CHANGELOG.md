@@ -2,6 +2,67 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [4.1.0] - 2026-07-23 (竞品差距优化)
+
+聚焦"IM 集成 / 技能生态 / 模型支持"三大竞品差距,IM 5→8/10,技能 4→7/10,模型 7→8/10。
+
+### Added (P0 IM 配置 + 状态 + 消息 + 文件)
+- **IM 配置面板** (`src/views/ImManagement.vue`):11 平台卡片 + 5-tab (配置/状态/消息/规则/权限)
+- **IMMessageStore.getStats()** + IPC `channel:message-stats` / `channel:message-history`
+- **FileTransferManager** 6 平台 (feishu/dingtalk/wechat-work/telegram/slack/discord) +
+  IPC `file:upload-to-im` / `file:list-supported-platforms`
+- **IMConfigStore / IMMessageStore / FileTransferManager** 单测覆盖(15+14+12)
+
+### Added (P0 路由规则 + 权限管理)
+- **IMMessageRouter 真实集成** (IPC `routing:list/add/remove`)
+- **IMPermissionManager.listAll** + IPC `permission:list` 接入 ImManagement
+- 8 个 IMMessageRouter 单测覆盖
+
+### Added (P1 Discord + WhatsApp 真实集成)
+- **DiscordChannel** 真实 REST API (validateToken/send/listMessages/pollMessages/healthCheck)
+- **WhatsAppChannel** 真实 Cloud API (validateToken/send/markAsRead)
+- 17+12 个 channel 单测
+
+### Added (P1 ClawHub 技能市场)
+- **ClawHubManager** publish/review/search/rate
+- IPC `clawhub:publish`/`review`/`search`/`rate`/`list-pending`
+- **ClawHub.vue** 3-tab 浏览/发布/审核
+- 22 unit + 11 view tests
+
+### Added (P1 模型对比 + 社区评分)
+- **ModelRatingManager** rate/listForModel/getStats
+- **ModelCompare.vue** 10 模型 / 4 排序 / 评分弹窗
+- IPC `model:rate`/`list-ratings`/`get-stats`
+- 12 unit tests
+
+### Added (P2 权限 JSON 导入/导出)
+- **IMPermissionManager** listAll/exportToJson/importFromJson/clearAll
+- IPC `permission:export`/`permission:import`
+- 18 unit tests (replace/merge/clear 三种模式)
+
+### Added (P2 模型使用量排行)
+- **ModelUsageTracker** record/getTop/getTotal
+- IPC `model:usage-record`/`usage-top`/`usage-total`
+- ModelCompare.vue 新增"使用量排行"Tab
+- 13 unit tests
+
+### Added (P2 IM 消息快捷回复)
+- **channel:send** 真实调用 ChannelRouter.send(替代 stub)
+- ImManagement.vue 消息查看器行可点击 + 6 个内置回复模板
+- 9 unit tests for ChannelRouter + 10 view tests for ImManagement
+
+### Added (P2 ClawHub 技能模板市场)
+- **ClawHubTemplate** 6 个内置模板(每日总结/代码审查/周报/会议纪要/翻译/Bug 分流)
+- **ClawHubManager.instantiateTemplate()** 写模板内容到 userData/templates/<id>/skill.md
+- IPC `clawhub:list-templates`/`get-template`/`list-template-categories`/`instantiate-template`
+- ClawHub.vue 新增"技能模板"Tab(响应式卡片网格 + 一键实例化弹窗)
+- 13 unit + 11 view tests
+
+### Stats
+- **61 test files / 782 unit tests** (从 v4.0.0 末期 571 → +211)
+- **lint 0 / vue-tsc 0 / smoke 22/22 / e2e 9 files 36 tests**
+- 5 个新 commits:cf518cb / 5ae95c9 / d865351 / 6d9f655 / c7b97c4 / 404c368 / 1fd7ee3 / c4f5419 / 5dea698
+
 ## [4.0.0] - 2026-07-23 (100% Production-Ready)
 
 P0-P5 全部完成。PiPiClaw 从 60% → 89%(未达 100% 是需要 1+ 周真实使用 / 证书 / pipeline)。
