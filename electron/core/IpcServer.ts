@@ -21,6 +21,7 @@ import { OpenClawExecutor } from '../openclaw/OpenClawExecutor';
 import { HermesMemory } from '../hermes/HermesMemory';
 import { SkillLoader } from '../skill/SkillLoader';
 import { SelfLearner } from '../learning/SelfLearner';
+import { CrashReportCollector } from '../insight/CrashReport';
 import type { TaskStep, StepType, TaskStatus, StepStatus } from '../task/TaskTypes';
 import type {
   OpenClawOperationRequest,
@@ -1461,6 +1462,53 @@ export class IpcServer {
         return { success: true };
       } catch (error) {
         this.log.error('learning:clear-pending-proposal 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // ========== CrashReport 收集器 (P5-T5.4) ==========
+    // 让 UI 能列出 / 读取 / 清除本地 crash 报告(供"反馈问题"按钮用)
+
+    ipcMain.handle('crash:list', () => {
+      try {
+        const collector = CrashReportCollector.getInstance();
+        const reports = collector.list().map((r) => ({ id: r.id, data: r.data }));
+        return { success: true, data: reports };
+      } catch (error) {
+        this.log.error('crash:list 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('crash:get', (_, id: string) => {
+      try {
+        const collector = CrashReportCollector.getInstance();
+        const data = collector.get(id);
+        return { success: true, data };
+      } catch (error) {
+        this.log.error('crash:get 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('crash:clear', () => {
+      try {
+        const collector = CrashReportCollector.getInstance();
+        const cleared = collector.clear();
+        this.log.info('crash:clear 已清除报告', { count: cleared });
+        return { success: true, data: { cleared } };
+      } catch (error) {
+        this.log.error('crash:clear 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    ipcMain.handle('crash:count', () => {
+      try {
+        const collector = CrashReportCollector.getInstance();
+        return { success: true, data: { count: collector.count() } };
+      } catch (error) {
+        this.log.error('crash:count 失败', error);
         return { success: false, error: String(error) };
       }
     });

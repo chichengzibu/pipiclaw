@@ -114,6 +114,12 @@ const IpcChannels = {
   TASK_LOG_RETRY: 'task:log:retry',
   TASK_LOG_CANCEL: 'task:log:cancel',
 
+  // CrashReport 收集器 (P5-T5.4)
+  CRASH_LIST: 'crash:list',
+  CRASH_GET: 'crash:get',
+  CRASH_CLEAR: 'crash:clear',
+  CRASH_COUNT: 'crash:count',
+
   // 文件操作
   FILE_PARSE: 'file:parse',
   FILE_PARSE_BATCH: 'file:parseBatch',
@@ -782,6 +788,16 @@ const electronAPI = {
 
     cancel: (taskId: string): Promise<IpcResponse<boolean>> =>
       ipcRenderer.invoke(IpcChannels.TASK_LOG_CANCEL, taskId),
+
+    // P5-T5.4: CrashReport 收集器
+    crashList: (): Promise<IpcResponse<Array<{ id: string; data: any }>>> =>
+      ipcRenderer.invoke(IpcChannels.CRASH_LIST),
+    crashGet: (id: string): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.CRASH_GET, id),
+    crashClear: (): Promise<IpcResponse<{ cleared: number }>> =>
+      ipcRenderer.invoke(IpcChannels.CRASH_CLEAR),
+    crashCount: (): Promise<IpcResponse<{ count: number }>> =>
+      ipcRenderer.invoke(IpcChannels.CRASH_COUNT),
 
     // Phase 2: 任务追踪与预览
     trace: (data: any): Promise<IpcResponse<void>> =>
