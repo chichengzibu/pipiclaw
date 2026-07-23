@@ -298,3 +298,134 @@ describe('P1-06: ClawHubManager.rate', () => {
     expect(mgr.get(skill.id)?.downloadCount).toBe(2)
   })
 })
+
+describe('P2-03: ClawHubManager 技能模板', () => {
+  beforeEach(() => {
+    ;(ClawHubManager as unknown as { instance: ClawHubManager | null }).instance = null
+    if (fs.existsSync(TEST_USER_DATA)) {
+      fs.rmSync(TEST_USER_DATA, { recursive: true, force: true })
+    }
+  })
+
+  it('listTemplates 至少 5 个内置模板', () => {
+    const mgr = ClawHubManager.getInstance()
+    const tpls = mgr.listTemplates()
+    expect(tpls.length).toBeGreaterThanOrEqual(5)
+  })
+
+  it('listTemplateCategories 返回唯一分类列表', () => {
+    const mgr = ClawHubManager.getInstance()
+    const cats = mgr.listTemplateCategories()
+    expect(cats.length).toBeGreaterThanOrEqual(2)
+    expect(new Set(cats).size).toBe(cats.length) // 去重
+  })
+
+  it('getTemplate 存在 → 返回模板', () => {
+    const mgr = ClawHubManager.getInstance()
+    const tpl = mgr.listTemplates()[0]
+    expect(mgr.getTemplate(tpl.id)?.id).toBe(tpl.id)
+  })
+
+  it('getTemplate 不存在 → null', () => {
+    const mgr = ClawHubManager.getInstance()
+    expect(mgr.getTemplate('tpl-ghost')).toBeNull()
+  })
+
+  it('listTemplates 按 query 过滤(名称)', () => {
+    const mgr = ClawHubManager.getInstance()
+    const all = mgr.listTemplates()
+    const tplName = all[0].name
+    const filtered = mgr.listTemplates({ query: tplName })
+    expect(filtered.length).toBeGreaterThanOrEqual(1)
+    expect(filtered[0].name).toBe(tplName)
+  })
+
+  it('listTemplates 按 query 过滤(标签)', () => {
+    const mgr = ClawHubManager.getInstance()
+    const all = mgr.listTemplates()
+    const tag = all[0].tags[0]
+    const filtered = mgr.listTemplates({ query: tag })
+    expect(filtered.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('listTemplates 按 category 过滤', () => {
+    const mgr = ClawHubManager.getInstance()
+    const all = mgr.listTemplates()
+    const cat = all[0].category
+    const filtered = mgr.listTemplates({ category: cat })
+    expect(filtered.every((t) => t.category === cat)).toBe(true)
+  })
+
+  it('instantiateTemplate → 创建新 skill (pending) + 模板内容写入文件', () => {
+    const mgr = ClawHubManager.getInstance()
+    const tpl = mgr.listTemplates()[0]
+    const skill = mgr.instantiateTemplate({
+      templateId: tpl.id,
+      customName: '我的日报',
+      authorId: 'u1',
+      authorName: '测试用户',
+    })
+    expect(skill.source).toBe('template')
+    expect(skill.templateId).toBe(tpl.id)
+    expect(skill.name).toBe('我的日报')
+    expect(skill.status).toBe('pending')
+    expect(skill.category).toBe(tpl.category)
+    expect(skill.tags).toEqual(tpl.tags)
+    // 文件写入了
+    expect(fs.existsSync(skill.manifestPath)).toBe(true)
+    const content = fs.readFileSync(skill.manifestPath, 'utf-8')
+    expect(content).toBe(tpl.manifestContent)
+  })
+
+  it('instantiateTemplate 不指定 customName → 默认 "<模板名> (我的副本)"', () => {
+    const mgr = ClawHubManager.getInstance()
+    const tpl = mgr.listTemplates()[0]
+    const skill = mgr.instantiateTemplate({
+      templateId: tpl.id,
+      authorId: 'u1',
+      authorName: 'u',
+    })
+    expect(skill.name).toBe(`${tpl.name} (我的副本)`)
+  })
+
+  it('instantiateTemplate 不存在的 templateId → 抛错', () => {
+    const mgr = ClawHubManager.getInstance()
+    expect(() =>
+      mgr.instantiateTemplate({ templateId: 'tpl-ghost', authorId: 'u', authorName: 'n' }),
+    ).toThrow(/不存在/)
+  })
+
+  it('实例化后的 skill 默认不在 search 结果中(状态 pending)', () => {
+    const mgr = ClawHubManager.getInstance()
+    const tpl = mgr.listTemplates()[0]
+    const skill = mgr.instantiateTemplate({
+      templateId: tpl.id,
+      authorId: 'u1',
+      authorName: 'u',
+    })
+    const approved = mgr.search({ status: 'approved' })
+    expect(approved.find((s) => s.id === skill.id)).toBeUndefined()
+    const pending = mgr.listPending()
+    expect(pending.find((s) => s.id === skill.id)).toBeDefined()
+  })
+
+  it('多次实例化同一模板 → 多个独立 skill + 各自 manifest 文件', () => {
+    const mgr = ClawHubManager.getInstance()
+    const tpl = mgr.listTemplates()[0]
+    const s1 = mgr.instantiateTemplate({ templateId: tpl.id, authorId: 'a', authorName: 'A' })
+    const s2 = mgr.instantiateTemplate({ templateId: tpl.id, authorId: 'b', authorName: 'B' })
+    expect(s1.id).not.toBe(s2.id)
+    expect(s1.manifestPath).not.toBe(s2.manifestPath)
+    expect(fs.existsSync(s1.manifestPath)).toBe(true)
+    expect(fs.existsSync(s2.manifestPath)).toBe(true)
+  })
+
+  it('实例化后审核通过 → 进 search 列表', () => {
+    const mgr = ClawHubManager.getInstance()
+    const tpl = mgr.listTemplates()[0]
+    const skill = mgr.instantiateTemplate({ templateId: tpl.id, authorId: 'u', authorName: 'n' })
+    mgr.review(skill.id, true, 'admin')
+    const approved = mgr.search({ status: 'approved' })
+    expect(approved.find((s) => s.id === skill.id)).toBeDefined()
+  })
+})

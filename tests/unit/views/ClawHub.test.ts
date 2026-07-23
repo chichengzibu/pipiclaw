@@ -23,6 +23,12 @@ const mockPending = [
     clawhubPublish: vi.fn().mockResolvedValue({ success: true, data: { id: 'new' } }),
     clawhubReview: vi.fn().mockResolvedValue({ success: true, data: { status: 'approved' } }),
     clawhubRate: vi.fn().mockResolvedValue({ success: true, data: { id: 'r1' } }),
+    clawhubListTemplates: vi.fn().mockResolvedValue({ success: true, data: [
+      { id: 'tpl-daily', name: '每日总结', description: '生成日报', useCase: '下班前', category: 'productivity', tags: ['daily'], authorName: 'Team', manifestContent: '...' },
+      { id: 'tpl-review', name: '代码审查', description: 'review diff', useCase: 'PR 后', category: 'developer', tags: ['pr'], authorName: 'Team', manifestContent: '...' },
+    ] }),
+    clawhubListTemplateCategories: vi.fn().mockResolvedValue({ success: true, data: ['productivity', 'developer'] }),
+    clawhubInstantiateTemplate: vi.fn().mockResolvedValue({ success: true, data: { id: 'skill-new', name: '我的日报', status: 'pending' } }),
   },
 }
 
@@ -170,5 +176,128 @@ describe('P1-06: ClawHub 评分', () => {
     expect(call.score).toBe(4)
     expect(call.review).toBe('good')
     expect(call.skillId).toBe('s1')
+  })
+})
+
+describe('P2-03: ClawHub 技能模板', () => {
+  it('loadTemplates 调 listTemplates + listCategories', async () => {
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    await vm.loadTemplates()
+    expect((window as any).electronAPI.channel.clawhubListTemplates).toHaveBeenCalled()
+    expect((window as any).electronAPI.channel.clawhubListTemplateCategories).toHaveBeenCalled()
+    expect(vm.templates.length).toBe(2)
+    expect(vm.templateCategories).toEqual(['productivity', 'developer'])
+  })
+
+  it('loadTemplates 传 category + query', async () => {
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    vm.templateCategory = 'developer'
+    vm.templateQuery = 'review'
+    await vm.loadTemplates()
+    const call = (window as any).electronAPI.channel.clawhubListTemplates.mock.calls.pop()[0]
+    expect(call).toEqual({ category: 'developer', query: 'review' })
+  })
+
+  it('loadTemplates 失败 → 静默处理(不抛)', async () => {
+    ;(window as any).electronAPI.channel.clawhubListTemplates = vi.fn().mockRejectedValue(new Error('IPC fail'))
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    await vm.loadTemplates()
+    expect(vm.templates).toEqual([])
+  })
+
+  it('openInstantiateDialog 设置 instantiatingTemplate + 打开 dialog', async () => {
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    vm.openInstantiateDialog({ id: 'tpl-x', name: '模板 X' })
+    expect(vm.instantiatingTemplate.id).toBe('tpl-x')
+    expect(vm.instantiateDialogVisible).toBe(true)
+  })
+
+  it('handleInstantiate 缺作者 ID → warning 不调 IPC', async () => {
+    const { ElMessage } = await import('element-plus')
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    vm.instantiatingTemplate = { id: 'tpl-x', name: 'X' }
+    vm.instantiateForm.authorId = ''
+    vm.instantiateForm.authorName = 'You'
+    await vm.handleInstantiate()
+    expect(ElMessage.warning).toHaveBeenCalled()
+    expect((window as any).electronAPI.channel.clawhubInstantiateTemplate).not.toHaveBeenCalled()
+  })
+
+  it('handleInstantiate 缺作者名 → warning 不调 IPC', async () => {
+    const { ElMessage } = await import('element-plus')
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    vm.instantiatingTemplate = { id: 'tpl-x', name: 'X' }
+    vm.instantiateForm.authorId = 'u1'
+    vm.instantiateForm.authorName = ''
+    await vm.handleInstantiate()
+    expect(ElMessage.warning).toHaveBeenCalled()
+  })
+
+  it('handleInstantiate 成功 → 调 IPC + 关 dialog + 刷新 pending', async () => {
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    vm.instantiatingTemplate = { id: 'tpl-x', name: 'X' }
+    vm.instantiateForm.customName = '我的 X'
+    vm.instantiateForm.authorId = 'u1'
+    vm.instantiateForm.authorName = 'Alice'
+    vi.clearAllMocks()
+    ;(window as any).electronAPI.channel.clawhubListPending = vi.fn().mockResolvedValue({ success: true, data: [] })
+    await vm.handleInstantiate()
+    const call = (window as any).electronAPI.channel.clawhubInstantiateTemplate.mock.calls[0][0]
+    expect(call.templateId).toBe('tpl-x')
+    expect(call.customName).toBe('我的 X')
+    expect(call.authorId).toBe('u1')
+    expect(call.authorName).toBe('Alice')
+    expect(vm.instantiateDialogVisible).toBe(false)
+  })
+
+  it('handleInstantiate 不传 customName → IPC 参数不带 customName', async () => {
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    vm.instantiatingTemplate = { id: 'tpl-x', name: 'X' }
+    vm.instantiateForm.customName = '   ' // 空白 → 不传
+    vm.instantiateForm.authorId = 'u1'
+    vm.instantiateForm.authorName = 'Alice'
+    vi.clearAllMocks()
+    await vm.handleInstantiate()
+    const call = (window as any).electronAPI.channel.clawhubInstantiateTemplate.mock.calls[0][0]
+    expect(call.customName).toBeUndefined()
+  })
+
+  it('handleInstantiate 失败 → 不关 dialog', async () => {
+    ;(window as any).electronAPI.channel.clawhubInstantiateTemplate = vi.fn().mockResolvedValue({ success: false, error: '模板不存在' })
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const vm = w.vm as any
+    vm.instantiatingTemplate = { id: 'tpl-x', name: 'X' }
+    vm.instantiateDialogVisible = true
+    vm.instantiateForm.authorId = 'u1'
+    vm.instantiateForm.authorName = 'Alice'
+    await vm.handleInstantiate()
+    expect(vm.instantiateDialogVisible).toBe(true)
+  })
+
+  it('Tab 切换:4 个 tab 名称正确', async () => {
+    const w = mount(ClawHub, { global: { plugins: [i18n], stubs: elementPlusStubs } })
+    await flushPromises()
+    const html = w.html()
+    expect(html).toContain('浏览市场')
+    expect(html).toContain('发布技能')
+    expect(html).toContain('审核队列')
+    expect(html).toContain('技能模板')
   })
 })

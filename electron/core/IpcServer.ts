@@ -1869,6 +1869,52 @@ export class IpcServer {
       }
     })
 
+    // P2-03 技能模板
+    ipcMain.handle('clawhub:list-templates', (_, opts: { category?: string; query?: string } = {}) => {
+      try {
+        const mgr = ClawHubManager.getInstance()
+        return { success: true, data: mgr.listTemplates(opts) }
+      } catch (error) {
+        this.log.error('clawhub:list-templates 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('clawhub:get-template', (_, id: string) => {
+      try {
+        const mgr = ClawHubManager.getInstance()
+        const tpl = mgr.getTemplate(id)
+        return { success: !!tpl, data: tpl }
+      } catch (error) {
+        this.log.error('clawhub:get-template 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('clawhub:list-template-categories', () => {
+      try {
+        const mgr = ClawHubManager.getInstance()
+        return { success: true, data: mgr.listTemplateCategories() }
+      } catch (error) {
+        this.log.error('clawhub:list-template-categories 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle(
+      'clawhub:instantiate-template',
+      (_, args: { templateId: string; customName?: string; authorId: string; authorName: string }) => {
+        try {
+          const mgr = ClawHubManager.getInstance()
+          const skill = mgr.instantiateTemplate(args)
+          return { success: true, data: skill }
+        } catch (error) {
+          this.log.error('clawhub:instantiate-template 失败', error)
+          return { success: false, error: String(error) }
+        }
+      },
+    )
+
     // P1-08 模型社区评分
     ipcMain.handle('model:rate', (_, args: any) => {
       try {

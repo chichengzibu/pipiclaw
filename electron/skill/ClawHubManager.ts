@@ -25,6 +25,27 @@ import { randomUUID } from 'node:crypto'
 
 export type ClawHubStatus = 'pending' | 'approved' | 'rejected' | 'flagged'
 
+/** 技能模板(P2-03):预置技能骨架,用户可一键实例化 */
+export interface ClawHubTemplate {
+  id: string
+  /** 模板名(给用户看的) */
+  name: string
+  /** 模板描述 */
+  description: string
+  /** 适用场景 */
+  useCase: string
+  /** 分类 */
+  category: string
+  /** 标签 */
+  tags: string[]
+  /** 默认作者(团队名) */
+  authorName: string
+  /** 模板的 skill.md 内容 */
+  manifestContent: string
+  /** 创建时间 */
+  createdAt: number
+}
+
 export interface ClawHubSkill {
   id: string
   name: string
@@ -50,7 +71,9 @@ export interface ClawHubSkill {
   publishedAt: number
   updatedAt: number
   /** 分类 */
-  source: 'community' | 'private' | 'builtin'
+  source: 'community' | 'private' | 'builtin' | 'template'
+  /** 如果是模板实例化产生的,记录源模板 id(P2-03) */
+  templateId?: string
 }
 
 export interface ClawHubReview {
@@ -73,12 +96,14 @@ export class ClawHubManager {
   private reviewsPath: string
   private skills: Map<string, ClawHubSkill> = new Map()
   private reviews: Map<string, ClawHubReview[]> = new Map()
+  private templates: Map<string, ClawHubTemplate> = new Map()
 
   private constructor() {
     const userData = app.getPath('userData')
     if (!fs.existsSync(userData)) fs.mkdirSync(userData, { recursive: true })
     this.skillsPath = path.join(userData, 'clawhub-skills.json')
     this.reviewsPath = path.join(userData, 'clawhub-reviews.json')
+    this.loadBuiltinTemplates()
     this.load()
   }
 
@@ -252,6 +277,271 @@ export class ClawHubManager {
     } catch (e) {
       this.log.warn('ClawHubManager: persist failed', e)
     }
+  }
+
+  // ==================== P2-03 技能模板 ====================
+  listTemplates(opts: { category?: string; query?: string } = {}): ClawHubTemplate[] {
+    let results = [...this.templates.values()]
+    if (opts.category) results = results.filter((t) => t.category === opts.category)
+    if (opts.query) {
+      const q = opts.query.toLowerCase()
+      results = results.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.description.toLowerCase().includes(q) ||
+          t.useCase.toLowerCase().includes(q) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(q)),
+      )
+    }
+    return results
+  }
+
+  getTemplate(id: string): ClawHubTemplate | null {
+    return this.templates.get(id) ?? null
+  }
+
+  listTemplateCategories(): string[] {
+    const set = new Set<string>()
+    for (const t of this.templates.values()) set.add(t.category)
+    return [...set]
+  }
+
+  /** 从模板实例化一个新 skill(状态 pending,等待用户发布到 ClawHub) */
+  instantiateTemplate(args: {
+    templateId: string
+    customName?: string
+    authorId: string
+    authorName: string
+  }): ClawHubSkill {
+    const tpl = this.templates.get(args.templateId)
+    if (!tpl) {
+      throw new Error(`template ${args.templateId} 不存在`)
+    }
+    const now = Date.now()
+    const name = args.customName?.trim() || `${tpl.name} (我的副本)`
+    // 把模板内容写到 userData/templates/<skill-id>/skill.md
+    const userData = app.getPath('userData')
+    const dir = path.join(userData, 'templates', `skill-${randomUUID().slice(0, 8)}`)
+    fs.mkdirSync(dir, { recursive: true })
+    const manifestPath = path.join(dir, 'skill.md')
+    fs.writeFileSync(manifestPath, tpl.manifestContent, 'utf-8')
+    const skill: ClawHubSkill = {
+      id: `skill-${randomUUID().slice(0, 8)}`,
+      name,
+      description: tpl.description,
+      category: tpl.category,
+      tags: [...tpl.tags],
+      manifestPath,
+      authorId: args.authorId,
+      authorName: args.authorName,
+      status: 'pending',
+      downloadCount: 0,
+      ratingSum: 0,
+      ratingCount: 0,
+      publishedAt: now,
+      updatedAt: now,
+      source: 'template',
+      templateId: tpl.id,
+    }
+    this.skills.set(skill.id, skill)
+    this.persist()
+    void this.bus.publish('clawhub:template-instantiated', {
+      skillId: skill.id,
+      templateId: tpl.id,
+      authorId: args.authorId,
+    })
+    this.log.info(
+      `ClawHubManager: 从模板 ${tpl.id} 实例化 ${skill.id} (${skill.name}) → userData/templates/${path.basename(dir)}`,
+    )
+    return skill
+  }
+
+  private loadBuiltinTemplates(): void {
+    const BUILTIN: ClawHubTemplate[] = [
+      {
+        id: 'tpl-daily-summary',
+        name: '每日工作总结',
+        description: '汇总今日聊天记录、任务进度,生成结构化日报',
+        useCase: '每天下班前自动生成当日工作总结',
+        category: 'productivity',
+        tags: ['daily', 'summary', 'report'],
+        authorName: 'PiPiClaw Team',
+        manifestContent: `# 每日工作总结
+
+## 描述
+汇总今日 IM 聊天、任务、文件操作,生成结构化日报。
+
+## 触发关键词
+- 日报
+- 今日总结
+- 今天做了什么
+
+## 操作步骤
+1. 拉取今日 IM 消息(feishu/telegram/discord 等)
+2. 汇总任务进度
+3. 列出完成的文件操作
+4. 输出 markdown 格式日报
+
+## 输出格式
+\`\`\`markdown
+# YYYY-MM-DD 日报
+## 完成任务
+- ...
+## 进行中
+- ...
+## 风险
+- ...
+\`\`\`
+`,
+        createdAt: Date.now(),
+      },
+      {
+        id: 'tpl-code-review',
+        name: '代码审查助手',
+        description: '审查 PR diff,给出风格/安全/性能建议',
+        useCase: '提交 PR 后自动 review 代码改动',
+        category: 'developer',
+        tags: ['code-review', 'pr', 'git'],
+        authorName: 'PiPiClaw Team',
+        manifestContent: `# 代码审查助手
+
+## 描述
+阅读 git diff,逐文件给出审查意见(风格/bug/安全/性能)。
+
+## 触发关键词
+- 帮我 review
+- 审查代码
+- code review
+
+## 操作步骤
+1. 读 git diff --staged
+2. 按文件分组
+3. 对每处改动给出:位置 / 类型(bug|style|perf|security) / 建议
+4. 总结:approve / request changes
+
+## 输出
+- 整体评分(1-5)
+- 必改项 / 建议项
+`,
+        createdAt: Date.now(),
+      },
+      {
+        id: 'tpl-weekly-report',
+        name: '周报生成器',
+        description: '基于本周任务/IM 消息/代码 commit 自动生成周报',
+        useCase: '每周五自动生成周报',
+        category: 'productivity',
+        tags: ['weekly', 'report', 'summary'],
+        authorName: 'PiPiClaw Team',
+        manifestContent: `# 周报生成器
+
+## 描述
+拉取本周完成任务、关键 IM 讨论、git commits,生成结构化周报。
+
+## 触发关键词
+- 周报
+- 本周总结
+- weekly report
+
+## 操作步骤
+1. 读取本周(周一到周日)任务状态
+2. 汇总 IM 关键讨论
+3. 列出本周代码 commit
+4. 分类输出:亮点 / 进展 / 阻塞 / 下周计划
+
+## 输出
+- markdown 周报
+- 一句话总结
+`,
+        createdAt: Date.now(),
+      },
+      {
+        id: 'tpl-meeting-notes',
+        name: '会议纪要生成',
+        description: '会议录音/转写 → 结构化纪要 + 待办',
+        useCase: '会议结束后自动生成纪要',
+        category: 'productivity',
+        tags: ['meeting', 'notes', 'minutes'],
+        authorName: 'PiPiClaw Team',
+        manifestContent: `# 会议纪要生成
+
+## 描述
+将会议转写文本整理为:议题 / 决议 / 待办 / 时间点。
+
+## 触发关键词
+- 会议纪要
+- 总结会议
+- meeting notes
+
+## 操作步骤
+1. 切分议题主旨
+2. 提取关键决策
+3. 提取待办事项(owner / deadline)
+4. 标注关键时间点
+`,
+        createdAt: Date.now(),
+      },
+      {
+        id: 'tpl-translate',
+        name: '多语种翻译',
+        description: '中英日韩法德西俄 8 语种互译,保留术语一致性',
+        useCase: '文档/聊天/邮件快速翻译',
+        category: 'language',
+        tags: ['translate', 'i18n', 'multilingual'],
+        authorName: 'PiPiClaw Team',
+        manifestContent: `# 多语种翻译
+
+## 描述
+8 语种互译(中/英/日/韩/法/德/西/俄),保持术语表一致性。
+
+## 触发关键词
+- 翻译
+- translate
+- 翻成英文
+
+## 操作步骤
+1. 识别源语言
+2. 检查术语表(项目特定术语优先)
+3. 输出译文 + 关键术语对照
+4. 提供 2-3 个备选表达
+
+## 输出
+- 主译文
+- 备选
+- 术语对照
+`,
+        createdAt: Date.now(),
+      },
+      {
+        id: 'tpl-bug-triage',
+        name: 'Bug 分流助手',
+        description: '新 issue 自动分流:严重程度 / 模块归属 / 负责人',
+        useCase: 'GitHub issue 提交流程',
+        category: 'developer',
+        tags: ['bug', 'triage', 'issue'],
+        authorName: 'PiPiClaw Team',
+        manifestContent: `# Bug 分流助手
+
+## 描述
+分析新提交的 bug issue,自动建议 severity / 归属模块 / 负责人。
+
+## 触发关键词
+- bug 分流
+- 分流这个 issue
+- bug triage
+
+## 操作步骤
+1. 读取 issue 标题 + 描述
+2. 推断 severity(P0/P1/P2/P3)
+3. 根据关键词归类模块(auth/payment/ui/...)
+4. 根据 git blame 推荐负责人
+5. 输出建议 + 标签
+`,
+        createdAt: Date.now(),
+      },
+    ]
+    for (const t of BUILTIN) this.templates.set(t.id, t)
+    this.log.info(`ClawHubManager: 加载 ${BUILTIN.length} 内置模板`)
   }
 
   private load(): void {

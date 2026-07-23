@@ -207,6 +207,10 @@ const IpcChannels = {
   CLAWHUB_SEARCH: 'clawhub:search',
   CLAWHUB_RATE: 'clawhub:rate',
   CLAWHUB_LIST_PENDING: 'clawhub:list-pending',
+  CLAWHUB_LIST_TEMPLATES: 'clawhub:list-templates',
+  CLAWHUB_GET_TEMPLATE: 'clawhub:get-template',
+  CLAWHUB_LIST_TEMPLATE_CATEGORIES: 'clawhub:list-template-categories',
+  CLAWHUB_INSTANTIATE_TEMPLATE: 'clawhub:instantiate-template',
 
   // 模型评分
   MODEL_RATE: 'model:rate',
@@ -1047,6 +1051,20 @@ const electronAPI = {
     clawhubSearch: (opts?: any): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_SEARCH, opts || {}),
     clawhubRate: (args: any): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_RATE, args),
     clawhubListPending: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_LIST_PENDING),
+
+    // P2-03 技能模板
+    clawhubListTemplates: (opts?: { category?: string; query?: string }): Promise<IpcResponse<any[]>> =>
+      ipcRenderer.invoke(IpcChannels.CLAWHUB_LIST_TEMPLATES, opts || {}),
+    clawhubGetTemplate: (id: string): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.CLAWHUB_GET_TEMPLATE, id),
+    clawhubListTemplateCategories: (): Promise<IpcResponse<string[]>> =>
+      ipcRenderer.invoke(IpcChannels.CLAWHUB_LIST_TEMPLATE_CATEGORIES),
+    clawhubInstantiateTemplate: (args: {
+      templateId: string
+      customName?: string
+      authorId: string
+      authorName: string
+    }): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_INSTANTIATE_TEMPLATE, args),
 
     // P1-08 模型评分
     modelRate: (args: any): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.MODEL_RATE, args),

@@ -81,8 +81,7 @@
       <!-- Tab 3: 审核队列(P1-04) -->
       <el-tab-pane label="审核队列" name="review">
         <el-table :data="pendingList" stripe>
-          <el-table-column label="技能" prop="name" />
-          <el-table-column label="作者" prop="authorName" width="120" />
+          <el-table-column label="技能" prop="name" />          <el-table-column label="作者" prop="authorName" width="120" />
           <el-table-column label="描述" prop="description" show-overflow-tooltip />
           <el-table-column label="分类" prop="category" width="100" />
           <el-table-column label="提交时间" width="180">
@@ -97,6 +96,48 @@
             </template>
           </el-table-column>
         </el-table>
+      </el-tab-pane>
+
+      <!-- Tab 4: 技能模板(P2-03) -->
+      <el-tab-pane label="技能模板" name="templates">
+        <div class="templates-header">
+          <el-input
+            v-model="templateQuery"
+            placeholder="搜索模板名/描述/标签"
+            clearable
+            style="width: 300px"
+            @keyup.enter="loadTemplates"
+          />
+          <el-select v-model="templateCategory" placeholder="分类" clearable style="width: 180px" @change="loadTemplates">
+            <el-option v-for="cat in templateCategories" :key="cat" :label="cat" :value="cat" />
+          </el-select>
+          <el-button @click="loadTemplates">刷新</el-button>
+          <span class="templates-meta">共 {{ templates.length }} 个模板</span>
+        </div>
+        <el-row :gutter="16" class="template-grid">
+          <el-col v-for="tpl in templates" :key="tpl.id" :xs="24" :sm="12" :md="8" :lg="6">
+            <el-card class="template-card" shadow="hover">
+              <div class="template-card-header">
+                <h4>{{ tpl.name }}</h4>
+                <el-tag size="small" type="info">{{ tpl.category }}</el-tag>
+              </div>
+              <p class="template-desc">{{ tpl.description }}</p>
+              <p class="template-usecase">📌 {{ tpl.useCase }}</p>
+              <div class="template-tags">
+                <el-tag v-for="tag in tpl.tags" :key="tag" size="small" effect="plain">{{ tag }}</el-tag>
+              </div>
+              <div class="template-author">by {{ tpl.authorName }}</div>
+              <el-button
+                type="primary"
+                size="small"
+                class="template-instantiate-btn"
+                @click="openInstantiateDialog(tpl)"
+              >
+                一键实例化
+              </el-button>
+            </el-card>
+          </el-col>
+        </el-row>
       </el-tab-pane>
     </el-tabs>
 
@@ -125,6 +166,38 @@
         <el-button type="danger" @click="handleReview(rejectingSkill!, false)">确认驳回</el-button>
       </template>
     </el-dialog>
+
+    <!-- 实例化模板弹窗 (P2-03) -->
+    <el-dialog v-model="instantiateDialogVisible" title="从模板实例化技能" width="500px">
+      <el-form v-if="instantiatingTemplate" label-width="100px">
+        <el-form-item label="模板"><strong>{{ instantiatingTemplate.name }}</strong></el-form-item>
+        <el-form-item label="作者">{{ instantiatingTemplate.authorName }}</el-form-item>
+        <el-form-item label="描述">
+          <span class="tpl-desc-inline">{{ instantiatingTemplate.description }}</span>
+        </el-form-item>
+        <el-form-item label="新技能名">
+          <el-input
+            v-model="instantiateForm.customName"
+            :placeholder="`默认: ${instantiatingTemplate.name} (我的副本)`"
+          />
+        </el-form-item>
+        <el-form-item label="作者 ID">
+          <el-input v-model="instantiateForm.authorId" placeholder="你的 userId" />
+        </el-form-item>
+        <el-form-item label="作者名">
+          <el-input v-model="instantiateForm.authorName" placeholder="你的展示名" />
+        </el-form-item>
+        <el-alert
+          type="info"
+          :closable="false"
+          title="实例化后状态为 pending,需要到「审核队列」通过后才会出现在浏览市场。"
+        />
+      </el-form>
+      <template #footer>
+        <el-button @click="instantiateDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="instantiating" @click="handleInstantiate">实例化</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -146,6 +219,68 @@ const ratingSkill = ref<any | null>(null)
 const rejectDialogVisible = ref(false)
 const rejectingSkill = ref<any | null>(null)
 const rejectReason = ref('')
+
+// P2-03 技能模板
+const templates = ref<any[]>([])
+const templateCategories = ref<string[]>([])
+const templateQuery = ref('')
+const templateCategory = ref('')
+const instantiateDialogVisible = ref(false)
+const instantiatingTemplate = ref<any | null>(null)
+const instantiating = ref(false)
+const instantiateForm = reactive({ customName: '', authorId: 'current-user', authorName: 'You' })
+
+async function loadTemplates(): Promise<void> {
+  try {
+    const opts: { category?: string; query?: string } = {}
+    if (templateCategory.value) opts.category = templateCategory.value
+    if (templateQuery.value) opts.query = templateQuery.value
+    const [tplRes, catRes] = await Promise.all([
+      (window as any).electronAPI.channel.clawhubListTemplates(opts),
+      (window as any).electronAPI.channel.clawhubListTemplateCategories(),
+    ])
+    if (tplRes?.success) templates.value = tplRes.data || []
+    if (catRes?.success) templateCategories.value = catRes.data || []
+  } catch (e) {
+    console.warn('loadTemplates failed', e)
+  }
+}
+
+function openInstantiateDialog(tpl: any): void {
+  instantiatingTemplate.value = tpl
+  instantiateForm.customName = ''
+  instantiateDialogVisible.value = true
+}
+
+async function handleInstantiate(): Promise<void> {
+  if (!instantiatingTemplate.value) return
+  if (!instantiateForm.authorId.trim() || !instantiateForm.authorName.trim()) {
+    ElMessage.warning('请填写作者 ID 和作者名')
+    return
+  }
+  instantiating.value = true
+  try {
+    const args: any = {
+      templateId: instantiatingTemplate.value.id,
+      authorId: instantiateForm.authorId.trim(),
+      authorName: instantiateForm.authorName.trim(),
+    }
+    if (instantiateForm.customName.trim()) args.customName = instantiateForm.customName.trim()
+    const r = await (window as any).electronAPI.channel.clawhubInstantiateTemplate(args)
+    if (r?.success) {
+      ElMessage.success(`已从模板创建: ${r.data.name},待审核`)
+      instantiateDialogVisible.value = false
+      // 刷新审核队列
+      await loadPending()
+    } else {
+      ElMessage.error('实例化失败: ' + (r?.error || '未知错误'))
+    }
+  } catch (e) {
+    ElMessage.error('实例化失败: ' + String(e))
+  } finally {
+    instantiating.value = false
+  }
+}
 
 async function doSearch(): Promise<void> {
   try {
@@ -259,6 +394,7 @@ async function handleDownload(skill: any): Promise<void> {
 onMounted(() => {
   doSearch()
   loadPending()
+  loadTemplates()
 })
 </script>
 
@@ -325,5 +461,82 @@ onMounted(() => {
 .empty-state {
   padding: 40px;
   text-align: center;
+}
+
+/* P2-03 技能模板 */
+.templates-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.templates-meta {
+  font-size: 12px;
+  color: var(--text-secondary, #999);
+}
+.template-grid {
+  margin-top: 8px;
+}
+.template-card {
+  margin-bottom: 16px;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+}
+.template-card :deep(.el-card__body) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 14px;
+}
+.template-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.template-card-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.template-desc {
+  font-size: 13px;
+  color: var(--text-regular, #444);
+  margin: 0 0 6px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.template-usecase {
+  font-size: 12px;
+  color: var(--text-secondary, #999);
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+.template-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.template-author {
+  font-size: 11px;
+  color: var(--text-secondary, #999);
+  margin-top: auto;
+  margin-bottom: 8px;
+}
+.template-instantiate-btn {
+  width: 100%;
+}
+.tpl-desc-inline {
+  font-size: 13px;
+  color: var(--text-regular, #444);
 }
 </style>
