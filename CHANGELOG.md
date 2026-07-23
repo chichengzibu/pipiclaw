@@ -2,6 +2,41 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [3.0.1] - 2026-07-23 (Hotfix)
+
+### Fixed
+- **SideNav 完全 broken**(v3.0.0 GA 严重回归): `src/main.ts` 缺 `app.component()` 全局注册
+  `@element-plus/icons-vue`,导致 `<component :is="iconName">` 在 SideNav 渲染空元素
+- **Vue 运行时 CSP 拦截**: `index.html` 的 script-src 缺 `'unsafe-eval'`,
+  Vue 生产构建用 `new Function()` 抛 CSPViolationError,导致 #app 节点为空
+- **WindowManager dev/prod 路径错乱**: e2e 测试下 `isDev = !app.isPackaged` 永远为 true,
+  会去找 vite dev server (localhost:5173),加 `PIPICLAW_E2E` env 兜底
+- **侧栏窗口被压时塌缩**: SideNav 加 `min-width: 180px` 兜底
+
+### Added
+- **CI hard-fail 守卫**: build 后 grep 验证 dist/index.html 含 `unsafe-eval` CSP + bundle
+  含 5 个关键 element-plus 图标组件名 (ChatDotRound/HomeFilled/Setting/Box/Cpu)
+- **e2e fresh userData**: 每次 playwright run mkdtempSync 一个新 userData 目录,
+  通过 Playwright `userDataDir` 传给 Electron,避免 localStorage 跨 spec 污染
+- **RELEASE_CHECKLIST.md** (docs/release/): 7 步必过清单,
+  堵 v3.0.0 "主导航 broken 还能 release" 的口子
+- **e2e locale-aware selectors**: chat-agent/settings-p7/a5-computer-use 全部改成中英文都匹配,
+  修 Playwright 默认 en-US 下跑挂的问题
+- **3 个新 e2e**: ui-smoke (14 nav 导航 + chat 输入 + 语言切换), diag-launch / diag-sidenav
+- **100% product completion plan** (docs/superpowers/plans/2026-07-23-100pct-product-completion-plan.md):
+  P0-P6 路线图,目标 v4.0.0 Production-Ready
+
+### Verified
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vue-tsc --noEmit`: 0 errors
+- `npx tsc --noEmit`: 0 errors
+- `npx vitest run`: **40 files / 486 tests passed**
+- `npm run smoke`: 22/22 passed
+- `E2E_ELECTRON=1 npx playwright test` (active specs): **15/15 passed**
+  (chat-agent 4 + settings-p7 4 + a5-computer-use 3 + ui-smoke 4)
+- `npm run build`: 0 errors, 91.44MB Windows installer
+- Build artifact self-check: CSP fix present + 5 critical icons bundled
+
 ## [3.0.0] - 2026-07-22 (GA)
 
 ### Added

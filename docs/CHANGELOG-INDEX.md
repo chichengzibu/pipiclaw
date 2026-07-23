@@ -12,6 +12,7 @@
 - [real LLM integration retro](superpowers/retros/2026-07-17-real-llm-integration/retro.md) — LlmConfig + 3 provider 真接
 - [real proxy wc jupyter retro](superpowers/retros/2026-07-17-real-proxy-wc-jupyter/retro.md) — WebContainerRunner + PortForwarder + JupyterRunner
 - [Phase 1 engineering hygiene retro](superpowers/retros/2026-07-17-phase1-engineering-hygiene/retro.md) — ESLint / CI hard-fail / 仓库清理 / 文档同步
+- [P0 engineering discipline retro](superpowers/retros/2026-07-23-p0-engineering-discipline.md) — v3.0.0 SideNav broken hotfix + 8 commits + release checklist
 
 ## Plans(实施计划)
 
