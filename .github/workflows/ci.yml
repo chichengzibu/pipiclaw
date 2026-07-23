@@ -47,9 +47,47 @@ jobs:
       - name: Smoke test (build artifacts + IPC surface)
         run: npm run smoke
 
+      # Phase 0 P0-T0.3: 防止 v3.0.0 SideNav broken 重演
+      # build 本身不会 catch 图标没注册 / CSP 缺 unsafe-eval
+      # 所以加这两道防线:
+      - name: Verify element-plus icons registered in bundle
+        # P0-T0.3: 防止 v3.0.0 SideNav broken 重演
+        # bundle 本身不能 catch 缺图标注册 / 缺 unsafe-eval CSP,
+        # 所以加两道防线:
+        #   1) dist/index.html 包含 'unsafe-eval' (Vue runtime 必需)
+        #   2) main bundle 包含 element-plus 图标的实际组件名
+        #      (vite 会重命名 import,但组件的 name 属性保留原始字符串,
+        #       可作为 'icons registered' 的可靠信号)
+        run: |
+          if ! grep -q "unsafe-eval" dist/index.html; then
+            echo "❌ dist/index.html missing 'unsafe-eval' in CSP (Vue runtime will fail)"
+            exit 1
+          fi
+          missing=0
+          for icon in ChatDotRound HomeFilled Setting Box Cpu; do
+            if ! grep -q "$icon" dist/assets/index-*.js; then
+              echo "❌ main bundle missing icon component: $icon"
+              missing=$((missing+1))
+            fi
+          done
+          if [ $missing -gt 0 ]; then
+            echo "❌ $missing icons missing - element-plus icons not bundled"
+            exit 1
+          fi
+          echo "✅ Build artifacts: CSP safe + 5 critical icons bundled"
+
       - name: Sandbox selfcheck
         run: node scripts/sandbox-selfcheck.mjs || echo "sandbox soft-fail no docker in CI"
 
-      - name: Playwright e2e (ubuntu only)
+      - name: Playwright e2e - active specs (ubuntu only, hard-fail)
         if: matrix.os == 'ubuntu-latest'
-        run: npx playwright install --with-deps chromium && npx playwright test --reporter=line || echo "e2e soft-fail Phase 4"
+        # 仅跑非 placeholder 的 active spec,hard-fail
+        # placeholder specs(需要 docker/飞书凭证)继续 skip
+        run: |
+          npx playwright install --with-deps chromium
+          E2E_ELECTRON=1 npx playwright test \
+            tests/e2e/chat-agent.spec.ts \
+            tests/e2e/settings-p7.spec.ts \
+            tests/e2e/a5-computer-use.spec.ts \
+            tests/e2e/ui-smoke.spec.ts \
+            --reporter=line
