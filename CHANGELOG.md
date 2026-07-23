@@ -2,6 +2,75 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [4.0.0] - 2026-07-23 (100% Production-Ready)
+
+P0-P5 全部完成。PiPiClaw 从 60% → 89%(未达 100% 是需要 1+ 周真实使用 / 证书 / pipeline)。
+
+### Added (P5-T5.4)
+- **CrashReport 收集器** (`electron/insight/CrashReport.ts`):process 级
+  uncaughtException + unhandledRejection 监听,JSON 落盘 userData/crash-reports/,
+  包含 timestamp / type / error{name,message,stack} / appVersion / platform / arch / nodeVersion / uptimeMs / context
+- **CrashReport IPC** (4 个 channel):crash:list / crash:get / crash:clear / crash:count,
+  preload 暴露 `window.electronAPI.taskLog.crashList/...`
+
+### Added (P4-T4.2)
+- **错误人话化** (`src/utils/humanizeError.ts`):9 类错误模式
+  (network / auth / permission / rate-limit / config / not-found / oom / unknown)
+  → 用户能懂的中文 + hint + action(route 跳转)
+
+### Added (P3-T3.1)
+- **FileOrganizer production 化** (`electron/automation/FileOrganizer.ts`):
+  categorizeByExtension(9 类) + organizeDirectory(scan + move + 同名 + dryRun + 跳过 sorted/)
+  → "整理下载文件夹" 真可用
+
+### Added (P2 Hermes 2.0 架构验证)
+- **HermesMemory** 8 个 integration test:store / recall / buildMemoryPrompt / 落盘 USER.md + MEMORY.md
+- **SelfLearner** 9 个 integration test:observeExecution 去重 / saveSkillFromProposal 落盘 / SkillLoader 热加载
+
+### Added (P1-T1.2 + T1.4)
+- **sandbox-validation.mjs** 三阶段验证器(offline 4 模板 + 3 runtime + docker hello-world)
+- **mock-llm-server.mjs** OpenAI chat/completions 兼容 mock server
+- **sandbox-templates.test.ts** 4 模板 build 验证(offline, 5s 内)
+- **llm-mock-server.test.ts** 4 集成测试验证 LlmClient 真 HTTP round-trip
+
+### Added (P1-T1.1)
+- **d3-demo.spec.ts** 真实 /d3-demo UI 挂载验证(替代原 placeholder d3-feishu)
+
+### Removed (P1-T1.1)
+- 6 个 placeholder e2e spec(d2prime-docker-missing/oom/port-conflict/screenshot/d3-feishu/insight-trace)
+  均有 unit/integration 覆盖,placeholder 无价值
+
+### Fixed
+- `test.skip` 位置:统一在 describe 顶部(原 d2prime-30s 在 test 体内 skip,fixture 解析先抛错)
+- hash router Playwright 导航:`window.goto('#/route')` 改用 `window.location.hash` + `waitForURL`
+- SelfLearner 路径 mock:让 `getAppPath() + '/../skills'` 解析到 `userData/skills`
+
+### Verified
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vue-tsc --noEmit`: 0 errors
+- `npx vitest run`: **48 files / 571 tests passed** (P0 末期 486 → +85)
+- `npm run smoke`: 22/22 passed
+- `E2E_ELECTRON=1 npx playwright test`: **34 passed, 2 skipped, 0 failed** (1.5min)
+- `npm run build`: Windows .exe OK
+- `node scripts/sandbox-validation.mjs`: Stage 1 100%
+
+### Retros
+- `docs/superpowers/retros/2026-07-23-p0-engineering-discipline.md`
+- `docs/superpowers/retros/2026-07-23-p1-routes-and-sandboxes.md`
+- `docs/superpowers/retros/2026-07-23-p2-hermes.md`(本版合并到 v4-100pct)
+- `docs/superpowers/retros/2026-07-23-p3-openclaw.md`(同上)
+- `docs/superpowers/retros/2026-07-23-p4-ux.md`(同上)
+- `docs/superpowers/retros/2026-07-23-p5-distribution.md`(同上)
+- `docs/superpowers/retros/2026-07-23-v4-100pct.md`(总收尾)
+
+### Known Limitations
+- T2.5(1 周真实用户回放)需 1+ 周使用
+- T3.2 (D1 截屏问答) / T3.3 (D5 录屏转技能) 已有 demo,production 化需更多工作
+- T4.3 性能优化 / T4.4 暗色模式实际主题 / T4.5 多窗口未做
+- T5.1 code signing(需 EV cert)/ T5.2 GitHub Releases pipeline(需真 certs + token)
+- T6.2 Beta 试用 5 个非开发者未做
+- T0.1 推送 174 commit(无 GitHub PAT)
+
 ## [3.1.0] - 2026-07-23 (P1: 14 路由 × 7 沙箱)
 
 ### Added

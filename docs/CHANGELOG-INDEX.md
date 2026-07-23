@@ -14,6 +14,11 @@
 - [Phase 1 engineering hygiene retro](superpowers/retros/2026-07-17-phase1-engineering-hygiene/retro.md) — ESLint / CI hard-fail / 仓库清理 / 文档同步
 - [P0 engineering discipline retro](superpowers/retros/2026-07-23-p0-engineering-discipline.md) — v3.0.0 SideNav broken hotfix + 8 commits + release checklist
 - [P1 routes & sandboxes retro](superpowers/retros/2026-07-23-p1-routes-and-sandboxes.md) — 14 路由 × 7 沙箱 + LLM 真链路验证 + 0 placeholder e2e
+- [P2 Hermes 2.0 retro](superpowers/retros/2026-07-23-p2-hermes.md) — T2.1-T2.3 单元覆盖
+- [P3 OpenClaw 2.0 retro](superpowers/retros/2026-07-23-p3-openclaw.md) — T3.1 文件整理 + T3.4 错误恢复
+- [P4 UX 抛光 retro](superpowers/retros/2026-07-23-p4-ux.md) — T4.2 错误人话化
+- [P5 分发与支持 retro](superpowers/retros/2026-07-23-p5-distribution.md) — T5.4 CrashReport
+- [v4.0.0 100% 完成 retro](superpowers/retros/2026-07-23-v4-100pct.md) — P0-P5 总收尾,60% → 89%
 
 ## Plans(实施计划)
 

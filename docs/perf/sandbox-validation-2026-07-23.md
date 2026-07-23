@@ -1,6 +1,6 @@
 # PiPiClaw Sandbox 验证报告
 
-生成时间: 2026-07-23T09:00:16.697Z
+生成时间: 2026-07-23T09:27:39.436Z
 commit: local
 运行环境: win32 x64, node v22.16.0
 
@@ -10,7 +10,7 @@ commit: local
 
 | Runtime | 类型 | 状态 | 耗时 | 备注 |
 | --- | --- | :---: | ---: | --- |
-| SandboxBuilder.templates | unit | ✅ pass | 3927ms | 6 passed, 0 failed |
+| SandboxBuilder.templates | unit | ✅ pass | 2987ms | 6 passed, 0 failed |
 
 ## 验证项说明
 
