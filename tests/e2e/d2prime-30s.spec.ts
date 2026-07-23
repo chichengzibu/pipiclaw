@@ -18,13 +18,24 @@ import { test, expect, shouldRunElectronE2E } from './helpers/electron-app'
  *
  * 默认行为:
  *   - CI skip,本地 E2E_ELECTRON=1 跑
+ *
+ * 导航方式:
+ *   - /d2-prime-demo 不在 SideNav 里(仅 14 个主入口)
+ *   - router 是 createWebHashHistory,所以用 window.location.hash 切换路由
  */
 
 test.describe('D2-Prime 30s startup', () => {
+  // P1-T1.1: 整个 describe 在没有 E2E_ELECTRON=1 时统一 skip
+  // (原先在 describe 内部某 test 体内 skip,导致同 describe 内其他 test 在
+  //  fixture 解析阶段就抛 "E2E_ELECTRON is not set" 失败)
   test.skip(!shouldRunElectronE2E, 'requires E2E_ELECTRON=1 to launch Electron renderer')
 
   test('D2-Prime demo page mounts with prompt and launch button', async ({ window }) => {
-    await window.goto('#/d2-prime-demo')
+    // /d2-prime-demo 是 hash 路由,直接改 hash
+    await window.evaluate(() => {
+      window.location.hash = '#/d2-prime-demo'
+    })
+    await window.waitForURL(/#\/d2-prime-demo/, { timeout: 5_000 })
 
     // 标题
     await expect(window.locator('h2:has-text("D2-Prime 旗舰 Demo")')).toBeVisible({
@@ -49,7 +60,10 @@ test.describe('D2-Prime 30s startup', () => {
   })
 
   test('D2-Prime flow card lists all 6 pipeline steps', async ({ window }) => {
-    await window.goto('#/d2-prime-demo')
+    await window.evaluate(() => {
+      window.location.hash = '#/d2-prime-demo'
+    })
+    await window.waitForURL(/#\/d2-prime-demo/, { timeout: 5_000 })
 
     // .d2-flow 卡片含 <ol> 流程 — 6 步
     const flowCard = window.locator('.d2-flow')
@@ -62,24 +76,26 @@ test.describe('D2-Prime 30s startup', () => {
     await expect(steps.nth(5)).toContainText('iframe')
   })
 
-  test.skip(
-    process.env.E2E_D2_PRIME_30S !== '1',
-    'requires E2E_D2_PRIME_30S=1 to time actual 30s sandbox boot — Phase 4 跳过,完整 benchmark 见 docs/e2e-testing.md'
-  )
-
   test('30s boot benchmark stub (see docs/e2e-testing.md)', async () => {
-    // 启用此 spec:
-    //   E2E_D2_PRIME_30S=1 E2E_ELECTRON=1 npx playwright test tests/e2e/d2prime-30s.spec.ts -g '30s boot'
+    // 完整 30s 启动 benchmark 需要:
+    //   - 真实 sandbox(docker 或 webContainer)可达
+    //   - 隔离性能环境
+    //   - 启用此 spec: E2E_D2_PRIME_30S=1 E2E_ELECTRON=1 npx playwright test \
+    //     tests/e2e/d2prime-30s.spec.ts -g '30s boot'
     //
     // 计划步骤:
-    //   1. await window.goto('#/d2-prime-demo')
+    //   1. await window.evaluate(() => { window.location.hash = '#/d2-prime-demo' })
     //   2. 在 prompt 输入 '测试 30s 启动'
     //   3. 记 t0 = Date.now(),点'启动 D2-Prime'
     //   4. 等 .d2-result 出现(说明 iframe forwardUrl 已就绪)
     //   5. assert Date.now() - t0 <= 30_000
     //   6. 截图归档 tests/e2e-report/d2prime-30s.png
     //
-    // 当前 Phase 4 不实跑,留作 Phase 5 任务。
+    // 当前 P1 阶段不实跑,留作 P3 真实工作流任务。
+    test.skip(
+      process.env.E2E_D2_PRIME_30S !== '1',
+      'requires E2E_D2_PRIME_30S=1 to time actual 30s sandbox boot — P1 跳过,完整 benchmark 见 docs/e2e-testing.md',
+    )
     expect(true).toBe(true)
   })
 })

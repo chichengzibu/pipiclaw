@@ -15,9 +15,9 @@ import { defineConfig } from '@playwright/test'
  *
  * CI 行为:
  *   - Electron 启动需要 5-15s,容器内需要 --no-sandbox
- *   - 4 个核心 spec 通过 test.skip(!process.env.E2E_ELECTRON) 防御性跳过
+ *   - 6 个核心 spec 通过 test.skip(!process.env.E2E_ELECTRON) 防御性跳过
  *     默认不在 CI 跑(E2E_ELECTRON=1 才跑)
- *   - 7 个 placeholder spec 永远 skip(需要真 LLM / Docker / 飞书凭证)
+ *   - 0 个 placeholder spec(P1-T1.1 已清理 + 改写为 UI 挂载验证)
  *   - 跑前确保 `npm run build` 生成了 dist-electron/main.js
  */
 
