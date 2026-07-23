@@ -28,6 +28,10 @@ import { IpcBridge } from './runtime/bridge/IpcBridge';
 import { registerD1ScreenshotShortcut } from './core/GlobalShortcut';
 import { ensureD1SkillRegistered } from './skill/builtin/D1ScreenshotQA';
 import { registerD5RecordingToSkill } from './skill/builtin/D5RecordingToSkill';
+// 静态 import 让 vite-plugin-electron SSR build 把 LlmAgentBrain inline 进 bundle,
+// 避免运行时 require() 找不到 dist-electron/agent/LlmAgentBrain.js 的路径问题.
+// 若 LlmClient 不可用,getInstance()/构造函数会抛错,因此包在 try 中。
+import { LlmAgentBrain } from './agent/LlmAgentBrain';
 
 const log = LogManager.getInstance();
 
@@ -135,9 +139,13 @@ app.whenReady().then(async () => {
 
       // 4.bis W14: 优先用 LlmAgentBrain (基于 LlmClient)。当 LLM provider 未配置时,
       //         LlmAgentBrain.think() 会 fallback 到 stub reply,不影响既有 ChatManager 流。
+      // 修复: 从 require('./agent/LlmAgentBrain') 改为静态 import,
+      //       这样 vite-plugin-electron 在 SSR build 时会 inline LlmAgentBrain,
+      //       避免运行时 dist-electron/agent/LlmAgentBrain.js 找不到的 require 失败。
+      //       LlmAgentBrain 实现 contracts/types 的 AgentBrain interface,
+      //       而非 AgentBrainImpl 类,通过 as unknown as cast 兼容 asAgentBrain 类型签名。
       try {
-        const { LlmAgentBrain } = require('./agent/LlmAgentBrain')
-        ChatManager.getInstance().registerAgent(asAgentBrain(LlmAgentBrain.getInstance()))
+        ChatManager.getInstance().registerAgent(asAgentBrain(LlmAgentBrain.getInstance() as unknown as AgentBrainImpl))
         log.info('[main] LlmAgentBrain registered')
       } catch (e) {
         log.warn('[main] LlmAgentBrain 注册失败,继续使用 AgentBrainImpl', e)
