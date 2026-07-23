@@ -2,7 +2,7 @@
   <div class="permissions-page">
     <div class="page-header">
       <div class="header-left">
-        <h1 class="page-title">权限管理</h1>
+        <h1 class="page-title">{{ t('permissions.title') }}</h1>
         <el-tag v-if="permissionsStore.activeSet" type="primary" effect="dark">
           当前: {{ permissionsStore.activeSet.name }}
         </el-tag>
@@ -11,7 +11,7 @@
         <Breadcrumb />
         <el-button type="primary" @click="handleCreateSet">
           <el-icon><Plus /></el-icon>
-          新建权限集
+          {{ t('permissions.createSet') }}
         </el-button>
       </div>
     </div>
@@ -21,7 +21,7 @@
         <!-- 左侧: 权限集列表 -->
         <div class="sets-panel">
           <div class="panel-header">
-            <span class="panel-title">权限集</span>
+            <span class="panel-title">{{ t('permissions.sets') }}</span>
           </div>
           <el-scrollbar class="sets-list">
             <div
@@ -36,7 +36,7 @@
                   <span class="set-icon">{{ getSetIcon(set.template) }}</span>
                   <span class="set-name">{{ set.name }}</span>
                   <el-tag v-if="set.id === permissionsStore.activeSetId" size="small" type="success">
-                    使用中
+                    {{ t('permissions.active') }}
                   </el-tag>
                 </div>
                 <div class="set-desc">{{ set.description }}</div>
@@ -59,13 +59,13 @@
                 size="small"
                 @click="handleActivate"
               >
-                激活
+                {{ t('permissions.activate') }}
               </el-button>
               <el-button
                 size="small"
                 @click="handleDuplicate"
               >
-                复制
+                {{ t('permissions.duplicate') }}
               </el-button>
               <el-button
                 v-if="selectedSet.template === 'custom'"
@@ -74,23 +74,23 @@
                 text
                 @click="handleDelete"
               >
-                删除
+                {{ t('permissions.delete') }}
               </el-button>
             </div>
           </div>
 
           <div class="detail-body">
             <div class="info-row">
-              <span class="info-label">模板:</span>
+              <span class="info-label">{{ t('permissions.templateColon') }}</span>
               <span class="info-value">{{ getTemplateName(selectedSet.template) }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">描述:</span>
+              <span class="info-label">{{ t('permissions.descriptionColon') }}</span>
               <span class="info-value">{{ selectedSet.description }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">权限数量:</span>
-              <span class="info-value">{{ selectedSet.rules.length }} 项</span>
+              <span class="info-label">{{ t('permissions.ruleCount') }}</span>
+              <span class="info-value">{{ t('permissions.rulesCount', { count: selectedSet.rules.length }) }}</span>
             </div>
           </div>
 
@@ -98,7 +98,7 @@
 
           <div class="rules-section">
             <div class="section-header">
-              <span class="section-title">权限规则</span>
+              <span class="section-title">{{ t('permissions.rules') }}</span>
             </div>
             <div class="rules-list">
               <div
@@ -141,12 +141,12 @@
             <el-divider />
             <div class="advanced-section">
               <div class="section-header">
-                <span class="section-title">路径限制</span>
+                <span class="section-title">{{ t('permissions.pathRestriction') }}</span>
               </div>
               <div class="path-rules">
                 <div v-for="rule in selectedSet.rules.filter(r => r.category === 'filesystem')" :key="rule.id" class="path-rule">
                   <div class="path-row">
-                    <span class="path-label">允许路径:</span>
+                    <span class="path-label">{{ t('permissions.allowedPaths') }}</span>
                     <el-tag
                       v-for="(path, idx) in rule.allowedPaths || []"
                       :key="idx"
@@ -156,10 +156,10 @@
                     >
                       {{ path }}
                     </el-tag>
-                    <span v-if="!rule.allowedPaths?.length" class="path-empty">无限制</span>
+                    <span v-if="!rule.allowedPaths?.length" class="path-empty">{{ t('permissions.none') }}</span>
                   </div>
                   <div class="path-row">
-                    <span class="path-label">禁止路径:</span>
+                    <span class="path-label">{{ t('permissions.deniedPaths') }}</span>
                     <el-tag
                       v-for="(path, idx) in rule.deniedPaths || []"
                       :key="idx"
@@ -170,7 +170,7 @@
                     >
                       {{ path }}
                     </el-tag>
-                    <span v-if="!rule.deniedPaths?.length" class="path-empty">无</span>
+                    <span v-if="!rule.deniedPaths?.length" class="path-empty">{{ t('permissions.deny') }}</span>
                   </div>
                 </div>
               </div>
@@ -179,7 +179,7 @@
         </div>
 
         <div class="detail-empty" v-else>
-          <el-empty description="请选择一个权限集查看详情" />
+          <el-empty :description="t('permissions.selectSetPrompt')" />
         </div>
       </div>
     </div>
@@ -187,55 +187,58 @@
     <!-- 新建权限集对话框 -->
     <el-dialog
       v-model="createDialogVisible"
-      title="新建权限集"
+      :title="t('permissions.createSet')"
       width="500px"
     >
       <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-width="100px">
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="createForm.name" placeholder="权限集名称" />
+        <el-form-item :label="t('permissions.nameLabel')" prop="name">
+          <el-input v-model="createForm.name" :placeholder="t('permissions.nameLabel')" />
         </el-form-item>
-        <el-form-item label="基于模板" prop="template">
-          <el-select v-model="createForm.template" placeholder="选择模板">
-            <el-option label="安全模式 (严格限制)" value="safe" />
-            <el-option label="标准模式 (平衡)" value="standard" />
-            <el-option label="开放模式 (几乎无限制)" value="permissive" />
+        <el-form-item :label="t('permissions.basedOnTemplate')" prop="template">
+          <el-select v-model="createForm.template" :placeholder="t('permissions.basedOnTemplate')">
+            <el-option :label="t('permissions.templateSafe')" value="safe" />
+            <el-option :label="t('permissions.templateStandard')" value="standard" />
+            <el-option :label="t('permissions.templatePermissive')" value="permissive" />
           </el-select>
         </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="createForm.description" type="textarea" :rows="2" placeholder="描述" />
+        <el-form-item :label="t('permissions.descriptionLabel')" prop="description">
+          <el-input v-model="createForm.description" type="textarea" :rows="2" :placeholder="t('permissions.descriptionLabel')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="createDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleCreateSubmit">创建</el-button>
+        <el-button @click="createDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleCreateSubmit">{{ t('common.create') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 复制对话框 -->
     <el-dialog
       v-model="duplicateDialogVisible"
-      title="复制权限集"
+      :title="t('permissions.duplicateTitle')"
       width="400px"
     >
       <el-form label-width="80px">
-        <el-form-item label="新名称">
-          <el-input v-model="duplicateName" placeholder="输入新名称" />
+        <el-form-item :label="t('permissions.newName')">
+          <el-input v-model="duplicateName" :placeholder="t('permissions.newName')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="duplicateDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleDuplicateSubmit">复制</el-button>
+        <el-button @click="duplicateDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleDuplicateSubmit">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import Breadcrumb from '@/components/layout/Breadcrumb.vue';
 import { Plus, InfoFilled } from '@element-plus/icons-vue';
 import { usePermissionsStore, type PermissionSet, type PermissionLevel } from '@/stores/permissions';
+
+const { t } = useI18n();
 
 const permissionsStore = usePermissionsStore();
 
@@ -252,18 +255,18 @@ const createForm = reactive({
   description: ''
 });
 
-const createRules = {
-  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
-  template: [{ required: true, message: '请选择模板', trigger: 'change' }]
-};
+const createRules = computed(() => ({
+  name: [{ required: true, message: t('permissions.pleaseEnterName'), trigger: 'blur' }],
+  template: [{ required: true, message: t('permissions.pleaseSelectTemplate'), trigger: 'change' }]
+}));
 
-const permissionLevels = [
-  { value: 'none', name: '禁止', description: '完全禁止' },
-  { value: 'read', name: '只读', description: '仅允许读取' },
-  { value: 'write', name: '读写', description: '允许读取和写入' },
-  { value: 'execute', name: '执行', description: '允许执行操作' },
-  { value: 'all', name: '完全', description: '允许所有操作' }
-];
+const permissionLevels = computed(() => [
+  { value: 'none', name: t('permissions.levelNone'), description: t('permissions.levelNoneDesc') },
+  { value: 'read', name: t('permissions.levelRead'), description: t('permissions.levelReadDesc') },
+  { value: 'write', name: t('permissions.levelWrite'), description: t('permissions.levelWriteDesc') },
+  { value: 'execute', name: t('permissions.levelExecute'), description: t('permissions.levelExecuteDesc') },
+  { value: 'all', name: t('permissions.levelAll'), description: t('permissions.levelAllDesc') }
+]);
 
 onMounted(async () => {
   await permissionsStore.fetchPermissionSets();
@@ -283,13 +286,13 @@ function getSetIcon(template: string): string {
 }
 
 function getTemplateName(template: string): string {
-  const names: Record<string, string> = {
-    safe: '安全模式',
-    standard: '标准模式',
-    permissive: '开放模式',
-    custom: '自定义'
+  const map: Record<string, string> = {
+    safe: t('permissions.templateNameSafe'),
+    standard: t('permissions.templateNameStandard'),
+    permissive: t('permissions.templateNamePermissive'),
+    custom: t('permissions.templateNameCustom')
   };
-  return names[template] || template;
+  return map[template] || template;
 }
 
 function getCategoryIcon(category: string): string {
@@ -306,16 +309,16 @@ function getCategoryIcon(category: string): string {
 }
 
 function getCategoryName(category: string): string {
-  const names: Record<string, string> = {
-    filesystem: '文件系统',
-    network: '网络',
-    process: '进程',
-    system: '系统',
-    clipboard: '剪贴板',
-    shell: 'Shell',
-    environment: '环境变量'
+  const map: Record<string, string> = {
+    filesystem: t('permissions.categoryFilesystem'),
+    network: t('permissions.categoryNetwork'),
+    process: t('permissions.categoryProcess'),
+    system: t('permissions.categorySystem'),
+    clipboard: t('permissions.categoryClipboard'),
+    shell: t('permissions.categoryShell'),
+    environment: t('permissions.categoryEnvironment')
   };
-  return names[category] || category;
+  return map[category] || category;
 }
 
 function handleSelectSet(set: PermissionSet): void {
@@ -326,7 +329,7 @@ async function handleActivate(): Promise<void> {
   if (!selectedSet.value) return;
   const success = await permissionsStore.setActiveSet(selectedSet.value.id);
   if (success) {
-    ElMessage.success(`已激活 "${selectedSet.value.name}"`);
+    ElMessage.success(t('permissions.activated', { name: selectedSet.value.name }));
   }
 }
 
@@ -345,7 +348,7 @@ async function handleRemovePath(rule: { allowedDomains?: string[]; deniedDomains
     rule.deniedDomains?.splice(idx, 1);
   }
   await permissionsStore.updatePermissionSet(selectedSet.value.id, { rules: selectedSet.value.rules });
-  ElMessage.success('已移除路径');
+  ElMessage.success(t('permissions.pathRemoved'));
 }
 
 async function handleCreateSubmit(): Promise<void> {
@@ -355,9 +358,9 @@ async function handleCreateSubmit(): Promise<void> {
     submitting.value = true;
     try {
       const templateDescs: Record<string, string> = {
-        safe: '严格限制，仅允许基本操作',
-        standard: '平衡模式，允许常见操作',
-        permissive: '开放模式，允许几乎所有操作'
+        safe: t('permissions.templateDescSafe'),
+        standard: t('permissions.templateDescStandard'),
+        permissive: t('permissions.templateDescPermissive')
       };
       const result = await permissionsStore.createPermissionSet({
         name: createForm.name,
@@ -366,7 +369,7 @@ async function handleCreateSubmit(): Promise<void> {
         rules: []
       });
       if (result) {
-        ElMessage.success('权限集创建成功');
+        ElMessage.success(t('permissions.created'));
         createDialogVisible.value = false;
         selectedSet.value = result;
       }
@@ -386,7 +389,7 @@ async function handleDuplicateSubmit(): Promise<void> {
   if (!selectedSet.value || !duplicateName.value) return;
   const result = await permissionsStore.duplicatePermissionSet(selectedSet.value.id, duplicateName.value);
   if (result) {
-    ElMessage.success('权限集复制成功');
+    ElMessage.success(t('permissions.duplicated'));
     duplicateDialogVisible.value = false;
     selectedSet.value = result;
   }
@@ -396,13 +399,17 @@ async function handleDelete(): Promise<void> {
   if (!selectedSet.value) return;
   try {
     await ElMessageBox.confirm(
-      `确定要删除权限集 "${selectedSet.value.name}" 吗？`,
-      '删除确认',
-      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+      t('permissions.deleteConfirmText', { name: selectedSet.value.name }),
+      t('permissions.deleteConfirmTitle'),
+      {
+        confirmButtonText: t('dialog.deleteButton'),
+        cancelButtonText: t('dialog.cancelButton'),
+        type: t('dialog.warningType') as 'warning'
+      }
     );
     const success = await permissionsStore.deletePermissionSet(selectedSet.value.id);
     if (success) {
-      ElMessage.success('删除成功');
+      ElMessage.success(t('permissions.deleted'));
       selectedSet.value = permissionsStore.permissionSets[0] || null;
     }
   } catch {}

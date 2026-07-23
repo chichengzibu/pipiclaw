@@ -11,20 +11,29 @@
         <el-icon class="nav-icon">
           <component :is="item.icon" />
         </el-icon>
-        <span class="nav-text">{{ item.title }}</span>
+        <span class="nav-text">{{ t(item.titleKey) }}</span>
       </router-link>
     </nav>
-    
+
     <!-- 底部信息 -->
     <div class="nav-footer">
+      <el-select
+        class="lang-switcher"
+        :model-value="currentLocale"
+        size="small"
+        @change="handleLocaleChange"
+      >
+        <el-option label="简体中文" value="zh-CN" />
+        <el-option label="English" value="en-US" />
+      </el-select>
       <div class="version-info">
         <span class="version-label">PiPiClaw</span>
         <span class="version-number">v{{ appStore.version }}</span>
       </div>
       <GatewayStatusBadge />
     </div>
-    
-    <div 
+
+    <div
       class="resize-handle"
       @mousedown="startResize"
     ></div>
@@ -32,35 +41,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import GatewayStatusBadge from '@/components/common/GatewayStatusBadge.vue';
 import { useAppStore } from '@/stores/app';
+import i18n, { setLocale, type SupportedLocale } from '@/locales';
 
+const { t } = useI18n();
 const route = useRoute();
 const appStore = useAppStore();
 
 const navItems = [
-  { path: '/dashboard', name: 'Dashboard', title: '首页', icon: 'HomeFilled' },
-  { path: '/chat', name: 'Chat', title: '对话', icon: 'ChatDotRound' },
-  { path: '/skills', name: 'Skills', title: '技能管理', icon: 'Box' },
-  { path: '/settings', name: 'Settings', title: '设置', icon: 'Setting' },
-  { path: '/help', name: 'Help', title: '帮助', icon: 'QuestionFilled' },
-  { path: '/models', name: 'Models', title: '模型', icon: 'Cpu' },
-  { path: '/permissions', name: 'Permissions', title: '权限', icon: 'Lock' },
-  { path: '/plugin-market', name: 'PluginMarket', title: '插件市场', icon: 'Shop' },
-  { path: '/remote-control', name: 'RemoteControl', title: '远程控制', icon: 'Connection' },
-  { path: '/schedule', name: 'Schedule', title: '计划任务', icon: 'Calendar' },
-  { path: '/skill-market', name: 'SkillMarket', title: '技能市场', icon: 'Goods' },
-  { path: '/tasks', name: 'Tasks', title: '任务', icon: 'List' },
-  { path: '/d1-demo', name: 'D1ScreenshotDemo', title: 'D1 截屏', icon: 'Camera' },
-  { path: '/d5-demo', name: 'D5RecordingToSkill', title: 'D5 录屏', icon: 'VideoCamera' }
+  { path: '/dashboard', titleKey: 'nav.dashboard', icon: 'HomeFilled' },
+  { path: '/chat', titleKey: 'nav.chat', icon: 'ChatDotRound' },
+  { path: '/skills', titleKey: 'nav.skills', icon: 'Box' },
+  { path: '/settings', titleKey: 'nav.settings', icon: 'Setting' },
+  { path: '/help', titleKey: 'nav.help', icon: 'QuestionFilled' },
+  { path: '/models', titleKey: 'nav.models', icon: 'Cpu' },
+  { path: '/permissions', titleKey: 'nav.permissions', icon: 'Lock' },
+  { path: '/plugin-market', titleKey: 'nav.plugins', icon: 'Shop' },
+  { path: '/remote-control', titleKey: 'nav.remoteControl', icon: 'Connection' },
+  { path: '/schedule', titleKey: 'nav.schedule', icon: 'Calendar' },
+  { path: '/skill-market', titleKey: 'nav.skillMarket', icon: 'Goods' },
+  { path: '/tasks', titleKey: 'nav.tasks', icon: 'List' },
+  { path: '/d1-demo', titleKey: 'nav.demo.d1', icon: 'Camera' },
+  { path: '/d5-demo', titleKey: 'nav.demo.d5', icon: 'VideoCamera' }
 ];
 
 const sidebarWidth = ref(200);
 const MIN_WIDTH = 180;
 const MAX_WIDTH = 400;
 let isResizing = false;
+
+const currentLocale = computed<string>(() => i18n.global.locale.value as string);
+
+function handleLocaleChange(value: string | number | boolean | undefined): void {
+  if (typeof value === 'string') {
+    setLocale(value as SupportedLocale);
+  }
+}
 
 const isActive = (path: string): boolean => {
   return route.path === path || route.path.startsWith(path + '/');
@@ -75,7 +95,7 @@ const startResize = (_e: MouseEvent) => {
 
 const handleResize = (e: MouseEvent) => {
   if (!isResizing) return;
-  
+
   const newWidth = e.clientX;
   if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
     sidebarWidth.value = newWidth;
@@ -171,6 +191,10 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.lang-switcher {
+  width: 100%;
 }
 
 .version-info {

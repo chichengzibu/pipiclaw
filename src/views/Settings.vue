@@ -1,66 +1,66 @@
 <template>
   <div class="settings-page">
     <div class="page-header">
-      <h1 class="page-title">系统设置</h1>
+      <h1 class="page-title">{{ t('settings.title') }}</h1>
     </div>
 
     <div class="settings-content">
       <el-tabs v-model="activeTab" class="settings-tabs">
-        <el-tab-pane label="基础设置" name="basic">
+        <el-tab-pane :label="t('settings.basicTab')" name="basic">
           <div class="tab-content">
             <el-card class="settings-card">
               <el-form label-width="140px">
-                <el-form-item label="选择主题">
-                  <el-select v-model="selectedTheme" placeholder="请选择主题" @change="handleThemeChange">
-                    <el-option 
-                      v-for="theme in appStore.availableThemes" 
+                <el-form-item :label="t('settings.selectTheme')">
+                  <el-select v-model="selectedTheme" :placeholder="t('settings.pleaseSelectTheme')" @change="handleThemeChange">
+                    <el-option
+                      v-for="theme in appStore.availableThemes"
                       :key="theme.key"
-                      :label="theme.name" 
+                      :label="theme.name"
                       :value="theme.key"
                     />
                   </el-select>
                 </el-form-item>
-                <el-form-item label="新手引导">
+                <el-form-item :label="t('settings.guide')">
                   <el-button type="primary" size="small" @click="appStore.openGuide">
-                    重新打开新手引导
+                    {{ t('settings.openGuide') }}
                   </el-button>
                 </el-form-item>
               </el-form>
             </el-card>
 
             <el-card class="settings-card">
-              <template #header><span>快捷键设置</span></template>
+              <template #header><span>{{ t('settings.shortcut') }}</span></template>
               <el-form label-width="140px">
-                <el-form-item label="全局唤起快捷键">
-                  <ShortcutRecorder 
-                    v-model="shortcutConfig.toggle" 
-                    default-accelerator="Ctrl+Alt+P" 
+                <el-form-item :label="t('settings.globalShortcut')">
+                  <ShortcutRecorder
+                    v-model="shortcutConfig.toggle"
+                    default-accelerator="Ctrl+Alt+P"
                   />
-                  <div class="form-tip">按 Ctrl+Alt+P（Windows）或 Cmd+Option+P（macOS）快速唤起/隐藏窗口</div>
+                  <div class="form-tip">{{ t('settings.shortcutTip') }}</div>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" @click="saveShortcutConfig">保存设置</el-button>
-                  <el-button @click="resetShortcutConfig">恢复默认</el-button>
+                  <el-button type="primary" @click="saveShortcutConfig">{{ t('settings.saveShortcut') }}</el-button>
+                  <el-button @click="resetShortcutConfig">{{ t('settings.resetShortcut') }}</el-button>
                 </el-form-item>
               </el-form>
             </el-card>
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="模型管理" name="models">
+        <el-tab-pane :label="t('settings.modelsTab')" name="models">
           <div class="tab-content">
             <div class="section-header">
               <div class="section-info">
-                <span class="provider-count">{{ modelsStore.enabledCount }}/{{ modelsStore.totalCount }} 已启用</span>
+                <span class="provider-count">{{ modelsStore.enabledCount }}/{{ modelsStore.totalCount }} {{ t('models.enabled') }}</span>
               </div>
               <el-button type="primary" @click="handleAddProvider">
                 <el-icon><Plus /></el-icon>
-                添加提供商
+                {{ t('models.addProvider') }}
               </el-button>
             </div>
 
-            <el-empty v-if="modelsStore.providers.length === 0" description="暂无模型提供商">
-              <el-button type="primary" @click="handleAddProvider">添加提供商</el-button>
+            <el-empty v-if="modelsStore.providers.length === 0" :description="t('models.noProviders')">
+              <el-button type="primary" @click="handleAddProvider">{{ t('models.addProvider') }}</el-button>
             </el-empty>
 
             <div v-else class="provider-grid">
@@ -95,9 +95,9 @@
                       size="small"
                       effect="plain"
                     >
-                      {{ provider.enabled ? '已启用' : '已禁用' }}
+                      {{ provider.enabled ? t('models.enabled') : t('models.disabled') }}
                     </el-tag>
-                    <span class="model-count">{{ provider.models.length }} 个模型</span>
+                    <span class="model-count">{{ t('models.modelsCount', { count: provider.models.length }) }}</span>
                   </div>
 
                   <div class="models-list" v-if="provider.models.length > 0">
@@ -122,7 +122,7 @@
                     </el-scrollbar>
                   </div>
                   <div v-else class="no-models">
-                    暂无模型配置
+                    {{ t('models.noModels') }}
                   </div>
                 </div>
 
@@ -133,20 +133,20 @@
                       :loading="modelsStore.isTesting(provider.id)"
                       @click="handleTestProvider(provider.id)"
                     >
-                      测试连接
+                      {{ t('models.testConnection') }}
                     </el-button>
                     <el-button size="small" @click="handleManageModels(provider)">
-                      管理模型
+                      {{ t('models.manageModels') }}
                     </el-button>
                     <el-button
                       v-if="!isVolcEngineProvider(provider)"
                       size="small"
                       @click="handleFetchModels(provider.id)"
                     >
-                      拉取模型
+                      {{ t('models.fetchModels') }}
                     </el-button>
                     <el-button size="small" @click="handleEditProvider(provider)">
-                      编辑
+                      {{ t('common.edit') }}
                     </el-button>
                     <el-button
                       size="small"
@@ -154,7 +154,7 @@
                       text
                       @click="handleDeleteProvider(provider.id, provider.name)"
                     >
-                      删除
+                      {{ t('common.delete') }}
                     </el-button>
                   </div>
                 </template>
@@ -163,7 +163,7 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="MCP 配置" name="mcp">
+        <el-tab-pane :label="t('settings.mcpTab')" name="mcp">
           <div class="tab-content">
             <div class="section-header">
               <span class="mcp-count">{{ mcpServers.length }} 个已配置</span>
@@ -190,25 +190,25 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="记忆管理" name="memory">
+        <el-tab-pane :label="t('settings.memoryTab')" name="memory">
           <div class="tab-content">
             <el-card class="settings-card">
               <el-form label-width="120px">
-                <el-form-item label="核心记忆">
+                <el-form-item :label="t('settings.coreMemory')">
                   <el-input
                     v-model="hermesMemoryStore.editingCoreMemory"
                     type="textarea"
                     :rows="6"
-                    placeholder="存储用户偏好、习惯、固定规则"
+                    :placeholder="t('settings.coreMemoryPlaceholder')"
                     @input="handleCoreMemoryChange"
                   />
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" size="small" @click="saveCoreMemory">
-                    保存核心记忆
+                    {{ t('settings.saveCoreMemory') }}
                   </el-button>
                   <el-button size="small" type="danger" @click="clearAllMemories">
-                    清空所有记忆
+                    {{ t('settings.clearAllMemory') }}
                   </el-button>
                 </el-form-item>
               </el-form>
@@ -216,39 +216,39 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="关于" name="about">
+        <el-tab-pane :label="t('settings.aboutTab')" name="about">
           <div class="tab-content">
             <el-card class="settings-card">
-              <template #header><span>应用信息</span></template>
+              <template #header><span>{{ t('about.appInfo') }}</span></template>
               <el-form label-width="120px">
-                <el-form-item label="当前版本">
-                  <span class="version-text">{{ appVersion || '加载中…' }}</span>
+                <el-form-item :label="t('about.currentVersion')">
+                  <span class="version-text">{{ appVersion || t('about.loadingVersion') }}</span>
                 </el-form-item>
-                <el-form-item label="更新状态">
-                  <el-tag v-if="updateStatus === 'idle'" type="info" effect="plain">未检查</el-tag>
-                  <el-tag v-else-if="updateStatus === 'checking'" type="info" effect="plain">检查中…</el-tag>
-                  <el-tag v-else-if="updateStatus === 'up-to-date'" type="success" effect="plain">已是最新版本</el-tag>
-                  <el-tag v-else-if="updateStatus === 'available'" type="warning" effect="plain">发现新版本 v{{ availableVersion }}</el-tag>
-                  <el-tag v-else-if="updateStatus === 'downloading'" type="warning" effect="plain">下载中…</el-tag>
-                  <el-tag v-else-if="updateStatus === 'downloaded'" type="success" effect="plain">已下载,可重启安装</el-tag>
-                  <el-tag v-else-if="updateStatus === 'error'" type="danger" effect="plain">检查失败</el-tag>
+                <el-form-item :label="t('about.updateStatus')">
+                  <el-tag v-if="updateStatus === 'idle'" type="info" effect="plain">{{ t('about.updateIdle') }}</el-tag>
+                  <el-tag v-else-if="updateStatus === 'checking'" type="info" effect="plain">{{ t('about.updateChecking') }}</el-tag>
+                  <el-tag v-else-if="updateStatus === 'up-to-date'" type="success" effect="plain">{{ t('about.updateUpToDate') }}</el-tag>
+                  <el-tag v-else-if="updateStatus === 'available'" type="warning" effect="plain">{{ t('about.updateAvailable', { version: availableVersion }) }}</el-tag>
+                  <el-tag v-else-if="updateStatus === 'downloading'" type="warning" effect="plain">{{ t('about.updateDownloading') }}</el-tag>
+                  <el-tag v-else-if="updateStatus === 'downloaded'" type="success" effect="plain">{{ t('about.updateDownloaded') }}</el-tag>
+                  <el-tag v-else-if="updateStatus === 'error'" type="danger" effect="plain">{{ t('about.updateError') }}</el-tag>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" :loading="isChecking" @click="handleCheckUpdate">检查更新</el-button>
+                  <el-button type="primary" :loading="isChecking" @click="handleCheckUpdate">{{ t('about.checkUpdate') }}</el-button>
                   <el-button
                     v-if="updateStatus === 'available'"
                     type="primary"
                     :loading="isDownloading"
                     @click="handleDownloadUpdate"
                   >
-下载新版本 v{{ availableVersion }}
+{{ t('about.downloadUpdate', { version: availableVersion }) }}
 </el-button>
                   <el-button
                     v-if="updateStatus === 'downloaded'"
                     type="success"
                     @click="handleInstallUpdate"
                   >
-立即重启安装
+{{ t('about.installUpdate') }}
 </el-button>
                 </el-form-item>
                 <el-form-item v-if="updateError" label=" ">
@@ -264,7 +264,7 @@
     <!-- 模型管理对话框 -->
     <el-dialog
       v-model="modelDialogVisible"
-      :title="isEditingModel ? '编辑提供商' : '添加提供商'"
+      :title="isEditingModel ? t('models.editProvider') : t('models.addProvider')"
       width="600px"
       :close-on-click-modal="false"
     >
@@ -274,15 +274,15 @@
         :rules="modelFormRules"
         label-width="120px"
       >
-        <el-form-item label="提供商名称" prop="name">
-          <el-input v-model="modelFormData.name" placeholder="例如：OpenAI" />
+        <el-form-item :label="t('models.providerName')" prop="name">
+          <el-input v-model="modelFormData.name" :placeholder="t('models.providerNamePlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="类型" prop="type">
-          <el-select v-model="modelFormData.type" placeholder="选择提供商类型" @change="handleTypeChange">
-            <el-option 
-              v-for="template in allProviderOptions" 
-              :key="template.type" 
+        <el-form-item :label="t('models.type')" prop="type">
+          <el-select v-model="modelFormData.type" :placeholder="t('models.selectType')" @change="handleTypeChange">
+            <el-option
+              v-for="template in allProviderOptions"
+              :key="template.type"
               :value="template.type"
             >
               <span style="margin-right: var(--space-sm);">{{ getProviderIcon(template.type) }}</span>
@@ -291,80 +291,80 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="API 地址" prop="baseUrl">
-          <el-input v-model="modelFormData.baseUrl" placeholder="API Base URL" />
+        <el-form-item :label="t('models.apiUrl')" prop="baseUrl">
+          <el-input v-model="modelFormData.baseUrl" :placeholder="t('models.apiUrlPlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="API Key" prop="apiKey">
+        <el-form-item :label="t('models.apiKey')" prop="apiKey">
           <el-input
             v-model="modelFormData.apiKey"
             type="password"
             show-password
-            placeholder="输入 API Key"
+            :placeholder="t('models.apiKeyPlaceholder')"
           />
           <div v-if="modelFormData.type === 'volc_ark'" class="form-tip">
-            请输入火山方舟 API Key（通常以 ark- 开头）
+            {{ t('models.apiKeyVolcTip') }}
           </div>
           <div v-if="modelFormData.type === 'anthropic'" class="form-tip">
-            请输入 Anthropic API Key（从 console.anthropic.com 获取）
+            {{ t('models.apiKeyAnthropicTip') }}
           </div>
         </el-form-item>
 
         <template v-if="modelFormData.type === 'azure'">
-          <el-form-item label="部署名称" prop="deploymentName">
-            <el-input v-model="modelFormData.deploymentName" placeholder="Azure 部署名称" />
+          <el-form-item :label="t('models.deploymentName')" prop="deploymentName">
+            <el-input v-model="modelFormData.deploymentName" :placeholder="t('models.deploymentPlaceholder')" />
           </el-form-item>
-          <el-form-item label="API 版本" prop="apiVersion">
-            <el-input v-model="modelFormData.apiVersion" placeholder="例如：2024-02-01" />
+          <el-form-item :label="t('models.apiVersion')" prop="apiVersion">
+            <el-input v-model="modelFormData.apiVersion" :placeholder="t('models.apiVersionPlaceholder')" />
           </el-form-item>
         </template>
 
         <template v-if="modelFormData.type === 'anthropic'">
-          <el-form-item label="组织 ID" prop="organization">
-            <el-input v-model="modelFormData.organization" placeholder="可选" />
+          <el-form-item :label="t('models.organization')" prop="organization">
+            <el-input v-model="modelFormData.organization" :placeholder="t('models.organizationPlaceholder')" />
           </el-form-item>
         </template>
 
-        <el-form-item label="超时时间" prop="timeout">
+        <el-form-item :label="t('models.timeout')" prop="timeout">
           <el-input-number
             v-model="modelFormData.timeout"
             :min="5000"
             :max="300000"
             :step="5000"
           />
-          <span class="form-tip">毫秒</span>
+          <span class="form-tip">{{ t('models.timeoutUnit') }}</span>
         </el-form-item>
 
-        <el-form-item label="模型ID">
-          <el-input v-model="modelFormData.modelId" :placeholder="isVolcEngineForm() ? '请输入模型ID，如 doubao-pro-32k-240615 或 ark-code-latest' : '请输入模型ID'" />
+        <el-form-item :label="t('models.modelId')">
+          <el-input v-model="modelFormData.modelId" :placeholder="isVolcEngineForm() ? t('models.modelIdPlaceholder') : t('models.modelIdPlaceholderNormal')" />
           <div v-if="isVolcEngineForm()" class="form-tip">
-            Coding Plan 支持的模型：doubao-pro-32k-240615, doubao-pro-4k-240515, doubao-lite-32k-240428, doubao-pro-128k-240615
+            {{ t('models.volcCodingPlanHint') }}
           </div>
         </el-form-item>
 
-        <el-form-item label="启用">
+        <el-form-item :label="t('models.enabled_')">
           <el-switch v-model="modelFormData.enabled" />
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="modelDialogVisible = false">取消</el-button>
+        <el-button @click="modelDialogVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" :loading="modelSubmitting" @click="handleModelSubmit">
-          {{ isEditingModel ? '保存' : '添加' }}
+          {{ isEditingModel ? t('common.save') : t('common.add') }}
         </el-button>
       </template>
     </el-dialog>
 
     <!-- 模型测试结果对话框 -->
-    <el-dialog v-model="modelTestDialogVisible" title="连接测试结果" width="400px">
+    <el-dialog v-model="modelTestDialogVisible" :title="t('models.testResultTitle')" width="400px">
       <div v-if="modelTestResult">
         <el-result
           :icon="modelTestResult.success ? 'success' : 'error'"
-          :title="modelTestResult.success ? '连接成功' : '连接失败'"
+          :title="modelTestResult.success ? t('models.connectionSuccess') : t('models.connectionFailed')"
         >
           <template #sub-title>
             <div v-if="modelTestResult.success">
-              <p>响应时间: {{ modelTestResult.latency }}ms</p>
+              <p>{{ t('models.latencyMs', { ms: modelTestResult.latency }) }}</p>
             </div>
             <div v-else>
               <p>{{ modelTestResult.error }}</p>
@@ -375,29 +375,29 @@
     </el-dialog>
 
     <!-- 管理模型对话框 -->
-    <el-dialog v-model="manageModelsDialogVisible" title="管理模型" width="600px">
+    <el-dialog v-model="manageModelsDialogVisible" :title="t('models.manageModelsTitle')" width="600px">
       <div v-if="currentProvider">
         <div class="model-list">
           <el-empty v-if="editingModels.length === 0" description="暂无模型" />
           <div v-else>
             <div v-for="(model, index) in editingModels" :key="model.id" class="model-item">
               <span class="model-name">{{ model.name }}</span>
-              <el-button size="small" type="danger" text @click="removeModel(index)">删除</el-button>
+              <el-button size="small" type="danger" text @click="removeModel(index)">{{ t('common.delete') }}</el-button>
             </div>
           </div>
         </div>
-        
+
         <el-divider />
-        
+
         <div class="add-model">
-          <el-input v-model="newModelId" placeholder="输入新模型ID" style="margin-right: var(--space-sm);" />
-          <el-button type="primary" @click="addModel">添加模型</el-button>
+          <el-input v-model="newModelId" :placeholder="t('models.inputNewModelId')" style="margin-right: var(--space-sm);" />
+          <el-button type="primary" @click="addModel">{{ t('models.addModel') }}</el-button>
         </div>
       </div>
-      
+
       <template #footer>
-        <el-button @click="manageModelsDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveModels">保存</el-button>
+        <el-button @click="manageModelsDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="saveModels">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
 
@@ -415,6 +415,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import ShortcutRecorder from '@/components/settings/ShortcutRecorder.vue';
 import FeedbackModal from '@/components/common/FeedbackModal.vue';
 import McpServerCard from '@/components/settings/McpServerCard.vue';
@@ -423,6 +424,8 @@ import { useAppStore } from '@/stores/app';
 import { useHermesMemoryStore } from '@/stores/hermesMemory';
 import { useModelsStore, PROVIDER_DEFAULTS, type ProviderConfig, type ProviderFormData } from '@/stores/models';
 import { Plus } from '@element-plus/icons-vue';
+
+const { t } = useI18n();
 
 const appStore = useAppStore();
 const hermesMemoryStore = useHermesMemoryStore();
@@ -472,17 +475,17 @@ function isVolcEngineForm(): boolean {
   return modelFormData.type === 'volc_ark' || Boolean(modelFormData.baseUrl && modelFormData.baseUrl.includes('coding/v3'));
 }
 
-const modelFormRules = {
-  name: [{ required: true, message: '请输入提供商名称', trigger: 'blur' }],
-  type: [{ required: true, message: '请选择提供商类型', trigger: 'change' }],
-  baseUrl: [{ required: true, message: '请输入 API 地址', trigger: 'blur' }]
-};
+const modelFormRules = computed(() => ({
+  name: [{ required: true, message: t('models.pleaseEnterName'), trigger: 'blur' }],
+  type: [{ required: true, message: t('models.pleaseSelectType'), trigger: 'change' }],
+  baseUrl: [{ required: true, message: t('models.pleaseEnterApiUrl'), trigger: 'blur' }]
+}));
 
 const allProviderOptions = computed(() => {
   const templates = [...modelsStore.providerTemplates];
   // 确保自定义选项始终在最后
   if (!templates.find(t => t.type === 'custom')) {
-    templates.push({ name: '自定义', type: 'custom', defaultConfig: {} });
+    templates.push({ name: t('models.customOption'), type: 'custom', defaultConfig: {} });
   }
   return templates;
 });
@@ -503,7 +506,7 @@ const isDownloading = ref(false);
 
 const handleThemeChange = (themeKey: string): void => {
   appStore.setTheme(themeKey);
-  ElMessage.success('主题已切换');
+  ElMessage.success(t('settings.themeChanged'));
 };
 
 async function loadShortcutConfig(): Promise<void> {
@@ -511,7 +514,6 @@ async function loadShortcutConfig(): Promise<void> {
     if ((window as any).electronAPI?.shortcut) {
       const result = await (window as any).electronAPI.shortcut.get();
       if (result?.success && result?.data) {
-        // 确保返回的数据有有效的值，否则使用默认值
         shortcutConfig.value = {
           toggle: result.data.toggle || 'Ctrl+Alt+P'
         };
@@ -527,14 +529,14 @@ async function saveShortcutConfig(): Promise<void> {
     if ((window as any).electronAPI?.shortcut) {
       const result = await (window as any).electronAPI.shortcut.set('toggle', shortcutConfig.value.toggle);
       if (result?.success) {
-        ElMessage.success('快捷键设置已保存');
+        ElMessage.success(t('settings.shortcutSaved'));
       } else {
-        ElMessage.error(result?.error || '保存失败');
+        ElMessage.error(result?.error || t('settings.saveFailed'));
       }
     }
   } catch (error) {
     console.error('保存快捷键配置失败:', error);
-    ElMessage.error('保存失败');
+    ElMessage.error(t('settings.saveFailed'));
   }
 }
 
@@ -555,22 +557,22 @@ function handleCoreMemoryChange(value: string): void {
 
 async function saveCoreMemory(): Promise<void> {
   await hermesMemoryStore.updateCoreMemory(hermesMemoryStore.editingCoreMemory);
-  ElMessage.success('核心记忆已保存');
+  ElMessage.success(t('settings.coreMemorySaved'));
 }
 
 async function clearAllMemories(): Promise<void> {
   try {
-    await ElMessageBox.confirm('确定要清空所有记忆吗？此操作不可恢复！', '清空确认', {
-      confirmButtonText: '清空',
-      cancelButtonText: '取消',
-      type: 'warning'
+    await ElMessageBox.confirm(t('dialog.confirmClearMemory'), t('dialog.clearMemoryTitle'), {
+      confirmButtonText: t('dialog.clearMemoryButton'),
+      cancelButtonText: t('dialog.cancelButton'),
+      type: t('dialog.warningType') as 'warning'
     });
     hermesMemoryStore.setCoreMemory('');
     hermesMemoryStore.setExperienceMemory('');
     hermesMemoryStore.setMemories([]);
     hermesMemoryStore.editingCoreMemory = '';
     await hermesMemoryStore.saveCoreMemory('');
-    ElMessage.success('所有记忆已清空');
+    ElMessage.success(t('settings.memoriesCleared'));
   } catch {}
 }
 
@@ -589,24 +591,17 @@ function getProviderIcon(type: string): string {
 }
 
 function getProviderTypeName(type: string): string {
-  const names: Record<string, string> = {
-    openai: 'OpenAI',
-    anthropic: 'Anthropic Claude',
-    deepseek: 'DeepSeek',
-    azure: 'Azure OpenAI',
-    ollama: 'Ollama 本地',
-    openrouter: 'OpenRouter',
-    volc_ark: '火山引擎',
-    custom: '自定义',
-    '智谱 AI': '智谱 AI',
-    '月之暗面': '月之暗面 (Kimi)',
-    'MiniMax': 'MiniMax',
-    '零一万物': '零一万物',
-    '百川智能': '百川智能',
-    '阿里百炼': '阿里百炼',
-    '硅基流动': '硅基流动'
+  const map: Record<string, string> = {
+    openai: t('models.typeOpenai'),
+    anthropic: t('models.typeAnthropic'),
+    deepseek: t('models.typeDeepseek'),
+    azure: t('models.typeAzure'),
+    ollama: t('models.typeOllama'),
+    openrouter: t('models.typeOpenrouter'),
+    volc_ark: t('models.typeVolcArk'),
+    custom: t('models.typeCustom')
   };
-  return names[type] || type;
+  return map[type] || type;
 }
 
 function handleTypeChange(type: string): void {
@@ -635,12 +630,12 @@ function handleTypeChange(type: string): void {
 async function handleAddProvider(): Promise<void> {
   isEditingModel.value = false;
   editingModelId.value = '';
-  
+
   // 确保 providerTemplates 数据已加载
   if (modelsStore.providerTemplates.length === 0) {
     await modelsStore.fetchProviderTemplates();
   }
-  
+
   Object.assign(modelFormData, {
     name: '',
     type: 'openai',
@@ -690,25 +685,25 @@ async function handleModelSubmit(): Promise<void> {
         name: modelFormData.modelId,
         capabilities: ['chat']
       }] : [];
-      
-      const submitData = { 
+
+      const submitData = {
         ...modelFormData,
-        models 
+        models
       };
 
       // 深拷贝表单数据，避免 Vue 响应式对象无法被 Electron IPC 序列化
       const clonedFormData = JSON.parse(JSON.stringify(submitData));
-      
+
       if (isEditingModel.value) {
         const result = await modelsStore.updateProvider(editingModelId.value, clonedFormData);
         if (result) {
-          ElMessage.success('保存成功');
+          ElMessage.success(t('models.providerSaved'));
           modelDialogVisible.value = false;
         }
       } else {
         const result = await modelsStore.addProvider(clonedFormData);
         if (result) {
-          ElMessage.success('添加成功');
+          ElMessage.success(t('models.providerAdded'));
           modelDialogVisible.value = false;
         }
       }
@@ -722,7 +717,7 @@ async function handleToggleProvider(id: string, enabled: boolean): Promise<void>
   togglingProviders.value.add(id);
   try {
     await modelsStore.toggleProvider(id, enabled);
-    ElMessage.success(enabled ? '已启用' : '已禁用');
+    ElMessage.success(enabled ? t('models.enabled') : t('models.disabled'));
   } finally {
     togglingProviders.value.delete(id);
   }
@@ -742,12 +737,12 @@ async function handleFetchModels(id: string): Promise<void> {
   const result = await modelsStore.fetchModels(id);
   if (result.success) {
     if (result.models.length > 0) {
-      ElMessage.success(`发现 ${result.models.length} 个模型`);
+      ElMessage.success(t('models.modelsFound', { count: result.models.length }));
     } else if (result.error) {
       ElMessage.warning(result.error);
     }
   } else if (result.error) {
-    ElMessage.error(`获取模型列表失败: ${result.error}`);
+    ElMessage.error(t('models.fetchFailed', { error: result.error }));
   }
 }
 
@@ -760,13 +755,13 @@ function handleManageModels(provider: ProviderConfig): void {
 
 function addModel(): void {
   if (!newModelId.value.trim()) return;
-  
+
   editingModels.value.push({
     id: newModelId.value.trim(),
     name: newModelId.value.trim(),
     capabilities: ['chat']
   });
-  
+
   newModelId.value = '';
 }
 
@@ -776,34 +771,34 @@ function removeModel(index: number): void {
 
 async function saveModels(): Promise<void> {
   if (!currentProvider.value) return;
-  
+
   try {
     await modelsStore.updateProvider(currentProvider.value.id, {
       ...currentProvider.value,
       models: editingModels.value
     });
-    ElMessage.success('保存成功');
+    ElMessage.success(t('models.providerSaved'));
     manageModelsDialogVisible.value = false;
   } catch (error) {
-    ElMessage.error('保存失败');
+    ElMessage.error(t('settings.saveFailed'));
   }
 }
 
 async function handleDeleteProvider(id: string, name: string): Promise<void> {
   try {
     await ElMessageBox.confirm(
-      `确定要删除提供商 "${name}" 吗？`,
-      '删除确认',
+      t('models.deleteConfirmText', { name }),
+      t('models.deleteConfirmTitle'),
       {
-        confirmButtonText: '删除',
-        cancelButtonText: '取消',
-        type: 'warning'
+        confirmButtonText: t('dialog.deleteButton'),
+        cancelButtonText: t('dialog.cancelButton'),
+        type: t('dialog.warningType') as 'warning'
       }
     );
 
     const success = await modelsStore.deleteProvider(id);
     if (success) {
-      ElMessage.success('删除成功');
+      ElMessage.success(t('models.providerDeleted'));
     }
   } catch {}
 }
@@ -840,7 +835,7 @@ async function loadAppVersion(): Promise<void> {
 async function handleCheckUpdate(): Promise<void> {
   const api = (window as any).electronAPI?.autoUpdater;
   if (!api?.check) {
-    ElMessage.warning('当前环境不支持自动更新');
+    ElMessage.warning(t('about.notSupported'));
     return;
   }
   isChecking.value = true;
@@ -850,17 +845,17 @@ async function handleCheckUpdate(): Promise<void> {
     const result = await api.check();
     if (!result?.success) {
       updateStatus.value = 'error';
-      updateError.value = result?.error || '检查失败';
+      updateError.value = result?.error || t('about.checkFailed');
       ElMessage.error(updateError.value);
     } else {
       const version = result?.data?.version;
       if (version && version !== appVersion.value) {
         availableVersion.value = version;
         updateStatus.value = 'available';
-        ElMessage.success(`发现新版本 v${version}`);
+        ElMessage.success(t('about.newVersionFound', { version }));
       } else {
         updateStatus.value = 'up-to-date';
-        ElMessage.success('已是最新版本');
+        ElMessage.success(t('about.alreadyLatest'));
       }
     }
   } catch (e: any) {
@@ -875,7 +870,7 @@ async function handleCheckUpdate(): Promise<void> {
 async function handleDownloadUpdate(): Promise<void> {
   const api = (window as any).electronAPI?.autoUpdater;
   if (!api?.download) {
-    ElMessage.warning('当前环境不支持自动更新');
+    ElMessage.warning(t('about.notSupported'));
     return;
   }
   isDownloading.value = true;
@@ -883,10 +878,10 @@ async function handleDownloadUpdate(): Promise<void> {
   try {
     const result = await api.download();
     if (result?.success) {
-      ElMessage.success('下载已开始');
+      ElMessage.success(t('about.downloadStarted'));
     } else {
       updateStatus.value = 'available';
-      ElMessage.error(result?.error || '下载失败');
+      ElMessage.error(result?.error || t('about.downloadFailed'));
     }
   } catch (e: any) {
     updateStatus.value = 'error';
@@ -900,7 +895,7 @@ async function handleDownloadUpdate(): Promise<void> {
 async function handleInstallUpdate(): Promise<void> {
   const api = (window as any).electronAPI?.autoUpdater;
   if (!api?.install) {
-    ElMessage.warning('当前环境不支持自动更新');
+    ElMessage.warning(t('about.notSupported'));
     return;
   }
   try {
@@ -922,7 +917,7 @@ function bindAutoUpdaterEvents(): void {
   api.onUpdateDownloaded?.((data: { version: string }) => {
     availableVersion.value = data.version;
     updateStatus.value = 'downloaded';
-    ElMessage.success(`v${data.version} 已下载,稍后重启`);
+    ElMessage.success(t('about.downloadedHint', { version: data.version }));
   });
   api.onError?.((data: { message: string }) => {
     if (updateStatus.value === 'checking' || updateStatus.value === 'downloading') {

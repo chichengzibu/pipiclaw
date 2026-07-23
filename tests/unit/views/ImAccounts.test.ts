@@ -67,7 +67,7 @@ describe('ImAccounts.vue', () => {
   it('renders page title and hint', async () => {
     const wrapper = mountComponent()
     await nextTick()
-    expect(wrapper.find('h2').text()).toBe('IM 账号配置')
+    expect(wrapper.find('h2').text()).toBe('即时通讯账号')
     expect(wrapper.text()).toContain('配置飞书 / 钉钉 / 企微 凭证')
     wrapper.unmount()
   })

@@ -1,7 +1,7 @@
 <template>
   <div class="tasks-page">
     <div class="page-header">
-      <h1 class="page-title">自动化任务</h1>
+      <h1 class="page-title">{{ t('tasks.title') }}</h1>
       <Breadcrumb />
     </div>
 
@@ -10,36 +10,36 @@
         <div class="stats-cards">
           <div class="stat-card">
             <div class="stat-value">{{ stats.total }}</div>
-            <div class="stat-label">总任务数</div>
+            <div class="stat-label">{{ t('common.status') }}</div>
           </div>
           <div class="stat-card success">
             <div class="stat-value">{{ stats.success }}</div>
-            <div class="stat-label">成功</div>
+            <div class="stat-label">{{ t('tasks.success') }}</div>
           </div>
           <div class="stat-card danger">
             <div class="stat-value">{{ stats.failed }}</div>
-            <div class="stat-label">失败</div>
+            <div class="stat-label">{{ t('tasks.failed') }}</div>
           </div>
         </div>
 
         <div class="filter-section">
-          <div class="filter-title">筛选</div>
-          <el-select v-model="filterStatus" placeholder="状态" clearable size="small">
-            <el-option label="全部" value="" />
-            <el-option label="成功" value="success" />
-            <el-option label="失败" value="failed" />
-            <el-option label="进行中" value="running" />
-            <el-option label="已取消" value="cancelled" />
+          <div class="filter-title">{{ t('common.filter') }}</div>
+          <el-select v-model="filterStatus" :placeholder="t('common.status')" clearable size="small">
+            <el-option :label="t('common.status')" value="" />
+            <el-option :label="t('tasks.success')" value="success" />
+            <el-option :label="t('tasks.failed')" value="failed" />
+            <el-option :label="t('tasks.running')" value="running" />
+            <el-option :label="t('tasks.pending')" value="pending" />
           </el-select>
-          <el-select v-model="filterMode" placeholder="模式" clearable size="small">
-            <el-option label="全部" value="" />
+          <el-select v-model="filterMode" :placeholder="t('common.type')" clearable size="small">
+            <el-option :label="t('common.type')" value="" />
             <el-option label="安全模式" value="safe" />
             <el-option label="计划模式" value="plan" />
             <el-option label="全量模式" value="craft" />
           </el-select>
           <el-input
             v-model="filterKeyword"
-            placeholder="关键词搜索"
+            :placeholder="t('common.search')"
             clearable
             size="small"
             prefix-icon="Search"
@@ -53,7 +53,7 @@
             :disabled="selectedTasks.length === 0"
             @click="handleBatchDelete"
           >
-            删除选中 ({{ selectedTasks.length }})
+            {{ t('common.delete') }} ({{ selectedTasks.length }})
           </el-button>
         </div>
 
@@ -78,12 +78,12 @@
                 {{ task.duration }}ms
               </span>
               <span class="task-steps">
-                {{ task.steps?.length || 0 }} 步骤
+                {{ task.steps?.length || 0 }} {{ t('tasks.actions') }}
               </span>
             </div>
           </div>
           <div v-if="filteredTasks.length === 0" class="empty-list">
-            暂无任务记录
+            {{ t('tasks.noTasks') }}
           </div>
         </el-scrollbar>
       </div>
@@ -93,14 +93,14 @@
           <div class="detail-header">
             <div class="detail-title">
               <span class="title-icon">{{ getStatusIcon(selectedTask.status) }}</span>
-              <span class="title-text">任务详情</span>
+              <span class="title-text">{{ t('tasks.title') }}</span>
             </div>
             <div class="detail-actions">
               <el-button size="small" @click="handleExport('json')">
-                导出 JSON
+                {{ t('common.export') }} JSON
               </el-button>
               <el-button size="small" @click="handleExport('txt')">
-                导出 TXT
+                {{ t('common.export') }} TXT
               </el-button>
               <el-button
                 v-if="selectedTask.status === 'failed'"
@@ -108,7 +108,7 @@
                 size="small"
                 @click="handleRetry"
               >
-                重试
+                {{ t('tasks.retry') }}
               </el-button>
               <el-button
                 v-if="selectedTask.status === 'running'"
@@ -116,7 +116,7 @@
                 size="small"
                 @click="handleCancel"
               >
-                终止
+                {{ t('tasks.cancel') }}
               </el-button>
             </div>
           </div>
@@ -218,8 +218,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import { Document } from '@element-plus/icons-vue';
 import Breadcrumb from '@/components/layout/Breadcrumb.vue';
+
+const { t } = useI18n();
 
 interface TaskLogStep {
   order: number;

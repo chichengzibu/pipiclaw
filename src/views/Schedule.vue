@@ -1,268 +1,294 @@
 <template>
   <div class="schedule-page">
     <div class="page-header">
-      <h1 class="page-title">定时任务</h1>
-      <Breadcrumb />
-      <div class="header-actions">
-        <el-button @click="importFromSkillMarket">
-          <el-icon><MagicStick /></el-icon>
-          从技能市场导入
-        </el-button>
-        <el-button type="primary" @click="scheduleStore.openCreateDialog">
+      <div class="header-left">
+        <h1 class="page-title">{{ t('schedule.title') }}</h1>
+      </div>
+      <div class="header-right">
+        <el-button type="primary" @click="openCreateDialog">
           <el-icon><Plus /></el-icon>
-          新建任务
+          {{ t('schedule.createTask') }}
         </el-button>
       </div>
     </div>
-    
-    <el-alert type="info" :closable="false" class="schedule-alert">
-      设置按周期自动执行的自动化任务，实现无人值守的重复操作，比如每日报表生成、定时文件备份
-    </el-alert>
-    
-    <el-card class="tasks-card">
-      <el-table :data="scheduleStore.tasks" style="width: 100%">
-        <el-table-column prop="name" label="任务名称" min-width="200" />
-        <el-table-column prop="instruction" label="任务描述" min-width="300" show-overflow-tooltip />
-        <el-table-column label="执行周期" min-width="150">
+
+    <div class="schedule-intro">
+      <el-alert :title="t('schedule.intro')" type="info" :closable="false" show-icon />
+    </div>
+
+    <div class="schedule-content">
+      <el-empty v-if="tasks.length === 0" :description="t('schedule.title')" />
+
+      <el-table v-else :data="tasks" stripe>
+        <el-table-column :label="t('common.name')" prop="name" min-width="160" />
+        <el-table-column :label="t('schedule.instruction')" prop="instruction" min-width="240" show-overflow-tooltip />
+        <el-table-column :label="t('schedule.scheduleType')" prop="scheduleType" width="120">
           <template #default="{ row }">
-            <el-tag size="small">{{ getScheduleTypeText(row.scheduleType) }}</el-tag>
+            <el-tag size="small">{{ getScheduleTypeLabel(row.scheduleType) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column :label="t('common.status')" prop="enabled" width="120">
           <template #default="{ row }">
-            <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
-              {{ row.enabled ? '启用' : '禁用' }}
-            </el-tag>
+            <el-switch
+              :model-value="row.enabled"
+              @change="(val: boolean) => handleToggle(row.id, val)"
+            />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column :label="t('common.createTime')" prop="createdAt" width="180" />
+        <el-table-column :label="t('common.actions')" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" text @click="toggleTask(row)">
-              {{ row.enabled ? '禁用' : '启用' }}
-            </el-button>
-            <el-button size="small" text @click="scheduleStore.openEditDialog(row)">
-              编辑
-            </el-button>
-            <el-button size="small" text type="danger" @click="deleteTask(row)">
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
-    
-    <!-- 执行历史 -->
-    <el-card class="history-card">
-      <template #header>
-        <span>执行历史</span>
-      </template>
-      <el-table :data="scheduleStore.history" style="width: 100%">
-        <el-table-column prop="taskName" label="任务名称" min-width="180" />
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'success' ? 'success' : row.status === 'failed' ? 'danger' : 'info'" size="small">
-              {{ getStatusText(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="执行时间" width="180">
-          <template #default="{ row }">
-            {{ row.startTime ? formatTime(row.startTime) : '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="耗时" width="100">
-          <template #default="{ row }">
-            {{ row.duration ? `${row.duration}ms` : '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="100">
-          <template #default="{ row }">
-            <el-button v-if="row.status === 'failed'" size="small" text>
-              重试
+            <el-button size="small" @click="openEditDialog(row)">{{ t('common.edit') }}</el-button>
+            <el-button size="small" @click="viewHistory(row)">{{ t('schedule.history') }}</el-button>
+            <el-button size="small" type="danger" text @click="handleDelete(row)">
+              {{ t('common.delete') }}
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
-    
-    <!-- 新建/编辑任务弹窗 -->
-    <el-dialog 
-      v-model="scheduleStore.showCreateDialog" 
-      :title="scheduleStore.editingTask ? '编辑任务' : '新建任务'" 
+    </div>
+
+    <!-- 创建/编辑对话框 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="isEditing ? t('schedule.editTask') : t('schedule.createTask')"
       width="600px"
+      :close-on-click-modal="false"
     >
-      <el-form :model="formData" label-width="100px">
-        <el-form-item label="任务名称">
-          <el-input v-model="formData.name" placeholder="请输入任务名称" />
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+        <el-form-item :label="t('schedule.taskName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('schedule.taskNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="任务描述">
-          <el-input 
-            v-model="formData.description" 
-            type="textarea" 
-            :rows="3"
-            placeholder="请输入任务描述" 
-          />
+        <el-form-item :label="t('schedule.taskDesc')">
+          <el-input v-model="form.description" type="textarea" :rows="2" :placeholder="t('schedule.taskDescPlaceholder')" />
         </el-form-item>
-        <el-form-item label="执行指令">
-          <el-input 
-            v-model="formData.instruction" 
-            type="textarea" 
-            :rows="4"
-            placeholder="请输入要执行的指令" 
-          />
+        <el-form-item :label="t('schedule.instruction')" prop="instruction">
+          <el-input v-model="form.instruction" type="textarea" :rows="3" :placeholder="t('schedule.instructionPlaceholder')" />
         </el-form-item>
-        <el-form-item label="执行周期">
-          <el-radio-group v-model="formData.scheduleType">
-            <el-radio label="once">单次</el-radio>
-            <el-radio label="daily">每天</el-radio>
-            <el-radio label="weekly">每周</el-radio>
-            <el-radio label="monthly">每月</el-radio>
-            <el-radio label="cron">Cron</el-radio>
-          </el-radio-group>
+        <el-form-item :label="t('schedule.scheduleType')">
+          <el-select v-model="form.scheduleType">
+            <el-option :label="t('schedule.once')" value="once" />
+            <el-option :label="t('schedule.daily')" value="daily" />
+            <el-option :label="t('schedule.weekly')" value="weekly" />
+            <el-option :label="t('schedule.monthly')" value="monthly" />
+            <el-option :label="t('schedule.cron')" value="cron" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="Cron表达式" v-if="formData.scheduleType === 'cron'">
-          <CronPicker v-model="formData.scheduleValue" />
+        <el-form-item v-if="form.scheduleType === 'cron'" :label="t('schedule.cronExpr')">
+          <el-input v-model="form.cron" placeholder="0 0 * * *" />
         </el-form-item>
-        <el-form-item label="重试次数">
-          <el-input-number v-model="formData.maxRetries" :min="0" :max="10" />
+        <el-form-item :label="t('schedule.retryCount')">
+          <el-input-number v-model="form.retryCount" :min="0" :max="10" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="scheduleStore.closeDialog">取消</el-button>
-        <el-button type="primary" @click="saveTask">
-          {{ scheduleStore.editingTask ? '保存' : '创建' }}
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button @click="handleImportFromMarket">
+          {{ t('schedule.importFromMarket') }}
+        </el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+          {{ isEditing ? t('common.save') : t('common.create') }}
         </el-button>
       </template>
+    </el-dialog>
+
+    <!-- 历史记录对话框 -->
+    <el-dialog v-model="historyVisible" :title="t('schedule.history')" width="700px">
+      <el-table :data="history" stripe>
+        <el-table-column :label="t('schedule.execTime')" prop="executedAt" width="180" />
+        <el-table-column :label="t('common.status')" prop="status" width="100">
+          <template #default="{ row }">
+            <el-tag :type="getStatusTagType(row.status)">{{ getStatusLabel(row.status) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('schedule.duration')" prop="duration" width="100" />
+        <el-table-column :label="t('common.description')" prop="errorMessage" show-overflow-tooltip />
+      </el-table>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, MagicStick } from '@element-plus/icons-vue';
-import Breadcrumb from '@/components/layout/Breadcrumb.vue';
-import CronPicker from '@/components/schedule/CronPicker.vue';
-import { useScheduleStore, type ScheduleTask } from '@/stores/schedule';
+import { useI18n } from 'vue-i18n';
+import { Plus } from '@element-plus/icons-vue';
 
-const scheduleStore = useScheduleStore();
+const { t } = useI18n();
 
-type ScheduleType = 'daily' | 'weekly' | 'monthly' | 'cron';
-
-const formData = reactive<{
+interface ScheduleTask {
+  id: string;
   name: string;
   description: string;
   instruction: string;
-  scheduleType: ScheduleType;
-  scheduleValue: string;
-  maxRetries: number;
-}>({
+  scheduleType: 'once' | 'daily' | 'weekly' | 'monthly' | 'cron';
+  cron?: string;
+  retryCount: number;
+  enabled: boolean;
+  createdAt: string;
+}
+
+const tasks = ref<ScheduleTask[]>([]);
+const history = ref<any[]>([]);
+const dialogVisible = ref(false);
+const historyVisible = ref(false);
+const submitting = ref(false);
+const isEditing = ref(false);
+const formRef = ref();
+
+const form = reactive<ScheduleTask>({
+  id: '',
   name: '',
   description: '',
   instruction: '',
   scheduleType: 'daily',
-  scheduleValue: '',
-  maxRetries: 3
+  cron: '',
+  retryCount: 0,
+  enabled: true,
+  createdAt: ''
 });
 
-function resetForm(): void {
-  Object.assign(formData, {
-    name: '',
-    description: '',
-    instruction: '',
-    scheduleType: 'daily' as const,
-    scheduleValue: '',
-    maxRetries: 3
-  });
-}
+const rules = computed(() => ({
+  name: [{ required: true, message: t('schedule.taskNamePlaceholder'), trigger: 'blur' }],
+  instruction: [{ required: true, message: t('schedule.pleaseFillNameAndInstruction'), trigger: 'blur' }]
+}));
 
-function getScheduleTypeText(type: string): string {
+const statusTagType: Record<string, string> = {
+  success: 'success',
+  failed: 'danger',
+  running: 'warning',
+  pending: 'info'
+};
+
+const statusKey: Record<string, string> = {
+  success: 'schedule.statusSuccess',
+  failed: 'schedule.statusFailed',
+  running: 'schedule.statusRunning',
+  pending: 'schedule.statusPending'
+};
+
+function getScheduleTypeLabel(type: string): string {
   const map: Record<string, string> = {
-    once: '单次',
-    daily: '每天',
-    weekly: '每周',
-    monthly: '每月',
-    cron: 'Cron'
+    once: t('schedule.once'),
+    daily: t('schedule.daily'),
+    weekly: t('schedule.weekly'),
+    monthly: t('schedule.monthly'),
+    cron: t('schedule.cron')
   };
   return map[type] || type;
 }
 
-function getStatusText(status: string): string {
-  const map: Record<string, string> = {
-    pending: '待执行',
-    running: '执行中',
-    success: '成功',
-    failed: '失败'
-  };
-  return map[status] || status;
+function getStatusLabel(status: string): string {
+  return t(statusKey[status] || 'common.loading');
 }
 
-function formatTime(timestamp: number): string {
-  return new Date(timestamp).toLocaleString('zh-CN');
+function getStatusTagType(status: string): string {
+  return statusTagType[status] || 'info';
 }
 
-async function toggleTask(task: ScheduleTask): Promise<void> {
-  ElMessage.success(task.enabled ? '任务已禁用' : '任务已启用');
-}
-
-async function deleteTask(task: ScheduleTask): Promise<void> {
+async function loadTasks(): Promise<void> {
   try {
-    await ElMessageBox.confirm(`确定要删除任务「${task.name}」吗？`, '删除确认', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-      type: 'warning'
-    });
-    ElMessage.success('任务已删除');
+    const result = await (window as any).electronAPI?.schedule?.list?.();
+    if (result?.success && Array.isArray(result.data)) {
+      tasks.value = result.data;
+    }
+  } catch (e) {
+    console.error('加载定时任务失败:', e);
+  }
+}
+
+function openCreateDialog(): void {
+  isEditing.value = false;
+  Object.assign(form, {
+    id: '',
+    name: '',
+    description: '',
+    instruction: '',
+    scheduleType: 'daily',
+    cron: '',
+    retryCount: 0,
+    enabled: true,
+    createdAt: ''
+  });
+  dialogVisible.value = true;
+}
+
+function openEditDialog(task: ScheduleTask): void {
+  isEditing.value = true;
+  Object.assign(form, { ...task });
+  dialogVisible.value = true;
+}
+
+async function handleSubmit(): Promise<void> {
+  if (!formRef.value) return;
+  await formRef.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    submitting.value = true;
+    try {
+      const api = (window as any).electronAPI?.schedule;
+      const payload = { ...form };
+      let result;
+      if (isEditing.value) {
+        result = await api?.update?.(payload);
+        if (result?.success) {
+          ElMessage.success(t('schedule.taskUpdated'));
+        }
+      } else {
+        result = await api?.add?.(payload);
+        if (result?.success) {
+          ElMessage.success(t('schedule.taskCreated'));
+        }
+      }
+      if (result?.success) {
+        dialogVisible.value = false;
+        loadTasks();
+      }
+    } finally {
+      submitting.value = false;
+    }
+  });
+}
+
+async function handleDelete(task: ScheduleTask): Promise<void> {
+  try {
+    await ElMessageBox.confirm(
+      t('schedule.deleteConfirm', { name: task.name }),
+      t('dialog.deleteConfirm'),
+      {
+        confirmButtonText: t('dialog.deleteButton'),
+        cancelButtonText: t('dialog.cancelButton'),
+        type: t('dialog.warningType') as 'warning'
+      }
+    );
+    const result = await (window as any).electronAPI?.schedule?.remove?.(task.id);
+    if (result?.success) {
+      ElMessage.success(t('schedule.taskDeleted'));
+      loadTasks();
+    }
   } catch {}
 }
 
-function importFromSkillMarket(): void {
-  ElMessage.info('从技能市场导入功能开发中...');
+async function handleToggle(id: string, enabled: boolean): Promise<void> {
+  const result = await (window as any).electronAPI?.schedule?.setEnabled?.({ id, enabled });
+  if (result?.success) {
+    ElMessage.success(enabled ? t('schedule.taskEnabled') : t('schedule.taskDisabled'));
+    loadTasks();
+  }
 }
 
-function saveTask(): void {
-  if (!formData.name || !formData.instruction) {
-    ElMessage.warning('请填写任务名称和执行指令');
-    return;
+async function viewHistory(task: ScheduleTask): Promise<void> {
+  const result = await (window as any).electronAPI?.schedule?.history?.(task.id);
+  if (result?.success && Array.isArray(result.data)) {
+    history.value = result.data;
+    historyVisible.value = true;
   }
-  ElMessage.success(scheduleStore.editingTask ? '任务已更新' : '任务已创建');
-  scheduleStore.closeDialog();
-  resetForm();
 }
 
-onMounted(() => {
-  // 模拟初始化数据
-  scheduleStore.setTasks([
-    {
-      id: '1',
-      name: '每日报告生成',
-      description: '每天早上9点生成昨日工作报告',
-      instruction: '请生成昨日的工作报告',
-      scheduleType: 'daily',
-      scheduleValue: '0 9 * * *',
-      enabled: true,
-      maxRetries: 3,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    }
-  ]);
-  scheduleStore.setHistory([]);
-});
+function handleImportFromMarket(): void {
+  ElMessage.info(t('schedule.importDeveloping'));
+}
 
-watch(() => scheduleStore.editingTask, (task) => {
-  if (task) {
-    Object.assign(formData, {
-      name: task.name,
-      description: task.description || '',
-      instruction: task.instruction,
-      scheduleType: task.scheduleType,
-      scheduleValue: task.scheduleValue,
-      maxRetries: task.maxRetries
-    });
-  } else {
-    resetForm();
-  }
-}, { immediate: true });
+onMounted(loadTasks);
 </script>
 
 <style lang="scss" scoped>
@@ -272,22 +298,13 @@ watch(() => scheduleStore.editingTask, (task) => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--content-padding);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-md);
-}
-
-.schedule-alert {
+  margin-bottom: var(--content-padding);
   flex-shrink: 0;
 }
 
@@ -298,18 +315,13 @@ watch(() => scheduleStore.editingTask, (task) => {
   margin: 0;
 }
 
-.tasks-card,
-.history-card {
+.schedule-intro {
+  margin-bottom: var(--content-padding);
+}
+
+.schedule-content {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
-  :deep(.el-card__body) {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-  }
+  overflow-y: auto;
 }
 </style>

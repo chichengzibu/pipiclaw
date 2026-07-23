@@ -1,21 +1,21 @@
 <template>
   <div class="im-accounts">
-    <h2>IM 账号配置</h2>
-    <p class="im-hint">配置飞书 / 钉钉 / 企微 凭证,启用真实双向消息收发</p>
+    <h2>{{ t('nav.imAccounts') }}</h2>
+    <p class="im-hint">{{ t('imAccounts.hint') }}</p>
 
     <el-tabs v-model="activeTab" class="im-tabs">
-      <el-tab-pane label="飞书" name="feishu">
+      <el-tab-pane :label="t('imAccounts.feishu')" name="feishu">
         <el-form :model="feishu" label-width="120px">
-          <el-form-item label="App ID">
+          <el-form-item :label="t('imAccounts.appId')">
             <el-input v-model="feishu.appId" placeholder="cli_xxx" />
           </el-form-item>
-          <el-form-item label="App Secret">
+          <el-form-item :label="t('imAccounts.appSecret')">
             <el-input v-model="feishu.appSecret" type="password" placeholder="xxx" />
           </el-form-item>
           <el-form-item>
-            <el-switch v-model="feishu.enabled" active-text="启用" inactive-text="禁用" />
+            <el-switch v-model="feishu.enabled" :active-text="t('common.enable')" :inactive-text="t('common.disable')" />
             <el-button @click="testConnection('im-feishu', feishu)" :loading="testing['im-feishu']">
-              测试连接
+              {{ t('imAccounts.testConnection') }}
             </el-button>
           </el-form-item>
           <el-form-item v-if="testResults['im-feishu']">
@@ -24,21 +24,21 @@
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="钉钉" name="dingtalk">
+      <el-tab-pane :label="t('imAccounts.dingtalk')" name="dingtalk">
         <el-form :model="dingtalk" label-width="120px">
-          <el-form-item label="App Key">
+          <el-form-item :label="t('imAccounts.appKey')">
             <el-input v-model="dingtalk.appKey" placeholder="xxx" />
           </el-form-item>
-          <el-form-item label="App Secret">
+          <el-form-item :label="t('imAccounts.appSecret')">
             <el-input v-model="dingtalk.appSecret" type="password" />
           </el-form-item>
-          <el-form-item label="Robot Webhook">
+          <el-form-item :label="t('imAccounts.webhook')">
             <el-input v-model="dingtalk.webhookUrl" placeholder="https://oapi.dingtalk.com/robot/send?access_token=xxx" />
           </el-form-item>
           <el-form-item>
-            <el-switch v-model="dingtalk.enabled" active-text="启用" inactive-text="禁用" />
+            <el-switch v-model="dingtalk.enabled" :active-text="t('common.enable')" :inactive-text="t('common.disable')" />
             <el-button @click="testConnection('im-dingtalk', dingtalk)" :loading="testing['im-dingtalk']">
-              测试连接
+              {{ t('imAccounts.testConnection') }}
             </el-button>
           </el-form-item>
           <el-form-item v-if="testResults['im-dingtalk']">
@@ -47,21 +47,21 @@
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="企微" name="wechatwork">
+      <el-tab-pane :label="t('imAccounts.wechatwork')" name="wechatwork">
         <el-form :model="wechatwork" label-width="120px">
-          <el-form-item label="Corp ID">
+          <el-form-item :label="t('imAccounts.corpId')">
             <el-input v-model="wechatwork.corpId" placeholder="wwxxx" />
           </el-form-item>
-          <el-form-item label="Corp Secret">
+          <el-form-item :label="t('imAccounts.corpSecret')">
             <el-input v-model="wechatwork.corpSecret" type="password" />
           </el-form-item>
-          <el-form-item label="Agent ID">
+          <el-form-item :label="t('imAccounts.agentId')">
             <el-input v-model="wechatwork.agentId" placeholder="1000002" />
           </el-form-item>
           <el-form-item>
-            <el-switch v-model="wechatwork.enabled" active-text="启用" inactive-text="禁用" />
+            <el-switch v-model="wechatwork.enabled" :active-text="t('common.enable')" :inactive-text="t('common.disable')" />
             <el-button @click="testConnection('im-wechat-work', wechatwork)" :loading="testing['im-wechat-work']">
-              测试连接
+              {{ t('imAccounts.testConnection') }}
             </el-button>
           </el-form-item>
           <el-form-item v-if="testResults['im-wechat-work']">
@@ -72,95 +72,99 @@
     </el-tabs>
 
     <div class="im-actions">
-      <el-button type="primary" @click="saveAll" :loading="isSaving">保存所有</el-button>
+      <el-button type="primary" @click="saveAll" :loading="isSaving">{{ t('imAccounts.saveAll') }}</el-button>
     </div>
 
     <el-card class="im-flow">
-      <h3>使用流程</h3>
+      <h3>{{ t('imAccounts.usageFlow') }}</h3>
       <ol class="im-steps">
-        <li>在 [飞书开放平台](https://open.feishu.cn/) / [钉钉开放平台](https://open-dev.dingtalk.com/) / [企微后台](https://work.weixin.qq.com/wework_admin/) 创建企业自建应用</li>
-        <li>拿 appId/appSecret + 配置 IP 白名单</li>
-        <li>安装 ngrok(<code>npm install -g ngrok</code>),启动 <code>ngrok http 5173</code></li>
-        <li>把 ngrok URL 填到 IM 平台"消息接收 URL" / "事件订阅 URL"</li>
-        <li>本页面填入凭证 + 测试连接 → 保存</li>
-        <li>用真实 IM 账号发消息 → PiPiClaw 自动回复</li>
+        <li v-html="t('imAccounts.step1')"></li>
+        <li>{{ t('imAccounts.step2') }}</li>
+        <li v-html="t('imAccounts.step3')"></li>
+        <li v-html="t('imAccounts.step4')"></li>
+        <li>{{ t('imAccounts.step5') }}</li>
+        <li>{{ t('imAccounts.step6') }}</li>
       </ol>
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
-const activeTab = ref('feishu')
+const { t } = useI18n();
 
-const feishu = reactive({ appId: '', appSecret: '', enabled: false })
-const dingtalk = reactive({ appKey: '', appSecret: '', webhookUrl: '', enabled: false })
-const wechatwork = reactive({ corpId: '', corpSecret: '', agentId: '', enabled: false })
+const activeTab = ref('feishu');
 
-const testing = reactive<Record<string, boolean>>({})
-const testResults = reactive<Record<string, { ok: boolean; message: string } | null>>({})
-const isSaving = ref(false)
+const feishu = reactive({ appId: '', appSecret: '', enabled: false });
+const dingtalk = reactive({ appKey: '', appSecret: '', webhookUrl: '', enabled: false });
+const wechatwork = reactive({ corpId: '', corpSecret: '', agentId: '', enabled: false });
 
-async function loadConfigs() {
+const testing = reactive<Record<string, boolean>>({});
+const testResults = reactive<Record<string, { ok: boolean; message: string } | null>>({});
+const isSaving = ref(false);
+
+async function loadConfigs(): Promise<void> {
   try {
-    const result = await (window as any).electronAPI.channelConfig.get()
-    const configs: any[] = result && result.success && Array.isArray(result.data) ? result.data : []
-    const feishuConfig = configs.find((c: any) => c.channelKind === 'im-feishu')
+    const result = await (window as any).electronAPI.channelConfig.get();
+    const configs: any[] = result && result.success && Array.isArray(result.data) ? result.data : [];
+    const feishuConfig = configs.find((c: any) => c.channelKind === 'im-feishu');
     if (feishuConfig) {
-      feishu.appId = feishuConfig.appId ?? ''
-      feishu.appSecret = feishuConfig.appSecret ?? ''
-      feishu.enabled = feishuConfig.enabled ?? false
+      feishu.appId = feishuConfig.appId ?? '';
+      feishu.appSecret = feishuConfig.appSecret ?? '';
+      feishu.enabled = feishuConfig.enabled ?? false;
     }
-    const dingtalkConfig = configs.find((c: any) => c.channelKind === 'im-dingtalk')
+    const dingtalkConfig = configs.find((c: any) => c.channelKind === 'im-dingtalk');
     if (dingtalkConfig) {
-      dingtalk.appKey = dingtalkConfig.appKey ?? ''
-      dingtalk.appSecret = dingtalkConfig.appSecret ?? ''
-      dingtalk.webhookUrl = dingtalkConfig.webhookUrl ?? ''
-      dingtalk.enabled = dingtalkConfig.enabled ?? false
+      dingtalk.appKey = dingtalkConfig.appKey ?? '';
+      dingtalk.appSecret = dingtalkConfig.appSecret ?? '';
+      dingtalk.webhookUrl = dingtalkConfig.webhookUrl ?? '';
+      dingtalk.enabled = dingtalkConfig.enabled ?? false;
     }
-    const wechatConfig = configs.find((c: any) => c.channelKind === 'im-wechat-work')
+    const wechatConfig = configs.find((c: any) => c.channelKind === 'im-wechat-work');
     if (wechatConfig) {
-      wechatwork.corpId = wechatConfig.corpId ?? ''
-      wechatwork.corpSecret = wechatConfig.corpSecret ?? ''
-      wechatwork.agentId = wechatConfig.agentId ?? ''
-      wechatwork.enabled = wechatConfig.enabled ?? false
+      wechatwork.corpId = wechatConfig.corpId ?? '';
+      wechatwork.corpSecret = wechatConfig.corpSecret ?? '';
+      wechatwork.agentId = wechatConfig.agentId ?? '';
+      wechatwork.enabled = wechatConfig.enabled ?? false;
     }
   } catch (e) {
-    console.warn('loadConfigs failed', e)
+    console.warn('loadConfigs failed', e);
   }
 }
 
-async function testConnection(platform: string, config: any) {
-  testing[platform] = true
-  testResults[platform] = null
+async function testConnection(platform: string, config: any): Promise<void> {
+  testing[platform] = true;
+  testResults[platform] = null;
   try {
-    const result = await (window as any).electronAPI.channelConfig.test({ platform, config })
-    testResults[platform] = { ok: !!result.success, message: result.message ?? '' }
+    const result = await (window as any).electronAPI.channelConfig.test({ platform, config });
+    testResults[platform] = { ok: !!result.success, message: result.message ?? '' };
   } catch (e) {
-    testResults[platform] = { ok: false, message: String(e) }
+    testResults[platform] = { ok: false, message: String(e) };
   } finally {
-    testing[platform] = false
+    testing[platform] = false;
   }
 }
 
-async function saveAll() {
-  isSaving.value = true
+async function saveAll(): Promise<void> {
+  isSaving.value = true;
   try {
     await Promise.all([
       (window as any).electronAPI.channelConfig.save({ platform: 'im-feishu', config: feishu }),
       (window as any).electronAPI.channelConfig.save({ platform: 'im-dingtalk', config: dingtalk }),
       (window as any).electronAPI.channelConfig.save({ platform: 'im-wechat-work', config: wechatwork }),
-    ])
-    alert('已保存')
+    ]);
+    ElMessage.success(t('imAccounts.saved'));
   } catch (e) {
-    alert('保存失败: ' + e)
+    ElMessage.error(t('imAccounts.saveFailed', { error: String(e) }));
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 
-onMounted(loadConfigs)
+onMounted(loadConfigs);
 </script>
 
 <style lang="scss" scoped>

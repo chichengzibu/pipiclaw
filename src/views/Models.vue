@@ -2,21 +2,21 @@
   <div class="models-page">
     <div class="page-header">
       <div class="header-left">
-        <h1 class="page-title">模型管理</h1>
-        <span class="provider-count">{{ modelsStore.enabledCount }}/{{ modelsStore.totalCount }} 已启用</span>
+        <h1 class="page-title">{{ t('models.title') }}</h1>
+        <span class="provider-count">{{ t('models.providerCount', { enabled: modelsStore.enabledCount, total: modelsStore.totalCount }) }}</span>
       </div>
       <div class="header-right">
         <Breadcrumb />
         <el-button type="primary" @click="handleAddProvider">
           <el-icon><Plus /></el-icon>
-          添加提供商
+          {{ t('models.addProvider') }}
         </el-button>
       </div>
     </div>
 
     <div class="models-content" v-loading="modelsStore.loading">
-      <el-empty v-if="modelsStore.providers.length === 0" description="暂无模型提供商">
-        <el-button type="primary" @click="handleAddProvider">添加提供商</el-button>
+      <el-empty v-if="modelsStore.providers.length === 0" :description="t('models.noProviders')">
+        <el-button type="primary" @click="handleAddProvider">{{ t('models.addProvider') }}</el-button>
       </el-empty>
 
       <div v-else class="provider-grid">
@@ -51,9 +51,9 @@
                 size="small"
                 effect="plain"
               >
-                {{ provider.enabled ? '已启用' : '已禁用' }}
+                {{ provider.enabled ? t('models.enabled') : t('models.disabled') }}
               </el-tag>
-              <span class="model-count">{{ provider.models.length }} 个模型</span>
+              <span class="model-count">{{ t('models.modelsCount', { count: provider.models.length }) }}</span>
             </div>
 
             <div class="models-tag-cloud" v-if="provider.models && provider.models.length > 0">
@@ -70,17 +70,11 @@
                 </span>
               </el-tag>
               <span class="more-models-tip" v-if="provider.models.length > 8">
-                +{{ provider.models.length - 8 }} 个模型
+                {{ t('models.moreModels', { count: provider.models.length - 8 }) }}
               </span>
             </div>
             <div v-else class="no-models">
-              <el-tooltip 
-                :content="provider.type === 'volc_ark' ? '暂无模型配置，请手动添加' : '暂无模型配置'" 
-                placement="top" 
-                :disabled="(provider.type === 'volc_ark' ? '暂无模型配置，请手动添加' : '暂无模型配置').length <= 40"
-              >
-                <span>{{ truncateText(provider.type === 'volc_ark' ? '暂无模型配置，请手动添加' : '暂无模型配置', 40) }}</span>
-              </el-tooltip>
+              <span>{{ provider.type === 'volc_ark' ? t('models.noModelsVolc') : t('models.noModels') }}</span>
             </div>
           </div>
 
@@ -91,20 +85,20 @@
                 :loading="modelsStore.isTesting(provider.id)"
                 @click="handleTest(provider.id)"
               >
-                测试连接
+                {{ t('models.testConnection') }}
               </el-button>
               <el-button size="small" @click="handleManageModels(provider)">
-                管理模型
+                {{ t('models.manageModels') }}
               </el-button>
               <el-button
                 v-if="!isVolcEngineProvider(provider)"
                 size="small"
                 @click="handleFetchModels(provider.id)"
               >
-                拉取模型
+                {{ t('models.fetchModels') }}
               </el-button>
               <el-button size="small" @click="handleEdit(provider)">
-                编辑
+                {{ t('common.edit') }}
               </el-button>
               <el-button
                 size="small"
@@ -112,7 +106,7 @@
                 text
                 @click="handleDelete(provider.id, provider.name)"
               >
-                删除
+                {{ t('common.delete') }}
               </el-button>
             </div>
           </template>
@@ -123,7 +117,7 @@
     <!-- 添加/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="isEditing ? '编辑供应商' : '添加供应商'"
+      :title="isEditing ? t('models.editProvider') : t('models.addProvider')"
       width="700px"
       :close-on-click-modal="false"
     >
@@ -133,15 +127,15 @@
         :rules="formRules"
         label-width="120px"
       >
-        <el-form-item label="提供商名称" prop="name">
-          <el-input v-model="formData.name" placeholder="例如：OpenAI" />
+        <el-form-item :label="t('models.providerName')" prop="name">
+          <el-input v-model="formData.name" :placeholder="t('models.providerNamePlaceholder')" />
         </el-form-item>
 
-        <el-form-item v-if="!isEditing" label="类型" prop="type">
-          <el-select v-model="formData.type" placeholder="选择提供商类型" @change="handleTypeChange">
-            <el-option 
-              v-for="template in allProviderOptions" 
-              :key="template.type" 
+        <el-form-item v-if="!isEditing" :label="t('models.type')" prop="type">
+          <el-select v-model="formData.type" :placeholder="t('models.selectType')" @change="handleTypeChange">
+            <el-option
+              v-for="template in allProviderOptions"
+              :key="template.type"
               :value="template.type"
             >
               <span style="margin-right: var(--space-sm);">{{ getProviderIcon(template.type, template.name) }}</span>
@@ -150,89 +144,83 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="API 地址" prop="baseUrl">
-          <el-input v-model="formData.baseUrl" placeholder="API Base URL" />
+        <el-form-item :label="t('models.apiUrl')" prop="baseUrl">
+          <el-input v-model="formData.baseUrl" :placeholder="t('models.apiUrlPlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="API Key" prop="apiKey">
+        <el-form-item :label="t('models.apiKey')" prop="apiKey">
           <el-input
             v-model="formData.apiKey"
             type="password"
             show-password
-            placeholder="输入 API Key"
+            :placeholder="t('models.apiKeyPlaceholder')"
           />
           <div v-if="currentProviderType === 'volc_ark'" class="form-tip">
-            <el-tooltip content="请输入火山方舟创建的长效 API Key（通常以 ark- 开头，而非 IAM 访问密钥）" placement="top" :disabled="'请输入火山方舟创建的长效 API Key（通常以 ark- 开头，而非 IAM 访问密钥）'.length <= 40">
-              <span>{{ truncateText('请输入火山方舟创建的长效 API Key（通常以 ark- 开头，而非 IAM 访问密钥）', 40) }}</span>
-            </el-tooltip>
+            {{ t('models.apiKeyVolcTip') }}
           </div>
           <div v-if="currentProviderType === 'anthropic'" class="form-tip">
-            <el-tooltip content="请输入 Anthropic API Key（从 console.anthropic.com 获取）" placement="top" :disabled="'请输入 Anthropic API Key（从 console.anthropic.com 获取）'.length <= 40">
-              <span>{{ truncateText('请输入 Anthropic API Key（从 console.anthropic.com 获取）', 40) }}</span>
-            </el-tooltip>
+            {{ t('models.apiKeyAnthropicTip') }}
           </div>
         </el-form-item>
 
         <template v-if="currentProviderType === 'azure'">
-          <el-form-item label="部署名称" prop="deploymentName">
-            <el-input v-model="formData.deploymentName" placeholder="Azure 部署名称" />
+          <el-form-item :label="t('models.deploymentName')" prop="deploymentName">
+            <el-input v-model="formData.deploymentName" :placeholder="t('models.deploymentPlaceholder')" />
           </el-form-item>
-          <el-form-item label="API 版本" prop="apiVersion">
-            <el-input v-model="formData.apiVersion" placeholder="例如：2024-02-01" />
+          <el-form-item :label="t('models.apiVersion')" prop="apiVersion">
+            <el-input v-model="formData.apiVersion" :placeholder="t('models.apiVersionPlaceholder')" />
           </el-form-item>
         </template>
 
         <template v-if="currentProviderType === 'anthropic'">
-          <el-form-item label="组织 ID" prop="organization">
-            <el-input v-model="formData.organization" placeholder="可选" />
+          <el-form-item :label="t('models.organization')" prop="organization">
+            <el-input v-model="formData.organization" :placeholder="t('models.organizationPlaceholder')" />
           </el-form-item>
         </template>
 
-        <el-form-item label="超时时间" prop="timeout">
+        <el-form-item :label="t('models.timeout')" prop="timeout">
           <el-input-number
             v-model="formData.timeout"
             :min="5000"
             :max="300000"
             :step="5000"
           />
-          <span class="form-tip">毫秒</span>
+          <span class="form-tip">{{ t('models.timeoutUnit') }}</span>
         </el-form-item>
 
-        <el-form-item label="模型ID" prop="modelId">
-          <el-input v-model="formData.modelId" :placeholder="isVolcEngineForm() ? '请输入模型ID，如 doubao-pro-32k-240615 或 ark-code-latest' : '请输入模型ID'" />
+        <el-form-item :label="t('models.modelId')" prop="modelId">
+          <el-input v-model="formData.modelId" :placeholder="isVolcEngineForm() ? t('models.modelIdPlaceholder') : t('models.modelIdPlaceholderNormal')" />
           <div v-if="isVolcEngineForm()" class="form-tip">
-            Coding Plan 支持的模型：doubao-pro-32k-240615, doubao-pro-4k-240515, doubao-lite-32k-240428, doubao-pro-128k-240615
+            {{ t('models.volcCodingPlanHint') }}
           </div>
         </el-form-item>
 
-        <el-form-item label="启用">
+        <el-form-item :label="t('models.enabled_')">
           <el-switch v-model="formData.enabled" />
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" :loading="submitting" @click="handleSubmit">
-          {{ isEditing ? '保存' : '添加' }}
+          {{ isEditing ? t('common.save') : t('common.add') }}
         </el-button>
       </template>
     </el-dialog>
 
     <!-- 测试结果对话框 -->
-    <el-dialog v-model="testDialogVisible" title="连接测试结果" width="400px">
+    <el-dialog v-model="testDialogVisible" :title="t('models.testResultTitle')" width="400px">
       <div v-if="testResult">
         <el-result
           :icon="testResult.success ? 'success' : 'error'"
-          :title="testResult.success ? '连接成功' : '连接失败'"
+          :title="testResult.success ? t('models.connectionSuccess') : t('models.connectionFailed')"
         >
           <template #sub-title>
             <div v-if="testResult.success">
-              <p>响应时间: {{ testResult.latency }}ms</p>
+              <p>{{ t('models.latencyMs', { ms: testResult.latency }) }}</p>
             </div>
             <div v-else>
-              <el-tooltip :content="testResult.error" placement="top" :disabled="testResult.error && testResult.error.length <= 40">
-                <p>{{ testResult.error ? truncateText(testResult.error, 40) : '' }}</p>
-              </el-tooltip>
+              <p>{{ testResult.error }}</p>
             </div>
           </template>
         </el-result>
@@ -240,29 +228,29 @@
     </el-dialog>
 
     <!-- 管理模型对话框 -->
-    <el-dialog v-model="manageModelsDialogVisible" title="管理模型" width="600px">
+    <el-dialog v-model="manageModelsDialogVisible" :title="t('models.manageModelsTitle')" width="600px">
       <div v-if="currentProvider">
         <div class="model-list">
-          <el-empty v-if="editingModels.length === 0" description="暂无模型" />
+          <el-empty v-if="editingModels.length === 0" :description="t('models.noModels')" />
           <div v-else>
             <div v-for="(model, index) in editingModels" :key="model.id" class="model-item">
               <span class="model-name">{{ model.name }}</span>
-              <el-button size="small" type="danger" text @click="removeModel(index)">删除</el-button>
+              <el-button size="small" type="danger" text @click="removeModel(index)">{{ t('common.delete') }}</el-button>
             </div>
           </div>
         </div>
-        
+
         <el-divider />
-        
+
         <div class="add-model">
-          <el-input v-model="newModelId" placeholder="输入新模型ID" style="margin-right: var(--space-sm);" />
-          <el-button type="primary" @click="addModel">添加模型</el-button>
+          <el-input v-model="newModelId" :placeholder="t('models.inputNewModelId')" style="margin-right: var(--space-sm);" />
+          <el-button type="primary" @click="addModel">{{ t('models.addModel') }}</el-button>
         </div>
       </div>
-      
+
       <template #footer>
-        <el-button @click="manageModelsDialogVisible = false">关闭</el-button>
-        <el-button type="primary" @click="saveModels">保存</el-button>
+        <el-button @click="manageModelsDialogVisible = false">{{ t('common.close') }}</el-button>
+        <el-button type="primary" @click="saveModels">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -271,9 +259,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import Breadcrumb from '@/components/layout/Breadcrumb.vue';
 import { useModelsStore, PROVIDER_DEFAULTS, type ProviderConfig, type ProviderFormData } from '@/stores/models';
 import { Plus } from '@element-plus/icons-vue';
+
+const { t } = useI18n();
 
 const modelsStore = useModelsStore();
 
@@ -298,11 +289,6 @@ function isVolcEngineForm(): boolean {
   return formData.type === 'volc_ark' || (!!(formData as any).baseUrl && (formData as any).baseUrl.includes('coding/v3'));
 }
 
-function truncateText(text: string, maxLength: number): string {
-  if (!text) return '';
-  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-}
-
 const currentProviderType = computed(() => formData.type || 'openai');
 
 const formData = reactive<ProviderFormData & { modelId: string }>({
@@ -319,17 +305,16 @@ const formData = reactive<ProviderFormData & { modelId: string }>({
   modelId: ''
 });
 
-const formRules = {
-  name: [{ required: true, message: '请输入提供商名称', trigger: 'blur' }],
-  type: [{ required: true, message: '请选择提供商类型', trigger: 'change' }],
-  baseUrl: [{ required: true, message: '请输入 API 地址', trigger: 'blur' }]
-};
+const formRules = computed(() => ({
+  name: [{ required: true, message: t('models.pleaseEnterName'), trigger: 'blur' }],
+  type: [{ required: true, message: t('models.pleaseSelectType'), trigger: 'change' }],
+  baseUrl: [{ required: true, message: t('models.pleaseEnterApiUrl'), trigger: 'blur' }]
+}));
 
 const allProviderOptions = computed(() => {
   const templates = [...modelsStore.providerTemplates];
-  // 确保自定义选项始终在最后
-  if (!templates.find(t => t.type === 'custom')) {
-    templates.push({ name: '自定义', type: 'custom', defaultConfig: {} });
+  if (!templates.find(tmpl => tmpl.type === 'custom')) {
+    templates.push({ name: t('models.customOption'), type: 'custom', defaultConfig: {} });
   }
   return templates;
 });
@@ -342,7 +327,7 @@ onMounted(async () => {
 });
 
 function handleTypeChange(type: string): void {
-  const selectedTemplate = modelsStore.providerTemplates.find(t => t.type === type);
+  const selectedTemplate = modelsStore.providerTemplates.find(tmpl => tmpl.type === type);
   if (selectedTemplate) {
     formData.name = selectedTemplate.defaultConfig.name || '';
     formData.baseUrl = selectedTemplate.defaultConfig.baseUrl || '';
@@ -366,21 +351,21 @@ function handleTypeChange(type: string): void {
 
 function getProviderTypeName(type: string, name?: string): string {
   const names: Record<string, string> = {
-    openai: 'OpenAI',
-    anthropic: 'Anthropic Claude',
-    deepseek: 'DeepSeek',
-    azure: 'Azure OpenAI',
-    ollama: 'Ollama 本地',
-    openrouter: 'OpenRouter',
-    volc_ark: '火山引擎',
-    custom: '自定义',
-    '智谱 AI': '智谱 AI',
-    '月之暗面': '月之暗面 (Kimi)',
-    'MiniMax': 'MiniMax',
-    '零一万物': '零一万物',
-    '百川智能': '百川智能',
-    '阿里百炼': '阿里百炼',
-    '硅基流动': '硅基流动'
+    openai: t('models.typeOpenai'),
+    anthropic: t('models.typeAnthropic'),
+    deepseek: t('models.typeDeepseek'),
+    azure: t('models.typeAzure'),
+    ollama: t('models.typeOllama'),
+    openrouter: t('models.typeOpenrouter'),
+    volc_ark: t('models.typeVolcArk'),
+    custom: t('models.typeCustom'),
+    '智谱 AI': t('models.typeZhipu'),
+    '月之暗面': t('models.typeKimi'),
+    'MiniMax': t('models.typeMiniMax'),
+    '零一万物': t('models.typeYi'),
+    '百川智能': t('models.typeBaichuan'),
+    '阿里百炼': t('models.typeAliyun'),
+    '硅基流动': t('models.typeSilicon')
   };
   return names[type] || (name ? names[name] || type : type);
 }
@@ -421,13 +406,13 @@ function handleManageModels(provider: ProviderConfig): void {
 
 function addModel(): void {
   if (!newModelId.value.trim()) return;
-  
+
   editingModels.value.push({
     id: newModelId.value.trim(),
     name: newModelId.value.trim(),
     capabilities: ['chat']
   });
-  
+
   newModelId.value = '';
 }
 
@@ -437,27 +422,27 @@ function removeModel(index: number): void {
 
 async function saveModels(): Promise<void> {
   if (!currentProvider.value) return;
-  
+
   try {
     await modelsStore.updateProvider(currentProvider.value.id, {
       ...currentProvider.value,
       models: editingModels.value
     });
-    ElMessage.success('保存成功');
+    ElMessage.success(t('models.providerSaved'));
     manageModelsDialogVisible.value = false;
   } catch (error) {
-    ElMessage.error('保存失败');
+    ElMessage.error(t('error.saveFailed'));
   }
 }
 
 async function handleAddProvider(): Promise<void> {
   isEditing.value = false;
   editingId.value = '';
-  
+
   if (modelsStore.providerTemplates.length === 0) {
     await modelsStore.fetchProviderTemplates();
   }
-  
+
   Object.assign(formData, {
     name: '',
     type: 'openai',
@@ -477,8 +462,7 @@ async function handleAddProvider(): Promise<void> {
 function handleEdit(provider: ProviderConfig): void {
   isEditing.value = true;
   editingId.value = provider.id;
-  
-  // 回填基本信息
+
   Object.assign(formData, {
     name: provider.name,
     type: provider.type,
@@ -492,7 +476,7 @@ function handleEdit(provider: ProviderConfig): void {
     maxRetries: provider.maxRetries || 3,
     modelId: provider.models && provider.models.length > 0 ? provider.models[0].id : ''
   });
-  
+
   dialogVisible.value = true;
 }
 
@@ -504,29 +488,30 @@ async function handleSubmit(): Promise<void> {
 
     submitting.value = true;
     try {
-      // 创建模型数据
       const models = formData.modelId ? [{
         id: formData.modelId,
         name: formData.modelId,
         provider: formData.type,
         capabilities: ['chat']
       }] : [];
-      
-      const submitData = { 
+
+      const submitData = {
         ...formData,
         models
       };
 
+      const cloned = JSON.parse(JSON.stringify(submitData));
+
       if (isEditing.value) {
-        const result = await modelsStore.updateProvider(editingId.value, submitData);
+        const result = await modelsStore.updateProvider(editingId.value, cloned);
         if (result) {
-          ElMessage.success('保存成功');
+          ElMessage.success(t('models.providerSaved'));
           dialogVisible.value = false;
         }
       } else {
-        const result = await modelsStore.addProvider(submitData);
+        const result = await modelsStore.addProvider(cloned);
         if (result) {
-          ElMessage.success('添加成功');
+          ElMessage.success(t('models.providerAdded'));
           dialogVisible.value = false;
         }
       }
@@ -540,7 +525,7 @@ async function handleToggle(id: string, enabled: boolean): Promise<void> {
   togglingProviders.value.add(id);
   try {
     await modelsStore.toggleProvider(id, enabled);
-    ElMessage.success(enabled ? '已启用' : '已禁用');
+    ElMessage.success(enabled ? t('models.enabled') : t('models.disabled'));
   } finally {
     togglingProviders.value.delete(id);
   }
@@ -559,7 +544,7 @@ async function handleTest(id: string): Promise<void> {
     setTimeout(async () => {
       const fetchResult = await modelsStore.fetchModels(id);
       if (fetchResult.success) {
-        ElMessage.success(`发现 ${fetchResult.models.length} 个模型`);
+        ElMessage.success(t('models.modelsFound', { count: fetchResult.models.length }));
       } else if (fetchResult.error) {
         ElMessage.warning(fetchResult.error);
       }
@@ -571,30 +556,30 @@ async function handleFetchModels(id: string): Promise<void> {
   const result = await modelsStore.fetchModels(id);
   if (result.success) {
     if (result.models.length > 0) {
-      ElMessage.success(`发现 ${result.models.length} 个模型`);
+      ElMessage.success(t('models.modelsFound', { count: result.models.length }));
     } else if (result.error) {
       ElMessage.warning(result.error);
     }
   } else if (result.error) {
-    ElMessage.error(`获取模型列表失败: ${result.error}`);
+    ElMessage.error(t('models.fetchFailed', { error: result.error }));
   }
 }
 
 async function handleDelete(id: string, name: string): Promise<void> {
   try {
     await ElMessageBox.confirm(
-      `确定要删除提供商 "${name}" 吗？`,
-      '删除确认',
+      t('models.deleteConfirmText', { name }),
+      t('models.deleteConfirmTitle'),
       {
-        confirmButtonText: '删除',
-        cancelButtonText: '取消',
-        type: 'warning'
+        confirmButtonText: t('dialog.deleteButton'),
+        cancelButtonText: t('dialog.cancelButton'),
+        type: t('dialog.warningType') as 'warning'
       }
     );
 
     const success = await modelsStore.deleteProvider(id);
     if (success) {
-      ElMessage.success('删除成功');
+      ElMessage.success(t('models.providerDeleted'));
     }
   } catch (error) {
     void error;
@@ -701,12 +686,15 @@ async function handleDelete(id: string, name: string): Promise<void> {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  height: 100%;
 }
 
 .provider-info {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  flex: 1;
+  min-width: 0;
 }
 
 .provider-icon {
@@ -717,12 +705,16 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  min-width: 0;
 }
 
 .provider-name {
   font-size: var(--font-size-title-2);
   font-weight: var(--font-weight-semibold);
   color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .provider-type {
@@ -731,22 +723,22 @@ async function handleDelete(id: string, name: string): Promise<void> {
 }
 
 .provider-body {
+  padding: var(--space-sm) 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: var(--space-sm);
+  min-height: 0;
 }
 
 .connection-status {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-sm);
-  flex-shrink: 0;
 }
 
 .model-count {
-  font-size: var(--font-size-callout);
-  line-height: var(--line-height-normal);
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
 }
 
@@ -754,75 +746,40 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
-  flex: 1;
-  align-content: flex-start;
-
-  :deep(.el-tag) {
-    font-size: var(--font-size-caption-1);
-    height: var(--button-height-sm);
-  }
+  align-items: center;
+  overflow-y: auto;
 }
 
 .model-cap-tag {
-  font-size: var(--font-size-caption-1);
+  font-size: 10px;
+  color: var(--el-text-color-secondary);
   margin-left: var(--space-xs);
-  opacity: 0.8;
 }
 
 .more-models-tip {
-  font-size: var(--font-size-callout);
-  line-height: var(--line-height-normal);
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
-  padding: var(--space-xs) 0;
 }
 
 .no-models {
   font-size: var(--font-size-callout);
-  line-height: var(--line-height-normal);
   color: var(--el-text-color-secondary);
   text-align: center;
-  padding: var(--space-lg);
+  padding: var(--space-sm);
 }
 
 .provider-actions {
   display: flex;
-  gap: var(--space-sm);
-  justify-content: flex-end;
+  gap: var(--space-xs);
   flex-wrap: wrap;
-  width: 100%;
-}
-
-.volc-tip {
-  margin-bottom: var(--space-lg);
-}
-
-.model-row {
-  display: flex;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
-  padding: var(--space-sm);
-  background: var(--el-fill-color-light);
-  border-radius: var(--radius-sm);
-
-  :deep(.el-form-item) {
-    margin-bottom: 0;
-    flex: 1;
-  }
-}
-
-.form-item-input {
-  flex: 1;
-}
-
-.form-item-select {
+  justify-content: flex-end;
   width: 100%;
 }
 
 .form-tip {
-  margin-left: var(--space-sm);
+  font-size: var(--font-size-caption-1);
   color: var(--el-text-color-secondary);
-  font-size: var(--font-size-callout);
-  line-height: var(--line-height-normal);
+  margin-left: var(--space-sm);
 }
 
 .model-list {
@@ -834,7 +791,7 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-sm) var(--space-sm);
+  padding: var(--space-sm);
   margin-bottom: var(--space-sm);
   background: var(--el-fill-color-light);
   border-radius: var(--radius-sm);

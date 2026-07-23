@@ -33,6 +33,7 @@ export default defineConfig({
       'dist-electron/**',
       'tests/e2e/**'
     ],
+    setupFiles: ['./tests/unit/i18n-setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json-summary'],

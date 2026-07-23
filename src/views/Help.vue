@@ -1,307 +1,193 @@
 <template>
   <div class="help-page">
     <div class="page-header">
-      <h1 class="page-title">帮助中心</h1>
-      <Breadcrumb />
+      <h1 class="page-title">{{ t('help.title') }}</h1>
     </div>
-    
-    <el-tabs v-model="activeTab" class="help-tabs">
-      <!-- 常见问题 -->
-      <el-tab-pane label="常见问题" name="faq">
-        <div class="faq-section">
-          <el-collapse v-model="activeFaq">
-            <el-collapse-item title="如何添加模型？" name="1">
-              <div class="faq-answer">
-                <p>1. 进入「模型管理」页面</p>
-                <p>2. 点击「添加模型提供商」按钮</p>
-                <p>3. 选择提供商类型（如 Ollama、DeepSeek 等）</p>
-                <p>4. 填写 API Key 和 Base URL</p>
-                <p>5. 点击「测试连接」验证配置</p>
-                <p>6. 验证通过后点击「保存」</p>
+
+    <div class="help-content">
+      <el-row :gutter="20">
+        <!-- 快速入门 -->
+        <el-col :span="24">
+          <el-card class="help-card">
+            <template #header>
+              <div class="card-header">
+                <el-icon><Star /></el-icon>
+                <span>{{ t('help.tutorial') }}</span>
               </div>
-            </el-collapse-item>
-            
-            <el-collapse-item title="如何设置权限？" name="2">
-              <div class="faq-answer">
-                <p>1. 进入「权限管理」页面</p>
-                <p>2. 选择或创建一个权限集</p>
-                <p>3. 为每个权限类别设置权限级别</p>
-                <p>4. 可以设置允许/禁止的路径</p>
-                <p>5. 保存后激活该权限集</p>
-              </div>
-            </el-collapse-item>
-            
-            <el-collapse-item title="如何使用自动化任务？" name="3">
-              <div class="faq-answer">
-                <p>1. 在对话中描述您的任务需求</p>
-                <p>2. AI 会解析任务并生成执行计划</p>
-                <p>3. 确认计划后点击「执行」</p>
-                <p>4. 可以在「自动化任务」页面查看执行日志</p>
-              </div>
-            </el-collapse-item>
-            
-            <el-collapse-item title="如何使用全局快捷键？" name="4">
-              <div class="faq-answer">
-                <p>默认快捷键：<strong>Ctrl+Alt+P</strong> (Windows) / <strong>Cmd+Option+P</strong> (macOS)</p>
-                <p>按此快捷键可以快速唤起/隐藏主窗口</p>
-                <p>可以在「系统设置」中自定义快捷键</p>
-              </div>
-            </el-collapse-item>
-          </el-collapse>
-        </div>
-      </el-tab-pane>
-      
-      <!-- 使用教程 -->
-      <el-tab-pane label="使用教程" name="tutorial">
-        <div class="tutorial-section">
-          <el-card class="tutorial-card">
-            <div class="tutorial-step">
-              <div class="step-number">1</div>
-              <div class="step-content">
-                <h3>配置模型</h3>
-                <p>首次使用需要先配置模型提供商，支持 Ollama、DeepSeek、OpenAI 等多种模型</p>
-              </div>
-            </div>
-          </el-card>
-          
-          <el-card class="tutorial-card">
-            <div class="tutorial-step">
-              <div class="step-number">2</div>
-              <div class="step-content">
-                <h3>设置权限</h3>
-                <p>根据您的需求设置操作权限，确保安全使用自动化功能</p>
-              </div>
-            </div>
-          </el-card>
-          
-          <el-card class="tutorial-card">
-            <div class="tutorial-step">
-              <div class="step-number">3</div>
-              <div class="step-content">
-                <h3>开始对话</h3>
-                <p>进入「AI对话」页面，输入您的需求，AI 会帮您完成</p>
-              </div>
-            </div>
-          </el-card>
-        </div>
-      </el-tab-pane>
-      
-      <!-- 功能说明 -->
-      <el-tab-pane label="功能说明" name="features">
-        <div class="features-section">
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-card class="feature-card">
-                <div class="feature-icon">💬</div>
-                <h3>AI对话</h3>
-                <p>与 AI 自然对话，支持多轮对话、上下文理解</p>
-              </el-card>
-            </el-col>
-            <el-col :span="12">
-              <el-card class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3>自动化任务</h3>
-                <p>让 AI 帮您执行文件操作、系统命令等自动化任务</p>
-              </el-card>
-            </el-col>
-            <el-col :span="12">
-              <el-card class="feature-card">
-                <div class="feature-icon">🖼️</div>
-                <h3>多模态输入</h3>
-                <p>支持截图粘贴、文件拖拽上传，AI 可以理解图片和文档</p>
-              </el-card>
-            </el-col>
-            <el-col :span="12">
-              <el-card class="feature-card">
-                <div class="feature-icon">⌨️</div>
-                <h3>全局快捷键</h3>
-                <p>随时随地快速唤起窗口，提升使用效率</p>
-              </el-card>
-            </el-col>
-          </el-row>
-          
-          <el-alert type="info" :closable="false" style="margin-top: var(--space-lg);">
-            <template #title>
-              如有问题或建议，请前往「系统设置」→「反馈与帮助」提交反馈
             </template>
-          </el-alert>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+            <el-steps :active="3" finish-status="success" direction="vertical">
+              <el-step>
+                <template #title>
+                  <span class="step-title">{{ t('help.step1Title') }}</span>
+                </template>
+                <template #description>
+                  <p>{{ t('help.step1Desc') }}</p>
+                </template>
+              </el-step>
+              <el-step>
+                <template #title>
+                  <span class="step-title">{{ t('help.step2Title') }}</span>
+                </template>
+                <template #description>
+                  <p>{{ t('help.step2Desc') }}</p>
+                </template>
+              </el-step>
+              <el-step>
+                <template #title>
+                  <span class="step-title">{{ t('help.step3Title') }}</span>
+                </template>
+                <template #description>
+                  <p>{{ t('help.step3Desc') }}</p>
+                </template>
+              </el-step>
+            </el-steps>
+          </el-card>
+        </el-col>
+
+        <!-- 常见问题 -->
+        <el-col :span="12">
+          <el-card class="help-card">
+            <template #header>
+              <div class="card-header">
+                <el-icon><QuestionFilled /></el-icon>
+                <span>{{ t('help.faq') }}</span>
+              </div>
+            </template>
+            <el-collapse>
+              <el-collapse-item :title="t('help.addModel')" name="1">
+                <pre class="steps">{{ t('help.addModelSteps') }}</pre>
+              </el-collapse-item>
+              <el-collapse-item :title="t('help.setPermission')" name="2">
+                <pre class="steps">{{ t('help.setPermissionSteps') }}</pre>
+              </el-collapse-item>
+              <el-collapse-item :title="t('help.useTask')" name="3">
+                <pre class="steps">{{ t('help.useTaskSteps') }}</pre>
+              </el-collapse-item>
+              <el-collapse-item :title="t('help.useShortcut')" name="4">
+                <p v-html="t('help.shortcutDefault')"></p>
+                <p>{{ t('help.shortcutDescription') }}</p>
+                <p>{{ t('help.shortcutCustomize') }}</p>
+              </el-collapse-item>
+            </el-collapse>
+          </el-card>
+        </el-col>
+
+        <!-- 功能介绍 -->
+        <el-col :span="12">
+          <el-card class="help-card">
+            <template #header>
+              <div class="card-header">
+                <el-icon><InfoFilled /></el-icon>
+                <span>{{ t('help.features') }}</span>
+              </div>
+            </template>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-title">{{ t('help.featureChatTitle') }}</div>
+                <div class="feature-desc">{{ t('help.featureChatDesc') }}</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-title">{{ t('help.featureTaskTitle') }}</div>
+                <div class="feature-desc">{{ t('help.featureTaskDesc') }}</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-title">{{ t('help.featureMultimodalTitle') }}</div>
+                <div class="feature-desc">{{ t('help.featureMultimodalDesc') }}</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-title">{{ t('help.featureShortcutTitle') }}</div>
+                <div class="feature-desc">{{ t('help.featureShortcutDesc') }}</div>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+
+        <el-col :span="24">
+          <el-alert :title="t('help.feedbackHint')" type="success" :closable="false" show-icon />
+        </el-col>
+      </el-row>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import Breadcrumb from '@/components/layout/Breadcrumb.vue';
+import { useI18n } from 'vue-i18n';
+import { Star, QuestionFilled, InfoFilled } from '@element-plus/icons-vue';
 
-const activeTab = ref('faq');
-const activeFaq = ref<string[]>([]);
+const { t } = useI18n();
 </script>
 
 <style lang="scss" scoped>
 @use "@/styles/variables.scss" as *;
 
-/* Help页面根容器强制使用主题变量 */
 .help-page {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--content-padding);
-  min-width: var(--content-max-width);
-  background-color: var(--page-bg) !important;
-  color: var(--text-primary) !important;
 }
 
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
+  margin-bottom: var(--content-padding);
 }
 
 .page-title {
   font-size: var(--font-size-title-1);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary) !important;
+  color: var(--text-color);
   margin: 0;
 }
 
-/* 强制覆盖Help页面的所有卡片样式 */
-.help-page :deep(.el-card) {
-  background-color: var(--card-bg) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-primary) !important;
-}
-
-.help-page :deep(.el-card__header) {
-  border-color: var(--border-color) !important;
-  background-color: var(--card-bg) !important;
-}
-
-.help-page :deep(.el-card__body) {
-  background-color: var(--card-bg) !important;
-  color: var(--text-primary) !important;
-}
-
-.help-tabs {
+.help-content {
   flex: 1;
-  min-height: 0;
+  overflow-y: auto;
+}
+
+.help-card {
+  margin-bottom: var(--content-padding);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.steps {
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-loose);
+  color: var(--text-color-secondary);
+  white-space: pre-wrap;
+}
+
+.feature-list {
   display: flex;
   flex-direction: column;
-
-  :deep(.el-tabs__nav) {
-    display: flex;
-    gap: var(--space-sm);
-  }
-
-  :deep(.el-tabs__item) {
-    min-width: 100px;
-    padding: 0 var(--space-lg);
-    font-size: var(--font-size-body);
-    line-height: var(--line-height-normal);
-  }
-
-  :deep(.el-tabs__content) {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: var(--space-lg) 0;
-  }
+  gap: var(--space-md);
 }
 
-/* FAQ */
-.faq-section {
-  max-width: 800px;
+.feature-item {
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--el-fill-color-light);
 }
 
-.faq-answer {
-  p {
-    margin: var(--space-sm) 0;
-    font-size: var(--font-size-body);
-    color: var(--text-color);
-    line-height: var(--line-height-normal);
-  }
+.feature-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-body);
+  color: var(--text-color);
+  margin-bottom: var(--space-xs);
 }
 
-:deep(.el-collapse-item__header) {
-  padding: var(--space-md) var(--space-lg);
+.feature-desc {
+  font-size: var(--font-size-caption-1);
+  color: var(--el-text-color-secondary);
   line-height: var(--line-height-normal);
 }
 
-:deep(.el-collapse-item__content) {
-  padding: 0 var(--space-lg) var(--space-md);
-}
-
-:deep(.el-collapse) {
-  border-top: 1px solid var(--border-color);
-  
-  .el-collapse-item {
-    border-bottom: 1px solid var(--border-color);
-  }
-}
-
-/* 教程 */
-.tutorial-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  max-width: 800px;
-}
-
-.tutorial-step {
-  display: flex;
-  gap: var(--space-md);
-  align-items: flex-start;
-}
-
-.step-number {
-  width: var(--button-height-lg);
-  height: var(--button-height-lg);
-  border-radius: var(--radius-pill);
-  background-color: var(--el-color-primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: var(--font-weight-semibold);
-  flex-shrink: 0;
-}
-
-.step-content h3 {
-  margin: 0 0 var(--space-sm) 0;
-  font-size: var(--font-size-title-2);
-  color: var(--text-color);
-}
-
-.step-content p {
-  margin: 0;
+.step-title {
+  font-weight: var(--font-weight-medium);
   font-size: var(--font-size-body);
-  color: var(--text-color-secondary);
-}
-
-/* 功能说明 */
-.features-section {
-  .feature-card {
-    text-align: center;
-    padding: var(--space-xl) var(--space-lg);
-  }
-
-  .feature-icon {
-    font-size: 48px;
-    margin-bottom: var(--space-md);
-  }
-
-  h3 {
-    margin: 0 0 var(--space-sm) 0;
-    font-size: var(--font-size-title-2);
-    color: var(--text-color);
-  }
-
-  p {
-    margin: 0;
-    font-size: var(--font-size-body);
-    color: var(--text-color-secondary);
-  }
 }
 </style>
