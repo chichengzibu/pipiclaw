@@ -53,10 +53,13 @@ sandbox/runtime/
 tsc-*.txt
 test-*.txt
 tsc-step*.txt
+tsc-step*.txt.untracked
 untracked-step*.txt
 lint-step*.txt
 vtsc-step*.txt
 vitest-step*.txt
+# generic step probe files (legacy phase 1-2 dev artifacts)
+*-step*.txt
 
 # dev probes
 .smoke-tmp/
