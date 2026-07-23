@@ -331,7 +331,7 @@ const statusSummary = computed(() => {
     online: enabled.filter((c) => !c.testError).length,
     offline: enabled.filter((c) => !!c.testError).length,
     disabled: channels.value.filter((c) => !c.enabled).length,
-    todayMessages: 0, // P0-02 真实消息统计
+    todayMessages: messageStats.total,
   }
 })
 
@@ -355,13 +355,17 @@ const permissionForm = reactive({ subject: '', level: 'member', scope: [] })
 // P0-03 消息
 const messageFilter = reactive({ channel: '', keyword: '' })
 const allMessages = ref<any[]>([])
+const messageStats = reactive({ total: 0, byChannel: {} as Record<string, { in: number; out: number; total: number }>, sinceMs: 0 })
 const messagePage = ref(1)
 const filteredMessages = computed(() => {
   let list = allMessages.value
-  if (messageFilter.channel) list = list.filter((m) => m.channel === messageFilter.channel)
+  if (messageFilter.channel) list = list.filter((m) => m.channelId === messageFilter.channel)
   if (messageFilter.keyword) {
     const kw = messageFilter.keyword.toLowerCase()
-    list = list.filter((m) => m.content.toLowerCase().includes(kw))
+    list = list.filter((m) => {
+      const text = (m.message?.text || m.content || '').toLowerCase()
+      return text.includes(kw)
+    })
   }
   return list
 })
@@ -524,13 +528,30 @@ function deletePermission(p: any): void {
 
 // P0-03 消息
 async function reloadMessages(): Promise<void> {
-  // 真实实现:从 IMMessageStore 拉
-  allMessages.value = []
-  ElMessage.info('消息刷新占位(真实拉取见 P3 完整工作流)')
+  try {
+    const opts: { channelId?: string; limit?: number } = { limit: 200 }
+    if (messageFilter.channel) opts.channelId = messageFilter.channel
+    const result = await (window as any).electronAPI.channel.messageHistory(opts)
+    allMessages.value = result?.success ? result.data : []
+  } catch (e) {
+    console.warn('reloadMessages failed', e)
+  }
+}
+
+async function loadMessageStats(): Promise<void> {
+  try {
+    const result = await (window as any).electronAPI.channel.messageStats()
+    if (result?.success && result.data) {
+      Object.assign(messageStats, result.data)
+    }
+  } catch (e) {
+    console.warn('loadMessageStats failed', e)
+  }
 }
 
 onMounted(() => {
   loadChannels()
+  loadMessageStats()
 })
 </script>
 

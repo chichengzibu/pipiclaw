@@ -22,6 +22,8 @@ import { HermesMemory } from '../hermes/HermesMemory';
 import { SkillLoader } from '../skill/SkillLoader';
 import { SelfLearner } from '../learning/SelfLearner';
 import { CrashReportCollector } from '../insight/CrashReport';
+import { IMMessageStore } from '../channel/IMMessageStore';
+import { FileTransferManager } from '../channel/FileTransferManager';
 import type { TaskStep, StepType, TaskStatus, StepStatus } from '../task/TaskTypes';
 import type {
   OpenClawOperationRequest,
@@ -1680,6 +1682,63 @@ export class IpcServer {
         return { success: false, error: String(error) };
       }
     });
+
+    // P0-02 状态仪表板:今日消息统计
+    ipcMain.handle('channel:message-stats', () => {
+      try {
+        const store = IMMessageStore.getInstance()
+        const stats = store.getStats()
+        return { success: true, data: stats }
+      } catch (error) {
+        this.log.error('channel:message-stats 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    // P0-03 消息查看器:历史拉取
+    ipcMain.handle('channel:message-history', (_, opts: { channelId?: string; limit?: number } = {}) => {
+      try {
+        const store = IMMessageStore.getInstance()
+        const messages = store.query({ channelId: opts.channelId, limit: opts.limit ?? 50 })
+        return { success: true, data: messages }
+      } catch (error) {
+        this.log.error('channel:message-history 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    // P0-06 文件上传
+    ipcMain.handle('file:upload-to-im', async (_, args: {
+      platform: string
+      filePath: string
+      channelId: string
+      targetUserId: string
+      accessToken?: string
+    }) => {
+      try {
+        const mgr = FileTransferManager.getInstance()
+        const result = await mgr.uploadToIM({
+          platform: args.platform as any,
+          filePath: args.filePath,
+          channelId: args.channelId,
+          targetUserId: args.targetUserId,
+          accessToken: args.accessToken,
+        })
+        return { success: result.ok, data: result }
+      } catch (error) {
+        this.log.error('file:upload-to-im 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('file:list-supported-platforms', () => {
+      try {
+        const mgr = FileTransferManager.getInstance()
+        return { success: true, data: mgr.listSupportedPlatforms() }
+      } catch (error) {
+        return { success: false, error: String(error) }
+      }
+    })
 
     ipcMain.handle('channel:send', async (_, msg: { channelId: string; to: string; text?: string }) => {
       try {

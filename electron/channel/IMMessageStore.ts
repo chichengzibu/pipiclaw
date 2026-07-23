@@ -75,6 +75,37 @@ export class IMMessageStore {
     return this.messages.find(m => m.id === id)
   }
 
+  /**
+   * 统计各 channel 今日消息数(in + out)
+   * 供 P0-02 状态仪表板用
+   */
+  getStats(opts: { sinceMs?: number } = {}): {
+    total: number
+    byChannel: Record<string, { in: number; out: number; total: number }>
+    sinceMs: number
+  } {
+    const sinceMs = opts.sinceMs ?? this.startOfToday()
+    const filtered = this.messages.filter((m) => m.ts >= sinceMs)
+    const byChannel: Record<string, { in: number; out: number; total: number }> = {}
+    for (const m of filtered) {
+      if (!byChannel[m.channelId]) {
+        byChannel[m.channelId] = { in: 0, out: 0, total: 0 }
+      }
+      byChannel[m.channelId][m.direction] += 1
+      byChannel[m.channelId].total += 1
+    }
+    return { total: filtered.length, byChannel, sinceMs }
+  }
+
+  /**
+   * 今日 0 点时间戳(本地时区)
+   */
+  private startOfToday(): number {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d.getTime()
+  }
+
   clear(): void {
     this.messages = []
   }

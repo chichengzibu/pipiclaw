@@ -39,6 +39,10 @@ const mockChannelConfigs = [
     save: vi.fn().mockResolvedValue({ success: true }),
     test: vi.fn().mockResolvedValue({ success: true, data: { message: 'ok' } }),
   },
+  channel: {
+    messageStats: vi.fn().mockResolvedValue({ success: true, data: { total: 0, byChannel: {}, sinceMs: 0 } }),
+    messageHistory: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  },
 }
 
 // Element-plus 组件 stub(避免 jsdom 不全 + 加快测试)
@@ -226,14 +230,13 @@ describe('P0-02/03 状态 + 消息', () => {
     await flushPromises()
     const vm = wrapper.vm as any
     vm.allMessages = [
-      { timestamp: '10:00', channel: 'im-feishu', sender: '张三', content: '你好', status: 'ok' },
-      { timestamp: '10:01', channel: 'im-telegram', sender: 'alice', content: 'hello', status: 'ok' },
+      { ts: Date.now(), channelId: 'im-feishu', direction: 'in', message: { text: '你好' } },
+      { ts: Date.now(), channelId: 'im-telegram', direction: 'in', message: { text: 'hello world' } },
     ]
     vm.messageFilter.channel = 'im-feishu'
     expect(vm.filteredMessages.length).toBe(1)
     vm.messageFilter.channel = ''
     vm.messageFilter.keyword = 'hello'
     expect(vm.filteredMessages.length).toBe(1)
-    expect(vm.filteredMessages[0].sender).toBe('alice')
   })
 })

@@ -126,6 +126,8 @@ const IpcChannels = {
   FILE_READ_CLIPBOARD_IMAGE: 'file:readClipboardImage',
   FILE_GET_INFO: 'file:getInfo',
   FILE_GET_ALLOWED_EXTENSIONS: 'file:getAllowedExtensions',
+  FILE_UPLOAD_TO_IM: 'file:upload-to-im',
+  FILE_LIST_SUPPORTED_PLATFORMS: 'file:list-supported-platforms',
 
   // 对话导出
   CONVERSATION_EXPORT: 'conversation:export',
@@ -186,6 +188,8 @@ const IpcChannels = {
   CHANNEL_LIST: 'channel:list',
   CHANNEL_HEALTH: 'channel:health',
   CHANNEL_SEND: 'channel:send',
+  CHANNEL_MESSAGE_STATS: 'channel:message-stats',
+  CHANNEL_MESSAGE_HISTORY: 'channel:message-history',
 
   // ========== P7 Sandbox 能力域 (W3 新增) ==========
   SANDBOX_DETECT: 'sandbox:detect',
@@ -843,7 +847,13 @@ const electronAPI = {
       ipcRenderer.invoke(IpcChannels.FILE_GET_INFO, filePath),
 
     getAllowedExtensions: (): Promise<IpcResponse<string[]>> =>
-      ipcRenderer.invoke(IpcChannels.FILE_GET_ALLOWED_EXTENSIONS)
+      ipcRenderer.invoke(IpcChannels.FILE_GET_ALLOWED_EXTENSIONS),
+
+    // P0-06: 文件上传到 IM 平台
+    uploadToIM: (args: { platform: string; filePath: string; channelId: string; targetUserId: string; accessToken?: string }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.FILE_UPLOAD_TO_IM, args),
+    listSupportedPlatforms: (): Promise<IpcResponse<string[]>> =>
+      ipcRenderer.invoke(IpcChannels.FILE_LIST_SUPPORTED_PLATFORMS)
   },
 
   // ========== 对话导出 ==========
@@ -982,6 +992,13 @@ const electronAPI = {
   channel: {
     list: (): Promise<IpcResponse<Array<{ id: string; name: string; healthy: boolean }>>> =>
       ipcRenderer.invoke(IpcChannels.CHANNEL_LIST),
+    messageStats: (): Promise<IpcResponse<{
+      total: number
+      byChannel: Record<string, { in: number; out: number; total: number }>
+      sinceMs: number
+    }>> => ipcRenderer.invoke(IpcChannels.CHANNEL_MESSAGE_STATS),
+    messageHistory: (opts?: { channelId?: string; limit?: number }): Promise<IpcResponse<any[]>> =>
+      ipcRenderer.invoke(IpcChannels.CHANNEL_MESSAGE_HISTORY, opts || {}),
     health: (channelId: string): Promise<IpcResponse<{ healthy: boolean; latencyMs: number; stub: boolean; channelId: string }>> =>
       ipcRenderer.invoke(IpcChannels.CHANNEL_HEALTH, channelId),
     send: (msg: { channelId: string; to: string; text?: string }): Promise<IpcResponse<{ messageId: string; stub: boolean }>> =>
