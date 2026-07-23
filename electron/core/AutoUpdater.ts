@@ -74,7 +74,14 @@ export class AutoUpdater {
     }
   }
 
-  private registerIpcHandlers(): void {
+  /**
+   * P1-T1.3 hotfix: register handlers early in main.ts before window opens.
+   * 之前是放在 initialize() 里,只在 ready-to-show 之后跑,
+   * 导致 Settings.vue 在 /settings 路由 mount 时 autoUpdater:getVersion
+   * 还没注册,console 报 "No handler registered for 'autoUpdater:getVersion'"。
+   * 现在 handler 在 main.ts 早期无条件注册,即使 initialize() 失败也安全。
+   */
+  registerIpcHandlers(): void {
     ipcMain.handle('autoUpdater:check', async () => {
       try {
         const result = await autoUpdater.checkForUpdates();

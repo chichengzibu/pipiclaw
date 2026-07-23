@@ -63,6 +63,12 @@ app.whenReady().then(async () => {
     ipcServer = IpcServer.getInstance();
     ipcServer.registerHandlers();
 
+    // P1-T1.3 hotfix: 早期注册 autoUpdater IPC handler
+    // 之前是放在 initialize() 里,只在 ready-to-show 之后跑,
+    // 导致 Settings.vue 在 /settings 路由 mount 时 autoUpdater:getVersion
+    // 还没注册。Settings.vue 调用 -> No handler registered -> console error
+    new AutoUpdater().registerIpcHandlers()
+
     // 3. 创建主窗口
     windowManager = WindowManager.getInstance();
     await windowManager.createMainWindow();
