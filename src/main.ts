@@ -5,6 +5,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import ElementPlus from 'element-plus';
+import * as ElementPlusIcons from '@element-plus/icons-vue';
 import 'element-plus/dist/index.css';
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
 import enUs from 'element-plus/dist/locale/en.mjs';
@@ -16,6 +17,13 @@ import './styles/reset.scss';
 import './styles/global.scss';
 
 const app = createApp(App);
+
+// 全局注册 Element Plus 图标（修复 SideNav 导航项不显示的问题）
+// SideNav.vue 使用 <component :is="item.icon" /> 配合字符串名('HomeFilled' 等),
+// 必须通过 app.component() 全局注册才能解析。
+for (const [name, comp] of Object.entries(ElementPlusIcons)) {
+  app.component(name, comp as never);
+}
 
 app.use(createPinia());
 app.use(router);

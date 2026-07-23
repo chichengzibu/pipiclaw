@@ -136,6 +136,7 @@ onUnmounted(() => {
   flex-direction: column;
   height: 100%;
   flex-shrink: 0;
+  min-width: 180px;
   background-color: var(--bg-color);
   border-right: 1px solid var(--border-color);
   position: relative;
