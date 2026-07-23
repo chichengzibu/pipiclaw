@@ -23,10 +23,11 @@ test.describe('Chat Agent integration', () => {
   test.skip(!shouldRunElectronE2E, 'requires E2E_ELECTRON=1 to launch Electron renderer')
 
   test('app shell mounts and SideNav links to Chat', async ({ window }) => {
-    // SideNav 必须有"对话"入口,链接到 /chat
-    const chatLink = window.locator('a.nav-item:has-text("对话")')
+    // SideNav 必须有 Chat 入口(中英文都覆盖),链接到 /chat
+    const chatLink = window.locator('a.nav-item[href$="#/chat"]')
     await expect(chatLink).toBeVisible({ timeout: 10_000 })
-    await expect(chatLink).toHaveAttribute('href', '#/chat')
+    // 文本可能是 "AI Chat" 或 "AI 对话",断言两者其一
+    await expect(chatLink).toContainText(/Chat|对话/)
 
     // 状态栏显示版本号
     const status = window.locator('.app-status-bar')
@@ -34,7 +35,7 @@ test.describe('Chat Agent integration', () => {
   })
 
   test('Chat page shows empty state or sessions list', async ({ window }) => {
-    await window.click('a.nav-item:has-text("对话")')
+    await window.click('a.nav-item[href$="#/chat"]')
     await window.waitForURL(/#\/chat/)
 
     // Chat.vue 顶层 .chat-page 必须渲染
@@ -43,27 +44,29 @@ test.describe('Chat Agent integration', () => {
     // 二选一:空状态(.empty-chat) 或 会话列表(.conversations-list)
     const emptyState = window.locator('.empty-chat')
     const sessionList = window.locator('.conversations-list')
-    await expect(emptyState.or(sessionList)).toBeVisible({ timeout: 10_000 })
+    await expect(emptyState.or(sessionList).first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('empty chat state exposes new-conversation CTA', async ({ window }) => {
-    await window.goto('#/chat')
+    // 通过 SideNav 导航(file:// 协议下 window.goto 需完整 URL)
+    await window.click('a.nav-item[href$="#/chat"]')
+    await window.waitForURL(/#\/chat/)
 
-    // 触发"新建对话"按钮 — 即便有历史会话也可点,会再插一条
-    const newChatButton = window.locator('button:has-text("新建对话")').first()
-    // 可能为空状态 or 顶部 header 处的 button
+    // 触发"New Chat"或"新建对话"按钮 — 即便有历史会话也可点,会再插一条
+    const newChatButton = window.locator('button:has-text("New Chat"), button:has-text("新建对话")').first()
     await expect(newChatButton).toBeVisible({ timeout: 10_000 })
   })
 
   test('input textarea is enabled when session is selected', async ({ window }) => {
-    await window.goto('#/chat')
+    await window.click('a.nav-item[href$="#/chat"]')
+    await window.waitForURL(/#\/chat/)
 
     // 如果有会话,直接点;否则新建
     const conversationItem = window.locator('.conversation-item').first()
     if (await conversationItem.count()) {
       await conversationItem.click()
     } else {
-      await window.locator('button:has-text("新建对话")').first().click()
+      await window.locator('button:has-text("New Chat"), button:has-text("新建对话")').first().click()
       // 等 chat-main 渲染
       await window.waitForSelector('.chat-main', { timeout: 10_000 })
     }
@@ -72,7 +75,7 @@ test.describe('Chat Agent integration', () => {
     const textarea = window.locator('.input-row textarea').first()
     await expect(textarea).toBeVisible({ timeout: 10_000 })
     await expect(textarea).toBeEnabled()
-    // placeholder 文案:输入消息...
-    await expect(textarea).toHaveAttribute('placeholder', /输入消息/)
+    // placeholder 文案:输入消息... 或 Enter to send...
+    await expect(textarea).toHaveAttribute('placeholder', /输入消息|message/i)
   })
 })

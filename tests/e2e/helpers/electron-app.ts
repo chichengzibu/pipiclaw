@@ -23,7 +23,7 @@ import path from 'node:path'
  * - 必须先 build:`npm run build` 生成 dist-electron/main.js
  */
 
-const repoRoot = path.resolve(__dirname, '..', '..')
+const repoRoot = path.resolve(__dirname, '..', '..', '..')
 const mainEntry = path.join(repoRoot, 'dist-electron', 'main.js')
 
 export const shouldRunElectronE2E = !!process.env.E2E_ELECTRON
@@ -42,6 +42,13 @@ export const test = base.extend<{
     const app = await electron.launch({
       args: [mainEntry, '--no-sandbox'],
       cwd: repoRoot,
+      env: {
+        ...process.env,
+        // 强制 WindowManager 走 prod 路径(loadFile dist/index.html),
+        // 否则会去找 vite dev server (localhost:5173)
+        PIPICLAW_E2E: '1',
+        ELECTRON_DISABLE_SECURITY_WARNINGS: '1',
+      },
       timeout: 30_000,
     })
 
