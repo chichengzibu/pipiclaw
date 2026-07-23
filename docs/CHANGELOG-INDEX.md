@@ -23,6 +23,7 @@
 - [real LLM integration](superpowers/plans/2026-07-17-real-llm-integration.md) — LLM provider 真接方案
 - [real proxy wc jupyter](superpowers/plans/2026-07-17-real-proxy-wc-jupyter.md) — WebContainer + 端口转发 + Jupyter 真接方案
 - [Phase 1 engineering hygiene](superpowers/plans/2026-07-17-phase1-engineering-hygiene.md) — 本文对应 Phase 1 工程化基线提升计划
+- [100% product completion](superpowers/plans/2026-07-23-100pct-product-completion-plan.md) — P0-P6 一体化路线图,目标 v4.0.0 Production-Ready
 
 ## Specs(设计文档)
 
