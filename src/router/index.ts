@@ -132,6 +132,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ImAccounts.vue'),
   },
   {
+    path: '/im-management',
+    name: 'ImManagement',
+    component: () => import('@/views/ImManagement.vue'),
+    meta: { title: 'IM 管理', icon: 'ChatDotRound' },
+  },
+  {
     path: '/settings/llm-config',
     name: 'LlmConfig',
     component: () => import('@/views/LlmConfig.vue'),
