@@ -52,6 +52,7 @@
     "eslint-plugin-vue": "^9.33.0",
     "globals": "^15.15.0",
     "jsdom": "^25.0.0",
+    "png2icons": "^2.0.1",
     "sass": "^1.70.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.64.0",
@@ -65,6 +66,9 @@
   "author": "PiPiClaw Team",
   "license": "MIT",
   "overrides": {
+    "app-builder-lib": {
+      "minimatch": "^9.0.9"
+    },
     "brace-expansion": "^2.1.2",
     "@tootallnate/once": "^2.0.1",
     "form-data": "^4.0.6",
