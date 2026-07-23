@@ -206,6 +206,11 @@ const IpcChannels = {
   CLAWHUB_RATE: 'clawhub:rate',
   CLAWHUB_LIST_PENDING: 'clawhub:list-pending',
 
+  // 模型评分
+  MODEL_RATE: 'model:rate',
+  MODEL_LIST_RATINGS: 'model:list-ratings',
+  MODEL_GET_STATS: 'model:get-stats',
+
   // ========== P7 Sandbox 能力域 (W3 新增) ==========
   SANDBOX_DETECT: 'sandbox:detect',
   SANDBOX_RUN: 'sandbox:run',
@@ -1031,6 +1036,12 @@ const electronAPI = {
     clawhubSearch: (opts?: any): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_SEARCH, opts || {}),
     clawhubRate: (args: any): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_RATE, args),
     clawhubListPending: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_LIST_PENDING),
+
+    // P1-08 模型评分
+    modelRate: (args: any): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.MODEL_RATE, args),
+    modelListRatings: (opts?: { modelId?: string }): Promise<IpcResponse<any[]>> =>
+      ipcRenderer.invoke(IpcChannels.MODEL_LIST_RATINGS, opts || {}),
+    modelGetStats: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.MODEL_GET_STATS),
     health: (channelId: string): Promise<IpcResponse<{ healthy: boolean; latencyMs: number; stub: boolean; channelId: string }>> =>
       ipcRenderer.invoke(IpcChannels.CHANNEL_HEALTH, channelId),
     send: (msg: { channelId: string; to: string; text?: string }): Promise<IpcResponse<{ messageId: string; stub: boolean }>> =>

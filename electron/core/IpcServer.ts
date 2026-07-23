@@ -27,6 +27,7 @@ import { FileTransferManager } from '../channel/FileTransferManager';
 import { IMMessageRouter } from '../channel/IMMessageRouter';
 import { IMPermissionManager } from '../channel/IMPermissionManager';
 import { ClawHubManager } from '../skill/ClawHubManager';
+import { ModelRatingManager } from '../models/ModelRatingManager';
 import type { RouteRule } from '../channel/ChannelTypes';
 import type { TaskStep, StepType, TaskStatus, StepStatus } from '../task/TaskTypes';
 import type {
@@ -1839,6 +1840,39 @@ export class IpcServer {
         return { success: true, data: mgr.listPending() }
       } catch (error) {
         this.log.error('clawhub:list-pending 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    // P1-08 模型社区评分
+    ipcMain.handle('model:rate', (_, args: any) => {
+      try {
+        const mgr = ModelRatingManager.getInstance()
+        const rating = mgr.rate(args)
+        return { success: true, data: rating }
+      } catch (error) {
+        this.log.error('model:rate 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('model:list-ratings', (_, opts: { modelId?: string } = {}) => {
+      try {
+        const mgr = ModelRatingManager.getInstance()
+        const list = opts.modelId ? mgr.listForModel(opts.modelId) : mgr.listAll()
+        return { success: true, data: list }
+      } catch (error) {
+        this.log.error('model:list-ratings 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('model:get-stats', () => {
+      try {
+        const mgr = ModelRatingManager.getInstance()
+        return { success: true, data: mgr.getStats() }
+      } catch (error) {
+        this.log.error('model:get-stats 失败', error)
         return { success: false, error: String(error) }
       }
     })

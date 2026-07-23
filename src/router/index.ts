@@ -144,6 +144,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'ClawHub 技能市场', icon: 'Goods' },
   },
   {
+    path: '/model-compare',
+    name: 'ModelCompare',
+    component: () => import('@/views/ModelCompare.vue'),
+    meta: { title: '模型对比', icon: 'DataAnalysis' },
+  },
+  {
     path: '/settings/llm-config',
     name: 'LlmConfig',
     component: () => import('@/views/LlmConfig.vue'),
