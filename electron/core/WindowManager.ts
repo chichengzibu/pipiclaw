@@ -73,13 +73,11 @@ export class WindowManager {
       this.sendMaximizeChange(false);
     });
 
-    this.mainWindow.on('focus', () => {
-      this.log.debug('窗口获得焦点');
-    });
-
-    this.mainWindow.on('blur', () => {
-      this.log.debug('窗口失去焦点');
-    });
+    // 注: focus/blur handlers 已被移除。
+    // frameless Electron 窗口在 dev 模式 (Vite HMR + Playwright 延迟加载 +
+    // Tray 创建) 下会反复触发 focus/blur,无功能影响但污染日志。
+    // 调试窗口焦点状态请用 Chromium DevTools -> PerformanceObserver。
+    // 见 tests/unit/WindowManager.test.ts 测试覆盖 registerFocusHandlers 行为。
 
     this.mainWindow.on('closed', () => {
       this.log.info('主窗口已关闭');
