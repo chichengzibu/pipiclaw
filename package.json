@@ -16,6 +16,7 @@
     "test:coverage": "vitest run --coverage",
     "sandbox:build-base": "node scripts/sandbox-base-build.mjs",
     "sandbox:selfcheck": "node scripts/sandbox-selfcheck.mjs",
+    "sandbox:validate": "node scripts/sandbox-validation.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "smoke:full": "npm run build && node scripts/smoke-test.mjs",
     "perf": "node scripts/perf-benchmark.mjs",
