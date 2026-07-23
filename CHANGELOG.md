@@ -2,6 +2,44 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [3.1.0] - 2026-07-23 (P1: 14 路由 × 7 沙箱)
+
+### Added
+- **7 个 sandbox runtime 验证** (P1-T1.2):
+  - `tests/integration/sandbox-templates.test.ts` — 4 个 SandboxBuilder 模板
+    (vite-react-ts / nextjs-app / fastapi / go-http) build 验证,5s 内 fileCount + 关键文件 size > 0
+  - `scripts/sandbox-validation.mjs` — 三阶段验证编排器
+    (Stage 1: offline 4 模板 / Stage 2: 3 runtime unit / Stage 3: docker hello-world)
+  - `docs/perf/sandbox-validation-2026-07-23.md` + `.json` — 月度归档报告
+  - `npm run sandbox:validate` 入口
+- **LLM 真实链路验证** (P1-T1.4):
+  - `scripts/mock-llm-server.mjs` — OpenAI chat/completions 兼容 mock server
+    (端口 9999,返回 `MOCK_LLM_OK_<n>_*` marker)
+  - `tests/integration/llm-mock-server.test.ts` — 4 个 test 验证
+    真实 HTTP round-trip:health + chat/completions + LlmClient 全链路 + 错误路径
+- **d3-demo UI 验证** (P1-T1.1): 新增 `tests/e2e/d3-demo.spec.ts`,
+  替代原 placeholder d3-feishu,2 个 test 验证 /d3-demo 挂载 + 5 步流程卡
+
+### Removed
+- **6 个 placeholder e2e spec** (P1-T1.1): d2prime-docker-missing / oom / port-conflict /
+  screenshot / d3-feishu / insight-trace — 均有 unit/integration 覆盖,placeholder 无价值
+
+### Fixed
+- **d2prime-30s.spec.ts skip 位置** (P1-T1.1): `test.skip(!shouldRunElectronE2E, msg)`
+  移到 describe 顶部,避免同 describe 内其他 test 在 fixture 解析阶段先抛错
+- **hash router Playwright 导航** (P1-T1.1): `window.goto('#/route')` 改用
+  `window.evaluate(() => { window.location.hash = '#/route' })` + `waitForURL`
+
+### Verified
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vue-tsc --noEmit`: 0 errors
+- `npx vitest run`: **42 files / 496 tests passed** (P0 末期 486 → +10)
+- `npm run smoke`: 22/22 passed
+- `E2E_ELECTRON=1 npx playwright test`: **34 passed, 2 skipped, 0 failed** (1.5min)
+  (无 placeholder,active spec 全跑通)
+- `npm run build`: 0 errors, Windows installer OK
+- `node scripts/sandbox-validation.mjs`: Stage 1 1/1 100%
+
 ## [3.0.1] - 2026-07-23 (Hotfix)
 
 ### Fixed

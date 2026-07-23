@@ -13,6 +13,7 @@
 - [real proxy wc jupyter retro](superpowers/retros/2026-07-17-real-proxy-wc-jupyter/retro.md) — WebContainerRunner + PortForwarder + JupyterRunner
 - [Phase 1 engineering hygiene retro](superpowers/retros/2026-07-17-phase1-engineering-hygiene/retro.md) — ESLint / CI hard-fail / 仓库清理 / 文档同步
 - [P0 engineering discipline retro](superpowers/retros/2026-07-23-p0-engineering-discipline.md) — v3.0.0 SideNav broken hotfix + 8 commits + release checklist
+- [P1 routes & sandboxes retro](superpowers/retros/2026-07-23-p1-routes-and-sandboxes.md) — 14 路由 × 7 沙箱 + LLM 真链路验证 + 0 placeholder e2e
 
 ## Plans(实施计划)
 
