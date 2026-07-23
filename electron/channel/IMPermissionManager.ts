@@ -53,4 +53,64 @@ export class IMPermissionManager {
   listWhitelist(channelKind: ChannelKind): string[] {
     return [...(this.whitelist.get(channelKind) ?? new Set<string>())]
   }
+
+  /**
+   * P2-04: 列出所有通道的授权(全量快照)
+   */
+  listAll(): Record<string, string[]> {
+    const out: Record<string, string[]> = {}
+    for (const [ch, set] of this.whitelist) {
+      out[ch] = [...set]
+    }
+    return out
+  }
+
+  /**
+   * P2-04: 导出为 JSON
+   */
+  exportToJson(): string {
+    return JSON.stringify(this.listAll(), null, 2)
+  }
+
+  /**
+   * P2-04: 从 JSON 导入(覆盖式)
+   * 格式:{ "im-feishu": ["user1", "user2"], ... }
+   */
+  importFromJson(json: string, mode: 'merge' | 'replace' = 'replace'): { imported: number; skipped: number } {
+    let parsed: any
+    try {
+      parsed = JSON.parse(json)
+    } catch (e) {
+      throw new Error(`JSON 解析失败: ${(e as Error).message}`)
+    }
+    if (typeof parsed !== 'object' || parsed === null) {
+      throw new Error('JSON 必须是 object')
+    }
+    let imported = 0
+    let skipped = 0
+    if (mode === 'replace') this.whitelist.clear()
+    for (const [channel, users] of Object.entries(parsed)) {
+      if (!Array.isArray(users)) {
+        skipped += 1
+        continue
+      }
+      const set = this.whitelist.get(channel) ?? new Set<string>()
+      for (const u of users) {
+        if (typeof u === 'string' && u.length > 0) {
+          set.add(u)
+          imported += 1
+        }
+      }
+      this.whitelist.set(channel, set)
+    }
+    this.log.info(`IMPermissionManager: 导入 ${imported} entries, mode=${mode}`)
+    return { imported, skipped }
+  }
+
+  /**
+   * P2-04: 清空(慎用)
+   */
+  clearAll(): void {
+    this.whitelist.clear()
+  }
 }

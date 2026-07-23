@@ -58,7 +58,38 @@
         </p>
       </el-tab-pane>
 
-      <!-- Tab 2: 我的评分历史(P1-08) -->
+      <!-- Tab 2: 使用量排行(P2-02) -->
+      <el-tab-pane label="使用量排行" name="usage">
+        <div class="usage-summary">
+          <el-statistic title="总调用次数" :value="usageTotal.totalCalls" />
+          <el-statistic title="总 token 数" :value="usageTotal.totalTokens" />
+          <el-statistic title="总费用(USD)" :value="Number(usageTotal.totalCost.toFixed(4))" :precision="4" />
+          <el-statistic title="涉及模型数" :value="usageTotal.modelCount" />
+        </div>
+        <div class="filter-bar">
+          <el-select v-model="usageSortBy" style="width: 160px" @change="loadUsage">
+            <el-option label="按 tokens 排" value="tokens" />
+            <el-option label="按 cost 排" value="cost" />
+            <el-option label="按调用次数排" value="calls" />
+          </el-select>
+          <el-button @click="loadUsage">刷新</el-button>
+        </div>
+        <el-table :data="usageTop" stripe>
+          <el-table-column label="排名" width="80" type="index" />
+          <el-table-column label="模型" prop="modelId" />
+          <el-table-column label="提供商" prop="provider" width="120" />
+          <el-table-column label="调用次数" prop="callCount" width="120" sortable />
+          <el-table-column label="总 tokens" prop="tokens" width="120" sortable />
+          <el-table-column label="总费用(USD)" prop="cost" width="140" sortable>
+            <template #default="{ row }">
+              <span class="price">${{ row.cost.toFixed(4) }}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+        <p v-if="usageTop.length === 0" class="muted">还没有使用记录,跑几次 LLM 调用就会自动统计</p>
+      </el-tab-pane>
+
+      <!-- Tab 3: 我的评分历史(P1-08) -->
       <el-tab-pane label="评分历史" name="history">
         <el-table :data="myRatings" stripe>
           <el-table-column label="模型" prop="modelId" />
@@ -126,6 +157,9 @@ const MODELS = [
 
 const myRatings = ref<any[]>([])
 const stats = ref<any[]>([])
+const usageTop = ref<any[]>([])
+const usageTotal = ref({ totalCalls: 0, totalTokens: 0, totalCost: 0, modelCount: 0 })
+const usageSortBy = ref<'tokens' | 'cost' | 'calls'>('tokens')
 
 const filteredModels = computed(() => {
   // 合并基础数据 + 社区评分
@@ -213,9 +247,23 @@ async function loadMyRatings(): Promise<void> {
   }
 }
 
+async function loadUsage(): Promise<void> {
+  try {
+    const [top, total] = await Promise.all([
+      (window as any).electronAPI.channel.modelUsageTop({ n: 20, sortBy: usageSortBy.value }),
+      (window as any).electronAPI.channel.modelUsageTotal(),
+    ])
+    if (top?.success) usageTop.value = top.data || []
+    if (total?.success) usageTotal.value = total.data || { totalCalls: 0, totalTokens: 0, totalCost: 0, modelCount: 0 }
+  } catch (e) {
+    console.warn('loadUsage failed', e)
+  }
+}
+
 onMounted(() => {
   loadStats()
   loadMyRatings()
+  loadUsage()
 })
 </script>
 
@@ -241,6 +289,17 @@ onMounted(() => {
 }
 .muted {
   color: #c0c4cc;
+}
+.usage-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  :deep(.el-statistic) {
+    background: var(--card-bg, #f8f9fa);
+    padding: 12px 16px;
+    border-radius: 8px;
+    flex: 1;
+  }
 }
 .legend {
   margin-top: 16px;

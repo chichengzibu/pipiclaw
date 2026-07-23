@@ -198,6 +198,8 @@ const IpcChannels = {
 
   // 权限
   PERMISSION_LIST: 'permission:list',
+  PERMISSION_EXPORT: 'permission:export',
+  PERMISSION_IMPORT: 'permission:import',
 
   // ClawHub 技能市场
   CLAWHUB_PUBLISH: 'clawhub:publish',
@@ -210,6 +212,11 @@ const IpcChannels = {
   MODEL_RATE: 'model:rate',
   MODEL_LIST_RATINGS: 'model:list-ratings',
   MODEL_GET_STATS: 'model:get-stats',
+
+  // 模型使用量
+  MODEL_USAGE_RECORD: 'model:usage-record',
+  MODEL_USAGE_TOP: 'model:usage-top',
+  MODEL_USAGE_TOTAL: 'model:usage-total',
 
   // ========== P7 Sandbox 能力域 (W3 新增) ==========
   SANDBOX_DETECT: 'sandbox:detect',
@@ -1028,6 +1035,10 @@ const electronAPI = {
 
     // P0-05 权限
     permissionList: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.PERMISSION_LIST),
+    // P2-04 权限导入导出
+    permissionExport: (): Promise<IpcResponse<string>> => ipcRenderer.invoke(IpcChannels.PERMISSION_EXPORT),
+    permissionImport: (args: { json: string; mode?: 'merge' | 'replace' }): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.PERMISSION_IMPORT, args),
 
     // P1-03~06 ClawHub 技能市场
     clawhubPublish: (args: any): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.CLAWHUB_PUBLISH, args),
@@ -1042,6 +1053,13 @@ const electronAPI = {
     modelListRatings: (opts?: { modelId?: string }): Promise<IpcResponse<any[]>> =>
       ipcRenderer.invoke(IpcChannels.MODEL_LIST_RATINGS, opts || {}),
     modelGetStats: (): Promise<IpcResponse<any[]>> => ipcRenderer.invoke(IpcChannels.MODEL_GET_STATS),
+
+    // P2-02 模型使用量
+    modelUsageRecord: (args: { modelId: string; provider: string; tokens: number; cost: number }): Promise<IpcResponse<void>> =>
+      ipcRenderer.invoke(IpcChannels.MODEL_USAGE_RECORD, args),
+    modelUsageTop: (opts?: { n?: number; sortBy?: 'tokens' | 'cost' | 'calls' }): Promise<IpcResponse<any[]>> =>
+      ipcRenderer.invoke(IpcChannels.MODEL_USAGE_TOP, opts || {}),
+    modelUsageTotal: (): Promise<IpcResponse<any>> => ipcRenderer.invoke(IpcChannels.MODEL_USAGE_TOTAL),
     health: (channelId: string): Promise<IpcResponse<{ healthy: boolean; latencyMs: number; stub: boolean; channelId: string }>> =>
       ipcRenderer.invoke(IpcChannels.CHANNEL_HEALTH, channelId),
     send: (msg: { channelId: string; to: string; text?: string }): Promise<IpcResponse<{ messageId: string; stub: boolean }>> =>

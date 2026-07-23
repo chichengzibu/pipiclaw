@@ -28,6 +28,7 @@ import { IMMessageRouter } from '../channel/IMMessageRouter';
 import { IMPermissionManager } from '../channel/IMPermissionManager';
 import { ClawHubManager } from '../skill/ClawHubManager';
 import { ModelRatingManager } from '../models/ModelRatingManager';
+import { ModelUsageTracker } from '../models/ModelUsageTracker';
 import type { RouteRule } from '../channel/ChannelTypes';
 import type { TaskStep, StepType, TaskStatus, StepStatus } from '../task/TaskTypes';
 import type {
@@ -1790,6 +1791,29 @@ export class IpcServer {
       }
     })
 
+    // P2-04 权限 JSON 导入/导出
+    ipcMain.handle('permission:export', () => {
+      try {
+        const mgr = IMPermissionManager.getInstance() as any
+        const json = typeof mgr.exportToJson === 'function' ? mgr.exportToJson() : '{}'
+        return { success: true, data: json }
+      } catch (error) {
+        this.log.error('permission:export 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('permission:import', (_, args: { json: string; mode?: 'merge' | 'replace' }) => {
+      try {
+        const mgr = IMPermissionManager.getInstance() as any
+        const result = mgr.importFromJson(args.json, args.mode ?? 'replace')
+        return { success: true, data: result }
+      } catch (error) {
+        this.log.error('permission:import 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
     // P1-03~06 ClawHub 技能市场
     ipcMain.handle('clawhub:publish', (_, args: any) => {
       try {
@@ -1873,6 +1897,38 @@ export class IpcServer {
         return { success: true, data: mgr.getStats() }
       } catch (error) {
         this.log.error('model:get-stats 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    // P2-02 模型使用量排行
+    ipcMain.handle('model:usage-record', (_, args: { modelId: string; provider: string; tokens: number; cost: number }) => {
+      try {
+        const tracker = ModelUsageTracker.getInstance()
+        tracker.record(args.modelId, args.provider, args.tokens, args.cost)
+        return { success: true }
+      } catch (error) {
+        this.log.error('model:usage-record 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('model:usage-top', (_, opts: { n?: number; sortBy?: 'tokens' | 'cost' | 'calls' } = {}) => {
+      try {
+        const tracker = ModelUsageTracker.getInstance()
+        return { success: true, data: tracker.getTop(opts.n ?? 10, opts.sortBy ?? 'tokens') }
+      } catch (error) {
+        this.log.error('model:usage-top 失败', error)
+        return { success: false, error: String(error) }
+      }
+    })
+
+    ipcMain.handle('model:usage-total', () => {
+      try {
+        const tracker = ModelUsageTracker.getInstance()
+        return { success: true, data: tracker.getTotal() }
+      } catch (error) {
+        this.log.error('model:usage-total 失败', error)
         return { success: false, error: String(error) }
       }
     })
