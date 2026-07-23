@@ -21,7 +21,8 @@
     "perf": "node scripts/perf-benchmark.mjs",
     "perf:full": "cross-env PERF_FULL=1 node scripts/perf-benchmark.mjs",
     "perf:sse": "cross-env PERF_SSE=1 node scripts/perf-benchmark.mjs",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "docs:list": "node scripts/list-docs.mjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
