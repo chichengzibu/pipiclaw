@@ -10,10 +10,18 @@ import { test, expect, shouldRunElectronE2E } from './helpers/electron-app'
  * 4. 会话删除 / 置顶
  * 5. 模型选择
  * 6. 消息渲染
+ *
+ * 选择器说明:
+ * - "新建" 按钮有两处:sidebar 角落 (class=.new-chat-btn) 和空状态大按钮
+ * - 用 class 匹配而非可见文字,避免 UI 文案调整导致测试脆弱
+ * - 空状态按钮额外加 .empty-new-chat class
  */
 
 test.describe('T+30 日常 Chat 全流程', () => {
   test.skip(!shouldRunElectronE2E, 'requires E2E_ELECTRON=1')
+
+  // "新建对话" 按钮的稳定选择器 — sidebar 和空状态都覆盖
+  const newChatBtnSel = 'button.new-chat-btn, .empty-new-chat, .empty-actions button:has-text("新建对话")'
 
   test('C1: Chat 输入框存在 + 可写', async ({ window }) => {
     // 进 Chat
@@ -53,7 +61,7 @@ test.describe('T+30 日常 Chat 全流程', () => {
     await window.waitForTimeout(500)
 
     // 先确保有会话
-    const newChatBtn = window.locator('button:has-text("新建对话"), button:has-text("New Chat")').first()
+    const newChatBtn = window.locator(newChatBtnSel).first()
     if (await newChatBtn.count() > 0) {
       await newChatBtn.click()
       await window.waitForTimeout(500)
@@ -79,7 +87,7 @@ test.describe('T+30 日常 Chat 全流程', () => {
     await window.waitForTimeout(500)
 
     // 找新建按钮
-    const newChatBtn = window.locator('button:has-text("新建对话"), button:has-text("New Chat")').first()
+    const newChatBtn = window.locator(newChatBtnSel).first()
     if (await newChatBtn.count() > 0) {
       const before = await window.locator('.conversation-item').count()
       await newChatBtn.click()
@@ -97,12 +105,17 @@ test.describe('T+30 日常 Chat 全流程', () => {
     await window.click('a.nav-item:has-text("AI Chat"), a.nav-item:has-text("对话")').catch(() => {})
     await window.waitForTimeout(500)
 
-    const newChatBtn = window.locator('button:has-text("新建对话"), button:has-text("New Chat")').first()
+    // sidebar 的 .new-chat-btn — 第一次创建后空状态消失,只剩它
+    const newChatBtn = window.locator(newChatBtnSel).first()
     if (await newChatBtn.count() > 0) {
       await newChatBtn.click()
       await window.waitForTimeout(500)
-      await newChatBtn.click()
-      await window.waitForTimeout(500)
+      // 第二次:用 sidebar 的 .new-chat-btn (稳定 class)
+      const sidebarNewChat = window.locator('button.new-chat-btn').first()
+      if (await sidebarNewChat.count() > 0) {
+        await sidebarNewChat.click()
+        await window.waitForTimeout(500)
+      }
       const conversations = await window.locator('.conversation-item').count()
       expect(conversations).toBeGreaterThanOrEqual(2)
     }
@@ -112,13 +125,16 @@ test.describe('T+30 日常 Chat 全流程', () => {
     await window.click('a.nav-item:has-text("AI Chat"), a.nav-item:has-text("对话")').catch(() => {})
     await window.waitForTimeout(500)
 
-    // 创建 2 个会话
-    const newChatBtn = window.locator('button:has-text("新建对话")').first()
-    if (await newChatBtn.count() > 0) {
-      await newChatBtn.click()
+    // 创建 2 个会话(用稳定的 .new-chat-btn + 空状态按钮)
+    const firstBtn = window.locator(newChatBtnSel).first()
+    if (await firstBtn.count() > 0) {
+      await firstBtn.click()
       await window.waitForTimeout(500)
-      await newChatBtn.click()
-      await window.waitForTimeout(500)
+      const sidebarBtn = window.locator('button.new-chat-btn').first()
+      if (await sidebarBtn.count() > 0) {
+        await sidebarBtn.click()
+        await window.waitForTimeout(500)
+      }
     }
 
     // 点击第一个会话

@@ -541,7 +541,7 @@
             </div>
 
             <div class="empty-actions">
-              <el-button type="primary" size="large" @click="handleNewChat">
+              <el-button type="primary" size="large" @click="handleNewChat" class="empty-new-chat">
                 <el-icon><Plus /></el-icon>
                 新建对话
               </el-button>
