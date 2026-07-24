@@ -1,5 +1,7 @@
 import { test, expect, shouldRunElectronE2E } from './helpers/electron-app'
 
+const isDev = process.env.NODE_ENV === 'development' || process.env.E2E_INCLUDE_DEV === '1'
+
 /**
  * D2-Prime: 30s 启动时长验证(降级为 UI 挂载验证)
  *
@@ -29,6 +31,7 @@ test.describe('D2-Prime 30s startup', () => {
   // (原先在 describe 内部某 test 体内 skip,导致同 describe 内其他 test 在
   //  fixture 解析阶段就抛 "E2E_ELECTRON is not set" 失败)
   test.skip(!shouldRunElectronE2E, 'requires E2E_ELECTRON=1 to launch Electron renderer')
+  test.skip(!isDev, '/d2-prime-demo is dev-only, skipped in production e2e')
 
   test('D2-Prime demo page mounts with prompt and launch button', async ({ window }) => {
     // /d2-prime-demo 是 hash 路由,直接改 hash

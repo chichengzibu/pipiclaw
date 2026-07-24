@@ -1,5 +1,7 @@
 import { test, expect, shouldRunElectronE2E } from './helpers/electron-app'
 
+const isDev = process.env.NODE_ENV === 'development' || process.env.E2E_INCLUDE_DEV === '1'
+
 /**
  * D3: 远程指令 Demo UI 挂载验证
  *
@@ -20,6 +22,7 @@ import { test, expect, shouldRunElectronE2E } from './helpers/electron-app'
 
 test.describe('D3 远程 demo UI mount', () => {
   test.skip(!shouldRunElectronE2E, 'requires E2E_ELECTRON=1 to launch Electron renderer')
+  test.skip(!isDev, '/d3-demo is dev-only, skipped in production e2e')
 
   test('D3 demo page mounts with config form and event log', async ({ window }) => {
     // 改 hash 触发 vue-router

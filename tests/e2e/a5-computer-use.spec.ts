@@ -19,8 +19,11 @@ import { test, expect, shouldRunElectronE2E } from './helpers/electron-app'
  *   - 完整 ActionExecutor 单元测试见 tests/unit/ 后续 PR
  */
 
+const isDev = process.env.NODE_ENV === 'development' || process.env.E2E_INCLUDE_DEV === '1'
+
 test.describe('A5 Computer Use', () => {
   test.skip(!shouldRunElectronE2E, 'requires E2E_ELECTRON=1 to launch Electron renderer')
+  test.skip(!isDev, '/a5-demo is dev-only, skipped in production e2e')
 
   test('A5 demo page renders with instruction input and run button', async ({ window }) => {
     await window.click('a.nav-item[href$="#/d5-demo"]')

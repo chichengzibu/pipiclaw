@@ -33,15 +33,15 @@ test.describe('UI interaction smoke test', () => {
   })
 
   test('navigate through main pages', async ({ window }) => {
-    // 1. SideNav 应该有 14 个 nav-item
+    // 1. SideNav 应该有 14 个 nav-item(v4.2+ 列表)
     const navItems = window.locator('a.nav-item')
     await expect(navItems).toHaveCount(14, { timeout: 10_000 })
 
-    // 2. 验证每个 nav-item 的文本(英文)
+    // 2. 验证每个 nav-item 的文本(英文) — v4.2+ SideNav 列表
     const expectedNavTexts = [
-      'Dashboard', 'AI Chat', 'Skills', 'Settings', 'Help',
-      'Models', 'Permissions', 'Plugin Market', 'Remote Control', 'Schedule',
-      'Skill Market', 'Automation Tasks', 'D1 Screenshot', 'D5 Recording'
+      'Dashboard', 'AI Chat', 'Skills', 'ClawHub', 'Models',
+      'Model Compare', 'IM Management', 'Automation Tasks', 'Schedule',
+      'Permissions', 'Plugin Market', 'Remote Control', 'Settings', 'Help',
     ]
     for (const text of expectedNavTexts) {
       const item = window.locator(`a.nav-item:has-text("${text}")`)

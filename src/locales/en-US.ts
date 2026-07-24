@@ -57,7 +57,7 @@ export default {
     imAccounts: 'IM Accounts',
     llmConfig: 'LLM Config',
     imManagement: 'IM Management',
-    clawhub: 'Skill Market',
+    clawhub: 'ClawHub',
     modelCompare: 'Model Compare',
     demo: {
       d1: 'D1 Screenshot',
