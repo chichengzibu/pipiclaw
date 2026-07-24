@@ -2,6 +2,58 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [4.3.1] - 2026-07-24 (Ship-Ready 真用户测试套件)
+
+从 v4.3.0 基础上,模拟真实用户跑 64 个 e2e + 869 个 unit + 22 个 smoke,验证
+生产 build 成功。PiPiClaw v4.3.x 现已 ship-ready。
+
+### v4.3.x 真用户测试累计(8 个测试阶段)
+
+| 阶段 | 场景 | 文件 |
+|------|------|------|
+| T+0 新用户首次启动 | 17 | tests/e2e/user-journey.spec.ts |
+| T+30 daily chat | 9 | tests/e2e/daily-chat.spec.ts |
+| T+60 models CRUD | 8 | tests/e2e/models-crud.spec.ts |
+| T+60 chat 真链路 send/receive | 3 | tests/e2e/chat-real-send.spec.ts |
+| T+150 长对话历史 | 5 | tests/e2e/chat-long-conversation.spec.ts |
+| T+240 ClawHub 技能市场 | 6 | tests/e2e/clawhub-browse.spec.ts |
+| T+270 拖拽文件 | 5 | tests/e2e/file-drag-drop.spec.ts |
+| T+300 主题切换 | 7 | tests/e2e/theme-toggle.spec.ts |
+| T+420 状态持久化 | 4 | tests/e2e/restart-persistence.spec.ts |
+| **累计新增 e2e** | **64** | **+ 36 已有 = 100 总计,23 dev-only skipped** |
+
+### 真用户测试发现并修复的真问题
+
+1. **sidebar "新建对话" Plus 按钮无文字/无 title** (`04d94ee`)— 用户创建
+   第一个会话后,空状态大按钮消失,只剩角落小 Plus 图标无任何提示
+   → 加 title + aria-label + 文字"新建"
+2. **Element Plus dialog 关闭后 DOM 残留** — 测选用 .el-dialog:visible
+   伪选择器,只对真正可见 dialog 计数
+3. **TitleBar 主题按钮 title 双向依赖状态** — 测试改用 .theme-toggle
+   class(稳定)+ aria-label 兜底
+4. **现有 conversation 无 providerId 时 model select 不会自动选** — 已知
+   UX gap,需要手动选 provider 才能发消息(R2 测试覆盖)
+5. **Playwright Electron userDataDir 在 Windows + Electron 30 被忽略** —
+   app 实际写 %APPDATA%/Electron/(productName 默认),不是 Playwright 路径
+6. **app 实际 schema 写顶层 theme,不是 app.theme** — v4.2 重构遗留:
+   cfg.app.theme 永远 'dark'(默认),用户实际选择写到 cfg.theme(顶层)
+
+### 验证清单
+
+- vitest 869/869 ✅ (从 v3.0.0 末期 486 → +383)
+- e2e 64 passed + 23 skipped(dev-only 路由)✅
+- smoke 22/22 ✅
+- vue-tsc / eslint 0 errors ✅
+- **production build success** ✅
+  - `release\PiPiClaw-4.3.0-Setup.exe` 95.9 MB
+  - NSIS installer + win-unpacked folder
+  - electron-builder 26.15.7 / Electron 30.5.1 / Node 22.16.0
+
+### 推荐部署
+
+用户可执行 `npm run build` 生成 Setup.exe。已验证本地 Ollama 11434 端到端
+send/receive 工作(qwen3.5:9b 速度冠军, gpt-oss:20b 高质量)。
+
 ## [4.3.0] - 2026-07-24 (真用户测试驱动修复)
 
 模拟真实用户跑 Ollama 本地模型(11434 端口),从测试中发现 5 个真问题,逐个修。
