@@ -1,8 +1,33 @@
 export type LlmProvider = 'openai' | 'anthropic' | 'zhipu'
 
 export interface LlmMessage {
-  role: 'system' | 'user' | 'assistant'
+  role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
+  /** tool 消息:对应 tool_call_id */
+  toolCallId?: string
+  /** assistant 消息:由模型产生的 tool_calls 记录(用于上下文) */
+  toolCalls?: LlmToolCall[]
+}
+
+/** OpenAI 风格 tool 定义 */
+export interface LlmTool {
+  type: 'function'
+  function: {
+    name: string
+    description?: string
+    parameters?: Record<string, unknown>
+  }
+}
+
+/** 模型产出的工具调用 */
+export interface LlmToolCall {
+  id: string
+  type: 'function'
+  function: {
+    name: string
+    /** JSON-encoded 字符串 */
+    arguments: string
+  }
 }
 
 export interface LlmRequest {
@@ -12,6 +37,12 @@ export interface LlmRequest {
   maxTokens?: number
   /** 强制用哪个 provider */
   provider?: LlmProvider
+  /** 工具定义(OpenAI 风格) */
+  tools?: LlmTool[]
+  /** 强制工具选择:auto / none / { type: 'function', function: { name } } */
+  toolChoice?: 'auto' | 'none' | { type: 'function'; function: { name: string } }
+  /** Ollama 兼容:关闭 thinking 模式(qwen3 / deepseek-r1 等) */
+  think?: boolean
 }
 
 export interface LlmResponse {
@@ -24,6 +55,12 @@ export interface LlmResponse {
   /** ms */
   durationMs: number
   error?: string
+  /** 工具调用(模型决定要调的工具) */
+  toolCalls?: LlmToolCall[]
+  /** thinking 内容(qwen3 / o1 / deepseek-r1 等,UI 可选显示) */
+  reasoning?: string
+  /** finish_reason:'stop' / 'length' / 'tool_calls' / 'content_filter' */
+  finishReason?: string
 }
 
 export interface LlmConfig {

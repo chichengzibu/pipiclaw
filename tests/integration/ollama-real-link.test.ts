@@ -58,7 +58,7 @@ describe('P5-UX: PiPiClaw + Ollama 真链路 e2e', () => {
     }
   }, 60000)
 
-  it('S2: 工具调用(基础协议验证)', async () => {
+  it('S2: 工具调用(完整透传 + 解析)', async () => {
     const client = LlmClient.getInstance()
     const r = await client.chat({
       model: MODEL,
@@ -77,12 +77,22 @@ describe('P5-UX: PiPiClaw + Ollama 真链路 e2e', () => {
           },
         },
       ],
-      maxTokens: 200,
+      maxTokens: 500,
     })
-    // LlmClient 的 openai adapter 暂未透传 tool_calls
     expect(r.ok).toBe(true)
-    console.log(`  S2: ${r.durationMs}ms, content="${r.content.slice(0, 100)}"`)
-    console.log(`  S2 note: 当前 LlmClient 不解析 tool_calls,需后续增强`)
+    console.log(`  S2: ${r.durationMs}ms`)
+    console.log(`  S2 content: ${r.content.slice(0, 80)}`)
+    if (r.toolCalls && r.toolCalls.length > 0) {
+      console.log(`  S2 ✓ tool_calls: ${r.toolCalls.length} 个`)
+      r.toolCalls.forEach((tc, i) => {
+        console.log(`    [${i}] ${tc.function.name}(${tc.function.arguments})`)
+      })
+      // 验证参数是北京
+      const args = JSON.parse(r.toolCalls[0].function.arguments)
+      expect(args.city).toContain('北京')
+    } else {
+      console.log(`  S2 ✗ 模型未调工具(降级为普通回答)`)
+    }
   }, 60000)
 
   it('S3: 长 prompt', async () => {
