@@ -70,6 +70,9 @@ export default {
     remoteControl: '远程控制',
     imAccounts: '即时通讯账号',
     llmConfig: 'LLM 配置',
+    imManagement: 'IM 管理',
+    clawhub: '技能市场',
+    modelCompare: '模型对比',
     demo: {
       d1: 'D1 截屏',
       d2: 'D2 Prime',

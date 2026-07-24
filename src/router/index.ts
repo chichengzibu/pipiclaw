@@ -102,29 +102,31 @@ const routes: RouteRecordRaw[] = [
     path: '/d1-demo',
     name: 'D1ScreenshotDemo',
     component: () => import('@/views/D1ScreenshotDemo.vue'),
-    meta: { title: 'D1 截屏', icon: 'Camera' }
+    meta: { title: 'D1 截屏', icon: 'Camera', devOnly: true }
   },
   {
     path: '/d5-demo',
     name: 'D5RecordingToSkill',
     component: () => import('@/views/D5RecordingToSkill.vue'),
-    meta: { title: 'D5 录屏', icon: 'VideoCamera' }
+    meta: { title: 'D5 录屏', icon: 'VideoCamera', devOnly: true }
   },
   {
     path: '/d3-demo',
     name: 'D3RemoteDemo',
     component: () => import('@/views/D3RemoteDemo.vue'),
-    meta: { title: 'D3 远程', icon: 'Promotion' }
+    meta: { title: 'D3 远程', icon: 'Promotion', devOnly: true }
   },
   {
     path: '/a5-demo',
     name: 'A5ComputerUseDemo',
     component: () => import('@/views/A5ComputerUseDemo.vue'),
+    meta: { devOnly: true },
   },
   {
     path: '/d2-prime-demo',
     name: 'D2PrimeDemo',
     component: () => import('@/views/D2PrimeDemo.vue'),
+    meta: { devOnly: true },
   },
   {
     path: '/settings/im-accounts',
@@ -161,6 +163,19 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes
 });
+
+// devOnly 路由:生产构建不导出 + 导航守卫拦截
+const isDev = (import.meta as { env?: { DEV?: boolean } })?.env?.DEV
+if (!isDev) {
+  // 生产模式:把 devOnly 路由重定向到首页,避免用户通过 URL 访问
+  router.beforeEach((to, _from, next) => {
+    if (to.meta?.devOnly) {
+      next('/dashboard')
+    } else {
+      next()
+    }
+  })
+}
 
 // 路由守卫：每次路由切换时更新页面标题
 router.beforeEach((to, _, next) => {

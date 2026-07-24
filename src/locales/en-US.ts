@@ -56,6 +56,9 @@ export default {
     remoteControl: 'Remote Control',
     imAccounts: 'IM Accounts',
     llmConfig: 'LLM Config',
+    imManagement: 'IM Management',
+    clawhub: 'Skill Market',
+    modelCompare: 'Model Compare',
     demo: {
       d1: 'D1 Screenshot',
       d2: 'D2 Prime',

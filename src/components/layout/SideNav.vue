@@ -56,17 +56,17 @@ const navItems = [
   { path: '/dashboard', titleKey: 'nav.dashboard', icon: 'HomeFilled' },
   { path: '/chat', titleKey: 'nav.chat', icon: 'ChatDotRound' },
   { path: '/skills', titleKey: 'nav.skills', icon: 'Box' },
-  { path: '/settings', titleKey: 'nav.settings', icon: 'Setting' },
-  { path: '/help', titleKey: 'nav.help', icon: 'QuestionFilled' },
+  { path: '/clawhub', titleKey: 'nav.clawhub', icon: 'Goods' },
   { path: '/models', titleKey: 'nav.models', icon: 'Cpu' },
+  { path: '/model-compare', titleKey: 'nav.modelCompare', icon: 'DataAnalysis' },
+  { path: '/im-management', titleKey: 'nav.imManagement', icon: 'ChatLineRound' },
+  { path: '/tasks', titleKey: 'nav.tasks', icon: 'List' },
+  { path: '/schedule', titleKey: 'nav.schedule', icon: 'Calendar' },
   { path: '/permissions', titleKey: 'nav.permissions', icon: 'Lock' },
   { path: '/plugin-market', titleKey: 'nav.plugins', icon: 'Shop' },
   { path: '/remote-control', titleKey: 'nav.remoteControl', icon: 'Connection' },
-  { path: '/schedule', titleKey: 'nav.schedule', icon: 'Calendar' },
-  { path: '/skill-market', titleKey: 'nav.skillMarket', icon: 'Goods' },
-  { path: '/tasks', titleKey: 'nav.tasks', icon: 'List' },
-  { path: '/d1-demo', titleKey: 'nav.demo.d1', icon: 'Camera' },
-  { path: '/d5-demo', titleKey: 'nav.demo.d5', icon: 'VideoCamera' }
+  { path: '/settings', titleKey: 'nav.settings', icon: 'Setting' },
+  { path: '/help', titleKey: 'nav.help', icon: 'QuestionFilled' }
 ];
 
 const sidebarWidth = ref(200);

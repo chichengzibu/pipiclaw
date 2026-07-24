@@ -15,7 +15,11 @@
           <span class="config-meta">共 {{ channels.length }} 个通道 · 已启用 {{ enabledCount }}</span>
         </div>
 
-        <div v-if="channels.length === 0" class="empty-state">
+        <div v-if="initialLoading" class="channel-grid">
+          <Skeleton v-for="i in 6" :key="`skel-${i}`" type="card" />
+        </div>
+
+        <div v-else-if="channels.length === 0" class="empty-state">
           <el-empty description="还没有配置任何 IM 通道,点上面「添加通道」开始" />
         </div>
 
@@ -332,6 +336,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import Skeleton from '@/components/common/Skeleton.vue'
 
 interface ChannelInfo {
   kind: string
@@ -344,6 +349,7 @@ interface ChannelInfo {
 }
 
 const activeTab = ref('config')
+const initialLoading = ref(true) // P5-UX: 初次加载时显示 Skeleton
 
 // 11 个支持的平台 + 元信息
 const ALL_KINDS: Array<{ value: string; label: string; icon: string }> = [
@@ -678,11 +684,14 @@ async function loadMessageStats(): Promise<void> {
   }
 }
 
-onMounted(() => {
-  loadChannels()
-  loadMessageStats()
-  loadRoutingRules()
-  loadPermissions()
+onMounted(async () => {
+  await Promise.all([
+    loadChannels(),
+    loadMessageStats(),
+    loadRoutingRules(),
+    loadPermissions(),
+  ])
+  initialLoading.value = false
 })
 </script>
 

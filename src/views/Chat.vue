@@ -511,16 +511,47 @@
 
         <div class="empty-chat" v-else>
           <div class="empty-content">
-            <span class="empty-icon">💬</span>
-            <h2 class="empty-title">开始新对话</h2>
-            <p class="empty-desc">选择一个已有的会话或创建新对话</p>
-            <el-button type="primary" @click="handleNewChat">
-              <el-icon><Plus /></el-icon>
-              新建对话
-            </el-button>
-            <el-button @click="$router.push('/models')" v-if="enabledProviders.length === 0">
-              去配置模型
-            </el-button>
+            <div class="empty-greeting">
+              <span class="empty-icon">👋</span>
+              <h2 class="empty-title">{{ greetingText }}</h2>
+              <p class="empty-desc">PiPiClaw 已经准备就绪。从下面挑一个开始,或者直接输入问题。</p>
+            </div>
+
+            <div class="empty-prompts" v-if="enabledProviders.length > 0">
+              <button
+                v-for="p in QUICK_PROMPTS"
+                :key="p.id"
+                class="empty-prompt-card"
+                @click="handleQuickPrompt(p)"
+              >
+                <span class="empty-prompt-emoji">{{ p.emoji }}</span>
+                <div class="empty-prompt-body">
+                  <div class="empty-prompt-title">{{ p.title }}</div>
+                  <div class="empty-prompt-desc">{{ p.desc }}</div>
+                </div>
+              </button>
+            </div>
+
+            <div class="empty-actions">
+              <el-button type="primary" size="large" @click="handleNewChat">
+                <el-icon><Plus /></el-icon>
+                新建对话
+              </el-button>
+              <el-button size="large" @click="$router.push('/models')" v-if="enabledProviders.length === 0">
+                <el-icon><Setting /></el-icon>
+                去配置模型
+              </el-button>
+              <el-button size="large" @click="openCommandPalette">
+                <el-icon><Search /></el-icon>
+                命令面板
+                <kbd>Ctrl K</kbd>
+              </el-button>
+            </div>
+
+            <div class="empty-tip" v-if="enabledProviders.length === 0">
+              <el-icon><WarningFilled /></el-icon>
+              <span>还没有配置 LLM 模型 — 先到 <a @click="$router.push('/models')">模型管理</a> 添加 OpenAI / Anthropic / 智谱 / Ollama 等</span>
+            </div>
           </div>
         </div>
       </div>
@@ -710,9 +741,9 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, watch, nextTick, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, MoreFilled, Promotion, VideoPause, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading } from '@element-plus/icons-vue';
+import { Plus, MoreFilled, Promotion, VideoPause, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading, Setting, WarningFilled } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 
@@ -751,10 +782,56 @@ const hermesMemoryStore = useHermesMemoryStore();
 const gatewayStore = useGatewayStore();
 const permissionsStore = usePermissionsStore();
 const route = useRoute();
+const router = useRouter();
 
 const inputMessage = ref('');
 const chatSidebarWidth = ref(280);
 const CHAT_SIDEBAR_MIN_WIDTH = 200;
+
+// P5-UX: 快速提示词模板(空状态 + 命令面板同步)
+const QUICK_PROMPTS = [
+  { id: 'p1', emoji: '📝', title: '帮我写一份日报', desc: '从今天的 IM / 任务 / 文件汇总', prompt: '请帮我生成今天的工作日报,要包含:\n1. 今日完成的关键任务\n2. 仍在进行的事项及当前进度\n3. 风险 / 阻塞 / 需要协助的事项\n4. 明日计划' },
+  { id: 'p2', emoji: '🔍', title: '代码审查', desc: '粘贴 PR diff,自动 review', prompt: '请审查下面的代码改动,按 文件 → 改动 → 建议 三段输出,要标出风格 / 性能 / 安全 / 潜在 bug 四类问题:\n\n```diff\n\n```' },
+  { id: 'p3', emoji: '🌐', title: '翻译一段文字', desc: '中英日韩法德西俄 8 语种', prompt: '请把下面这段文字翻译成英文(同时给我 2 个备选版本),保留原文中所有专有名词:\n\n' },
+  { id: 'p4', emoji: '🐛', title: '帮我分析一个 bug', desc: '贴日志 / 报错 / 现象', prompt: '我遇到一个 bug,需要你帮我定位:\n\n【现象】\n\n【报错日志】\n\n【已尝试】\n\n请先复述我的问题确认理解,然后给出 3 个最可能的根因,按概率排序,每个根因给出验证方法。' },
+  { id: 'p5', emoji: '💡', title: '头脑风暴', desc: '给个主题,列 10 个角度', prompt: '我想就「__主题__」做一次头脑风暴。请从 10 个不同角度帮我展开(技术 / 用户 / 商业 / 风险 / 趋势 / 反方 / 等等),每个角度 2-3 句话。' },
+  { id: 'p6', emoji: '📅', title: '写周报', desc: '本周工作整理', prompt: '请基于本周我的工作生成结构化周报:\n1. 本周亮点(3 条以内)\n2. 主要进展(按项目 / 任务分类)\n3. 数据 / 指标变化\n4. 遇到的问题和解决方案\n5. 下周计划' },
+]
+
+const greetingText = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 6) return '夜深了 — 还有我能帮的吗?'
+  if (hour < 12) return '早上好 ☀️'
+  if (hour < 14) return '中午好,该吃饭啦'
+  if (hour < 18) return '下午好,继续加油'
+  if (hour < 22) return '晚上好,辛苦了一天'
+  return '深夜了 — 别忘了休息'
+})
+
+async function handleQuickPrompt(p: { prompt: string }): Promise<void> {
+  if (enabledProviders.value.length === 0) {
+    ElMessage.warning('请先到「模型管理」配置 LLM')
+    router.push('/models')
+    return
+  }
+  // 先创建新对话,再填入 prompt
+  const conv = await chatStore.createConversation({
+    providerId: currentProviderId.value || undefined,
+    modelId: currentModelId.value || undefined,
+  })
+  if (conv) {
+    inputMessage.value = p.prompt
+    ElMessage.success('已创建新对话,prompt 已填入')
+    nextTick(() => {
+      const el = document.querySelector('.chat-input textarea') as HTMLTextAreaElement | null
+      el?.focus()
+    })
+  }
+}
+
+function openCommandPalette(): void {
+  window.dispatchEvent(new CustomEvent('cmd:open-palette'))
+}
 const CHAT_SIDEBAR_MAX_WIDTH = 400;
 let isChatSidebarResizing = false;
 
@@ -1011,16 +1088,31 @@ onMounted(async () => {
       chatSidebarWidth.value = parsedWidth;
     }
   }
-  
+
+  // 监听命令面板事件 (Cmd+K 联动)
+  window.addEventListener('cmd:new-chat', handleNewChat)
+  window.addEventListener('cmd:fill-chat', handleFillChat as EventListener)
+
   // 初始加载完成后，滚动到底部（即时）
   nextTick(() => {
     scrollToBottom(true, true);
   });
 });
 
+function handleFillChat(e: CustomEvent<{ text: string }>): void {
+  const text = e.detail?.text || ''
+  inputMessage.value = text
+  nextTick(() => {
+    const el = document.querySelector('.chat-input textarea') as HTMLTextAreaElement | null
+    el?.focus()
+  })
+}
+
 onUnmounted(() => {
   document.removeEventListener('mousemove', handleChatSidebarResize);
   document.removeEventListener('mouseup', stopChatSidebarResize);
+  window.removeEventListener('cmd:new-chat', handleNewChat);
+  window.removeEventListener('cmd:fill-chat', handleFillChat as EventListener);
 });
 
 // 监听对话切换
@@ -2121,30 +2213,142 @@ function handleCoreMemoryChange(value: string): void {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: var(--space-xl);
 }
 
 .empty-content {
+  width: 100%;
+  max-width: 720px;
   text-align: center;
   padding: var(--space-2xl);
 }
 
+.empty-greeting {
+  margin-bottom: var(--space-2xl);
+}
+
 .empty-icon {
-  font-size: var(--space-3xl);
+  font-size: 56px;
   display: block;
   margin-bottom: var(--space-md);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 .empty-title {
-  font-size: var(--font-size-title-1);
+  font-size: var(--font-size-display, 28px);
   font-weight: var(--font-weight-semibold);
   color: var(--text-color);
   margin: 0 0 var(--space-sm);
+  letter-spacing: -0.02em;
 }
 
 .empty-desc {
   font-size: var(--font-size-body);
   color: var(--el-text-color-secondary);
-  margin: 0 0 var(--space-lg);
+  margin: 0;
+  line-height: var(--line-height-relaxed);
+}
+
+.empty-prompts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.empty-prompt-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: var(--fg-primary);
+  transition: background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+
+  &:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-base);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.empty-prompt-emoji {
+  font-size: 24px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.empty-prompt-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.empty-prompt-title {
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  color: var(--fg-primary);
+  margin-bottom: 2px;
+}
+
+.empty-prompt-desc {
+  font-size: 12px;
+  color: var(--fg-tertiary);
+  line-height: var(--line-height-normal);
+}
+
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+  margin-bottom: var(--space-md);
+
+  kbd {
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-base);
+    border-radius: 3px;
+    padding: 1px 4px;
+    margin-left: 4px;
+    color: var(--fg-tertiary);
+  }
+}
+
+.empty-tip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--warning, #d97706);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--fg-secondary);
+  text-align: left;
+  margin-top: var(--space-md);
+
+  a {
+    color: var(--accent-base);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .el-icon {
+    color: var(--warning, #d97706);
+    font-size: 16px;
+  }
 }
 
 /* Phase 6: 任务执行状态样式 */
