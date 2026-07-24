@@ -11,14 +11,11 @@
             <el-card class="settings-card">
               <el-form label-width="140px">
                 <el-form-item :label="t('settings.selectTheme')">
-                  <el-select v-model="selectedTheme" :placeholder="t('settings.pleaseSelectTheme')" @change="handleThemeChange">
-                    <el-option
-                      v-for="theme in appStore.availableThemes"
-                      :key="theme.key"
-                      :label="theme.name"
-                      :value="theme.key"
-                    />
-                  </el-select>
+                  <el-radio-group v-model="selectedTheme" @change="handleThemeChange">
+                    <el-radio-button value="light">☀️ 浅色</el-radio-button>
+                    <el-radio-button value="dark">🌙 深色</el-radio-button>
+                    <el-radio-button value="system">🖥️ 跟随系统</el-radio-button>
+                  </el-radio-group>
                 </el-form-item>
                 <el-form-item :label="t('settings.guide')">
                   <el-button type="primary" size="small" @click="appStore.openGuide">
@@ -432,7 +429,7 @@ const hermesMemoryStore = useHermesMemoryStore();
 const modelsStore = useModelsStore();
 
 const activeTab = ref('basic');
-const selectedTheme = ref(appStore.currentTheme);
+const selectedTheme = ref(appStore.themeMode);
 const showFeedbackModal = ref(false);
 
 const shortcutConfig = ref({ toggle: 'Ctrl+Alt+P' });
@@ -504,7 +501,7 @@ const updateError = ref('');
 const isChecking = ref(false);
 const isDownloading = ref(false);
 
-const handleThemeChange = (themeKey: string): void => {
+const handleThemeChange = (themeKey: 'light' | 'dark' | 'system'): void => {
   appStore.setTheme(themeKey);
   ElMessage.success(t('settings.themeChanged'));
 };

@@ -6,7 +6,11 @@
       <SideNav />
       
       <main class="main-content">
-        <router-view />
+        <router-view v-slot="{ Component, route }">
+          <transition name="route-fade" mode="out-in">
+            <component :is="Component" :key="route.fullPath" />
+          </transition>
+        </router-view>
       </main>
     </div>
     

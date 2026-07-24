@@ -6,29 +6,42 @@
         <span class="app-name">PiPiClaw</span>
       </div>
     </div>
-    
+
     <div class="window-controls">
-      <button 
-        class="control-btn minimize" 
+      <button
+        class="control-btn theme-toggle"
+        @click="handleToggleTheme"
+        :title="isDark ? '切换到浅色' : '切换到深色'"
+        :aria-label="isDark ? '切换到浅色' : '切换到深色'"
+      >
+        <el-icon v-if="isDark"><Sunny /></el-icon>
+        <el-icon v-else><Moon /></el-icon>
+      </button>
+
+      <button
+        class="control-btn minimize"
         @click="handleMinimize"
         title="最小化"
+        aria-label="最小化"
       >
         <el-icon><Minus /></el-icon>
       </button>
-      
-      <button 
-        class="control-btn maximize" 
+
+      <button
+        class="control-btn maximize"
         @click="handleMaximize"
         :title="isMaximized ? '还原' : '最大化'"
+        :aria-label="isMaximized ? '还原' : '最大化'"
       >
         <el-icon v-if="isMaximized"><CopyDocument /></el-icon>
         <el-icon v-else><FullScreen /></el-icon>
       </button>
-      
-      <button 
-        class="control-btn close" 
+
+      <button
+        class="control-btn close"
         @click="handleClose"
         title="关闭"
+        aria-label="关闭"
       >
         <el-icon><Close /></el-icon>
       </button>
@@ -37,10 +50,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { Minus, FullScreen, Close, CopyDocument, Setting } from '@element-plus/icons-vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Minus, FullScreen, Close, CopyDocument, Setting, Sunny, Moon } from '@element-plus/icons-vue';
+import { useAppStore } from '@/stores/app';
 
+const appStore = useAppStore();
 const isMaximized = ref(false);
+
+const isDark = computed(() => appStore.currentTheme === 'dark');
+
+const handleToggleTheme = (): void => {
+  appStore.toggleTheme();
+};
 
 const handleMinimize = async (): Promise<void> => {
   try {
@@ -78,7 +99,6 @@ onMounted(async () => {
   try {
     if (window.electronAPI?.window) {
       isMaximized.value = await window.electronAPI.window.isMaximized();
-      
       unsubscribe = window.electronAPI.window.onMaximizeChange((maximized) => {
         isMaximized.value = maximized;
       });
@@ -105,8 +125,8 @@ onUnmounted(() => {
   width: 100%;
   height: $title-bar-height;
   flex-shrink: 0;
-  background-color: var(--bg-color);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-base);
   -webkit-app-region: drag;
   user-select: none;
 }
@@ -127,13 +147,13 @@ onUnmounted(() => {
 
 .app-icon {
   font-size: 16px;
-  color: var(--el-color-primary) !important;
+  color: var(--accent-base);
 }
 
 .app-name {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-color) !important;
+  color: var(--fg-primary);
 }
 
 .window-controls {
@@ -147,41 +167,35 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
+  width: 40px;
   height: 100%;
   border: none;
   background: transparent;
-  color: var(--text-color) !important;
+  color: var(--fg-secondary);
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
 
   .el-icon {
-    color: var(--text-color) !important;
+    font-size: 14px;
   }
 }
 
 .control-btn:hover {
-  background-color: var(--hover-bg-color);
-  
-  .el-icon {
-    color: var(--text-color) !important;
-  }
+  background: var(--bg-hover);
+  color: var(--fg-primary);
 }
 
 .control-btn:active {
-  background-color: var(--active-bg-color);
+  background: var(--bg-active);
 }
 
 .control-btn.close:hover {
-  background-color: var(--el-color-danger);
-  
-  .el-icon {
-    color: white !important;
-  }
+  background: var(--danger);
+  color: var(--fg-on-accent);
 }
 
-.control-btn .el-icon {
-  font-size: 14px;
-  color: var(--text-color) !important;
+.control-btn.theme-toggle .el-icon {
+  font-size: 15px;
 }
 </style>

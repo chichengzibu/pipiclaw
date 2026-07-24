@@ -1,22 +1,214 @@
 /**
- * PiPiClaw - Apple HIG Design Tokens
+ * PiPiClaw - Design Tokens (Light + Dark)
  *
- * 与 src/styles/variables.scss（5 套主题颜色）并存：
- * - variables.scss 负责颜色 + 主题切换 + Element Plus 集成
- * - tokens.css     负责 spacing / typography / motion / radius（Apple HIG 风格）
+ * 单一源真相:
+ *   - 通过 document.documentElement.dataset.theme = 'light' | 'dark' 切换
+ *   - 跟随系统:window.matchMedia('(prefers-color-scheme: dark)').matches
+ *   - Element Plus 同步切换:document.documentElement.classList.toggle('dark', ...)
  *
- * 使用方式(sass 不允许注释内嵌):
- *   padding: var(--space-md);
- *   :style="{ padding: \`var(--space-md)\` }"
- *   @import './tokens.css'; padding: var(--space-md);
+ * 设计参考:
+ *   - Tare  - 极简白底,几乎只用黑白灰
+ *   - Cursor - 深色 #1C1C1E + 蓝色 accent (#3B82F6)
  *
- * 暗色模式：
- *   默认跟随系统 prefers-color-scheme: dark，
- *   显式切换：document.documentElement.dataset.theme = 'dark' | 'light'
+ * 命名约定 (semantic):
+ *   --bg-{base|elevated|hover|active}  背景层级
+ *   --fg-{primary|secondary|tertiary}  文字层级
+ *   --border-{base|strong}             边框
+ *   --accent-{base|hover|fg}           强调色
+ *   --success / --warning / --danger   功能色
  */
 
+:root,
+:root[data-theme='light'] {
+  /* ========== 背景 ========== */
+  --bg-base: #ffffff;
+  --bg-elevated: #fafafa;
+  --bg-hover: #f5f5f5;
+  --bg-active: #ebebeb;
+  --bg-inverse: #1a1a1a;
+
+  /* ========== 文字 ========== */
+  --fg-primary: #1a1a1a;
+  --fg-secondary: #555555;
+  --fg-tertiary: #999999;
+  --fg-inverse: #fafafa;
+  --fg-on-accent: #ffffff;
+
+  /* ========== 边框 ========== */
+  --border-base: #e5e5e5;
+  --border-strong: #d0d0d0;
+
+  /* ========== 强调色 (蓝) ========== */
+  --accent-base: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-fg: #ffffff;
+  --accent-soft: #eff6ff; /* 用于 hover/selected 背景 */
+
+  /* ========== 功能色 ========== */
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #6b7280;
+
+  /* ========== 阴影 ========== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* ========== 滚动条 ========== */
+  --scrollbar-thumb: rgba(0, 0, 0, 0.18);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.32);
+  --scrollbar-track: transparent;
+
+  /* ========== Element Plus 主题变量同步 (light) ========== */
+  --el-bg-color: #ffffff;
+  --el-bg-color-page: #fafafa;
+  --el-bg-color-overlay: #ffffff;
+  --el-text-color-primary: #1a1a1a;
+  --el-text-color-regular: #555555;
+  --el-text-color-secondary: #777777;
+  --el-text-color-placeholder: #999999;
+  --el-text-color-disabled: #c0c4cc;
+  --el-border-color: #e5e5e5;
+  --el-border-color-light: #ebeef5;
+  --el-border-color-lighter: #f2f6fc;
+  --el-border-color-extra-light: #fafafa;
+  --el-fill-color: #f5f5f5;
+  --el-fill-color-light: #fafafa;
+  --el-fill-color-lighter: #fafafa;
+  --el-fill-color-blank: #ffffff;
+  --el-mask-color: rgba(0, 0, 0, 0.5);
+  --el-color-primary: #2563eb;
+  --el-color-primary-light-3: #60a5fa;
+  --el-color-primary-light-5: #93c5fd;
+  --el-color-primary-light-7: #bfdbfe;
+  --el-color-primary-light-8: #dbeafe;
+  --el-color-primary-light-9: #eff6ff;
+  --el-color-primary-dark-2: #1d4ed8;
+  --el-color-success: #16a34a;
+  --el-color-warning: #d97706;
+  --el-color-danger: #dc2626;
+  --el-color-error: #dc2626;
+  --el-color-info: #6b7280;
+  --el-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
+  --el-box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+  --el-disabled-bg-color: #f5f7fa;
+  --el-disabled-text-color: #c0c4cc;
+  --el-disabled-border-color: #e4e7ed;
+  --el-overlay-color: rgba(0, 0, 0, 0.5);
+  --el-mask-bg-color: rgba(255, 255, 255, 0.5);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  /* ========== 背景 (Tare/Cursor deep dark) ========== */
+  --bg-base: #0f0f10;
+  --bg-elevated: #1a1a1c;
+  --bg-hover: #252528;
+  --bg-active: #2f2f33;
+  --bg-inverse: #fafafa;
+
+  /* ========== 文字 ========== */
+  --fg-primary: #fafafa;
+  --fg-secondary: #b0b0b5;
+  --fg-tertiary: #77777a;
+  --fg-inverse: #1a1a1a;
+  --fg-on-accent: #ffffff;
+
+  /* ========== 边框 ========== */
+  --border-base: #2c2c2e;
+  --border-strong: #3a3a3c;
+
+  /* ========== 强调色 (Cursor 风格 — 亮一档) ========== */
+  --accent-base: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-fg: #ffffff;
+  --accent-soft: #1e3a8a; /* hover/selected 深色背景 */
+
+  /* ========== 功能色 ========== */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #f87171;
+  --info: #9ca3af;
+
+  /* ========== 阴影 (深色模式更深) ========== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.55);
+
+  /* ========== 滚动条 ========== */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.18);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.32);
+
+  /* ========== Element Plus 主题变量同步 (dark) ========== */
+  --el-bg-color: #1a1a1c;
+  --el-bg-color-page: #0f0f10;
+  --el-bg-color-overlay: #252528;
+  --el-text-color-primary: #fafafa;
+  --el-text-color-regular: #b0b0b5;
+  --el-text-color-secondary: #8a8a8e;
+  --el-text-color-placeholder: #77777a;
+  --el-text-color-disabled: #4a4a4d;
+  --el-border-color: #2c2c2e;
+  --el-border-color-light: #252528;
+  --el-border-color-lighter: #1f1f21;
+  --el-border-color-extra-light: #1a1a1c;
+  --el-fill-color: #252528;
+  --el-fill-color-light: #1f1f21;
+  --el-fill-color-lighter: #1a1a1c;
+  --el-fill-color-blank: #1a1a1c;
+  --el-mask-color: rgba(0, 0, 0, 0.7);
+  --el-color-primary: #3b82f6;
+  --el-color-primary-light-3: #60a5fa;
+  --el-color-primary-light-5: #93c5fd;
+  --el-color-primary-light-7: #bfdbfe;
+  --el-color-primary-light-8: #1e3a8a;
+  --el-color-primary-light-9: #172554;
+  --el-color-primary-dark-2: #2563eb;
+  --el-color-success: #22c55e;
+  --el-color-warning: #f59e0b;
+  --el-color-danger: #f87171;
+  --el-color-error: #f87171;
+  --el-color-info: #9ca3af;
+  --el-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.4);
+  --el-box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+  --el-disabled-bg-color: #252528;
+  --el-disabled-text-color: #4a4a4d;
+  --el-disabled-border-color: #2c2c2e;
+  --el-overlay-color: rgba(0, 0, 0, 0.7);
+  --el-mask-bg-color: rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
+}
+
+/* 跟随系统(未显式设置 data-theme 时) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg-base: #0f0f10;
+    --bg-elevated: #1a1a1c;
+    --bg-hover: #252528;
+    --bg-active: #2f2f33;
+    --bg-inverse: #fafafa;
+    --fg-primary: #fafafa;
+    --fg-secondary: #b0b0b5;
+    --fg-tertiary: #77777a;
+    --fg-inverse: #1a1a1a;
+    --border-base: #2c2c2e;
+    --border-strong: #3a3a3c;
+    --accent-base: #3b82f6;
+    --accent-hover: #60a5fa;
+    --accent-soft: #1e3a8a;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.45);
+    --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
+}
+
+/* ========== Spacing (4px 基准) ========== */
 :root {
-  /* ==================== Spacing Tokens（4 的倍数，Apple HIG 推荐） ==================== */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -25,79 +217,69 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* ==================== Typography Tokens ==================== */
-  /* Font families：macOS / Windows / Linux fallback */
+  /* ========== Typography ========== */
   --font-family-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
     'Segoe UI Variable', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
     'Helvetica Neue', Arial, sans-serif;
   --font-family-mono: 'SF Mono', 'JetBrains Mono', 'Cascadia Code',
     'Consolas', 'Courier New', monospace;
 
-  /* Font sizes：标题 / 正文 / 注脚 三档（Apple HIG） */
   --font-size-display: 28px;
   --font-size-title-1: 22px;
   --font-size-title-2: 17px;
-  --font-size-body: 15px;
+  --font-size-body: 14px;
   --font-size-callout: 13px;
   --font-size-caption-1: 11px;
   --font-size-caption-2: 9px;
 
-  /* Font weights */
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Line heights */
   --line-height-tight: 1.2;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.7;
 
-  /* ==================== Motion Tokens（Apple spring curve） ==================== */
-  /* Apple HIG 标准 ease/spring */
+  /* ========== Motion (Tare/Cursor 风格:快、轻、丝滑) ========== */
   --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
   --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
 
-  /* Duration：3 档 */
-  --duration-fast: 200ms;
-  --duration-base: 300ms;
-  --duration-slow: 500ms;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
 
-  /* ==================== Radius Tokens ==================== */
+  /* ========== Radius ========== */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-pill: 999px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-pill: 9999px;
 
-  /* ==================== Layout Tokens ==================== */
+  /* ========== Layout ========== */
   --title-bar-height: 32px;
   --side-nav-width: 200px;
-  --side-nav-width-collapsed: 64px;
+  --side-nav-width-collapsed: 56px;
   --inspector-width: 360px;
   --content-max-width: 1200px;
   --content-padding: var(--space-md);
 
-  /* ==================== Shadow Tokens ==================== */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.12);
-
-  /* ==================== Z-index Tokens ==================== */
+  /* ========== Z-index ========== */
   --z-base: 1;
   --z-elevated: 10;
   --z-dropdown: 100;
+  --z-sticky: 200;
   --z-modal: 1000;
   --z-toast: 2000;
   --z-tooltip: 3000;
 
-  /* ==================== Common Component Sizes ==================== */
+  /* ========== Component Sizes ========== */
   --button-height-sm: 24px;
-  --button-height-md: 32px;
-  --button-height-lg: 40px;
+  --button-height-md: 30px;
+  --button-height-lg: 38px;
   --input-height-md: 32px;
   --icon-size-sm: 14px;
   --icon-size-md: 16px;
@@ -105,27 +287,28 @@
   --icon-size-xl: 24px;
 }
 
-/* ==================== 暗色模式：跟随系统 ==================== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
-    --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.5);
-  }
-}
-
-/* ==================== 显式 data-theme 覆盖 ==================== */
-:root[data-theme='light'] {
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-
+/* ========== 兼容旧 token 名称(过渡期) ========== */
+:root,
+:root[data-theme='light'],
 :root[data-theme='dark'] {
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --page-bg: var(--bg-base);
+  --card-bg: var(--bg-elevated);
+  --card-bg-secondary: var(--bg-hover);
+  --bg-color: var(--bg-base);
+  --bg-color-secondary: var(--bg-elevated);
+  --bg-color-tertiary: var(--bg-hover);
+  --text-color: var(--fg-primary);
+  --text-color-secondary: var(--fg-secondary);
+  --text-color-placeholder: var(--fg-tertiary);
+  --text-primary: var(--fg-primary);
+  --text-secondary: var(--fg-secondary);
+  --text-placeholder: var(--fg-tertiary);
+  --border-color: var(--border-base);
+  --border-color-light: var(--border-base);
+  --hover-bg-color: var(--bg-hover);
+  --active-bg-color: var(--bg-active);
+  --color-primary: var(--accent-base);
+  --color-secondary: var(--accent-base);
+  --color-accent: var(--accent-base);
+  --primary-color: var(--accent-base);
 }
