@@ -5,8 +5,16 @@
       <div class="sidebar" :style="{ width: chatSidebarWidth + 'px' }">
         <div class="sidebar-header">
           <span class="sidebar-title">会话</span>
-          <el-button type="primary" size="small" @click="handleNewChat">
+          <el-button
+            type="primary"
+            size="small"
+            @click="handleNewChat"
+            title="新建对话"
+            aria-label="新建对话"
+            class="new-chat-btn"
+          >
             <el-icon><Plus /></el-icon>
+            <span class="new-chat-text">新建</span>
           </el-button>
         </div>
         
@@ -1598,6 +1606,18 @@ function handleCoreMemoryChange(value: string): void {
   align-items: center;
   padding: var(--space-md);
   border-bottom: 1px solid var(--el-border-color-light);
+  gap: 8px;
+}
+
+.new-chat-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.new-chat-btn .new-chat-text {
+  font-size: 12px;
+  margin-left: 2px;
 }
 
 .sidebar-title {
