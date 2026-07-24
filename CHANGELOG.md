@@ -2,6 +2,48 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [4.2.0] - 2026-07-24 (UX 全面升级 — 超越 Claude/Hermes)
+
+### Added (P5-UX)
+- **CommandPalette (Cmd+K / Ctrl+K)** (`src/components/common/CommandPalette.vue`):
+  - 全局命令面板,4 类命令(提示词 / 动作 / 页面 / 最近)
+  - 智能模糊搜索(强匹配 + 字符顺序)
+  - 6 个内置 prompt 模板(日报 / 审查 / 翻译 / bug / 头脑风暴 / 周报)
+  - 4 个动作(切主题 / 重新加载 / 开发者工具 / 清缓存)
+  - 13 个页面导航入口
+  - 最近使用 localStorage 持久化
+  - 键盘导航:↑↓ / ↵ / esc
+  - Teleport 到 body + scale 渐入动画
+- **UpdateBanner** (`src/components/common/UpdateBanner.vue`):
+  - 顶部非阻塞更新提示
+  - 3 状态:info(有新版) / success(已下载) / error(5s 自动消失)
+  - 完整 releaseNotes 渲染(字符串 / 数组 / 对象)
+- **Chat 空状态重设计**:
+  - 时间感知问候(早/午/晚/深夜)
+  - 6 个 prompt 模板卡片(响应式 grid)
+  - 3 个主 CTA(新建对话 / 配置模型 / 命令面板)
+  - 智能 warning banner(无模型配置时)
+- **SideNav 修夏**: 加 3 个核心入口(ClawHub / 模型对比 / IM 管理),移除 2 个 dev demo
+- **ImManagement Skeleton 接入**: 初次加载 6 个 Skeleton 卡片(替代白屏)
+- **路由 devOnly 守卫**: D1/D2/D3/D5/A5 demo 路由生产重定向到 /dashboard
+
+### Changed
+- **主题系统重构 (v4.1.1 → v4.2.0 累计)**:
+  - 5 套彩色主题 → 2 套极简主题 (Tare 浅色 + Cursor 深色)
+  - 单一源真相 `data-theme="light|dark"`
+  - Element Plus 主题变量全同步
+- **tokens.css** (重写) — 完整语义化 token + Element Plus 同步
+- **variables.scss** (简化) — 只留 SCSS 编译期变量
+- **global.scss** (重写) — 530 行 !important → 200 行 semantic
+- **App.vue** (简化) — 移除暖科技 radial-gradient 泄漏
+- **AppLayout** 加 route-fade transition + 全局 toast 事件
+
+### Stats
+- 65 test files / **842 unit tests** (从 782 → +60)
+- lint 0 / vue-tsc 0 / build success
+- 新增 4 个组件:CommandPalette / UpdateBanner / Skeleton / ThemeToggle
+- 命令面板 + 智能空状态 = 新用户 1 分钟 a-ha moment
+
 ## [4.1.0] - 2026-07-23 (竞品差距优化)
 
 聚焦"IM 集成 / 技能生态 / 模型支持"三大竞品差距,IM 5→8/10,技能 4→7/10,模型 7→8/10。
