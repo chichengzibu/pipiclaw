@@ -2,6 +2,44 @@
 
 All notable changes to PiPiClaw will be documented in this file.
 
+## [4.3.0] - 2026-07-24 (真用户测试驱动修复)
+
+模拟真实用户跑 Ollama 本地模型(11434 端口),从测试中发现 5 个真问题,逐个修。
+
+### Fixed (P0 真 bug)
+- **LlmClient 透传 tool_calls** (`commit 603e7ed`):
+  - OpenAI adapter 解析 `choices[0].message.tool_calls` → 暴露 `LlmResponse.toolCalls`
+  - 支持 `req.tools` / `req.toolChoice` 透传
+  - Agent / Function Call 场景可用
+  - 真链路验证(ollama qwen3:14b):模型真发出 `get_weather({"city":"北京"})`,PiPiClaw 解析正确
+- **OpenAI adapter 兼容 Ollama thinking mode** (`commit 34eb72f`):
+  - qwen3 / qwen3.5 / DeepSeek-R1 / gpt-oss 等 reasoning 模型,content 可能是空,实际答案在 `message.reasoning`
+  - 加 fallback: `content ?? reasoning`
+  - max_tokens 默认 2048 → 4096
+
+### Added
+- **ThinkingBlock 组件** (`commit 7f7e629`):Claude 3.7 Sonnet Extended Thinking 风格
+  - 默认折叠,1-click 展开
+  - 三种状态(已思考/思考过程/正在思考)
+  - 展示 duration + tokens
+  - 主题感知 + 无障碍 aria-expanded
+- **多模型 benchmark 脚本** (`commit e9d1363`):5 场景 × 4 模型横向对比
+  - qwen3.5:9b 是日常对话冠军(23s 总)
+  - gpt-oss:20b 适合复杂任务
+  - qwen3:14b / large 不推荐(慢)
+- **Ollama 适配经验文档** (`commit ee0b8ee`):`docs/llm-quirks.md`
+  - 5 个已知坑(thinking 吞 token / think 协议不生效 / 多轮短 ctx 失败等)
+  - 推荐配置(用户日常 / 复杂任务)
+- **Ollama 宕机降级验证** (`commit 676552f`):6 场景真链路
+  - 端口不可达 / 协议不对 / 黑洞地址 / 空 apiKey / 模型不存在 / provider 未启用
+  - 全部返回结构化 ok:false + 友好 error
+
+### Stats
+- 68 test files / **869 unit tests** (从 863 → +6)
+- lint 0 / vue-tsc 0 / build success
+- main.js 444KB → 446KB (+2KB 适配器增强)
+- 真用户测试跑出 5 个问题,全修
+
 ## [4.2.0] - 2026-07-24 (UX 全面升级 — 超越 Claude/Hermes)
 
 ### Added (P5-UX)
