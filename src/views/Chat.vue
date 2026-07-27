@@ -480,33 +480,51 @@ let markdownReady: Promise<void> | null = null;
 async function ensureMarkdownLoaded(): Promise<void> {
   if (markdownReady) return markdownReady;
   markdownReady = (async () => {
-    // 关键: 'highlight.js/lib/core' 不自动注册任何语言,纯核心 (~50KB)
-    const [{ marked }, hljsMod, ...langMods] = await Promise.all([
+    // 静态导入 (避免动态模板字符串在浏览器运行时的 specifier 解析失败:
+    //   "Failed to resolve module specifier 'highlight.js/lib/languages/javascript'")
+    // 浏览器原生 dynamic import 不支持裸路径模板字符串拼接, 必须静态化或用 import.meta.glob
+    const [{ marked }, hljsMod, jsLang, tsLang, pyLang, javaLang, goLang,
+      jsonLang, xmlLang, sqlLang, bashLang, cssLang] = await Promise.all([
       import('marked'),
       import('highlight.js/lib/core'),
-      ...COMMON_LANGS.map(lang => import(`highlight.js/lib/languages/${lang}`)),
-    ]);
-    hljsInstance = hljsMod.default;
-    // 仅注册常用 10 种语言
-    langMods.forEach((mod, i) => {
-      const lang = COMMON_LANGS[i];
-      hljsInstance!.registerLanguage(lang, mod.default);
-    });
-    marked.setOptions({ breaks: true, gfm: true });
+      import('highlight.js/lib/languages/javascript'),
+      import('highlight.js/lib/languages/typescript'),
+      import('highlight.js/lib/languages/python'),
+      import('highlight.js/lib/languages/java'),
+      import('highlight.js/lib/languages/go'),
+      import('highlight.js/lib/languages/json'),
+      import('highlight.js/lib/languages/xml'),
+      import('highlight.js/lib/languages/sql'),
+      import('highlight.js/lib/languages/bash'),
+      import('highlight.js/lib/languages/css'),
+    ])
+    hljsInstance = hljsMod.default
+    // 注册常用 10 种语言
+    hljsInstance.registerLanguage('javascript', jsLang.default)
+    hljsInstance.registerLanguage('typescript', tsLang.default)
+    hljsInstance.registerLanguage('python', pyLang.default)
+    hljsInstance.registerLanguage('java', javaLang.default)
+    hljsInstance.registerLanguage('go', goLang.default)
+    hljsInstance.registerLanguage('json', jsonLang.default)
+    hljsInstance.registerLanguage('xml', xmlLang.default)
+    hljsInstance.registerLanguage('sql', sqlLang.default)
+    hljsInstance.registerLanguage('bash', bashLang.default)
+    hljsInstance.registerLanguage('css', cssLang.default)
+    marked.setOptions({ breaks: true, gfm: true })
     marked.use({
       renderer: {
         code(code: string, lang?: string): string {
           if (lang && hljsInstance!.getLanguage(lang)) {
-            return `<pre><code class="hljs language-${lang}">${hljsInstance!.highlight(code, { language: lang }).value}</code></pre>`;
+            return `<pre><code class="hljs language-${lang}">${hljsInstance!.highlight(code, { language: lang }).value}</code></pre>`
           }
           // 未知 / 未注册语言: 跳过高亮,escape HTML
-          return `<pre><code class="hljs">${escapeHtml(code)}</code></pre>`;
+          return `<pre><code class="hljs">${escapeHtml(code)}</code></pre>`
         }
       }
-    } as unknown as Parameters<typeof marked.use>[0]);
-    markedInstance = marked;
-  })();
-  return markdownReady;
+    } as unknown as Parameters<typeof marked.use>[0])
+    markedInstance = marked
+  })()
+  return markdownReady
 }
 
 function escapeHtml(s: string): string {

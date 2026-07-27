@@ -9,11 +9,9 @@
       <SideNav />
 
       <main class="main-content">
-        <router-view v-slot="{ Component, route }">
-          <transition name="route-fade" mode="out-in">
-            <component :is="Component" :key="route.fullPath" />
-          </transition>
-        </router-view>
+        <!-- 不用 transition 包裹,避免组件切换失败 (B1-Bugfix)
+             页面进入/离开动画由各 view 内部 Transition 处理 -->
+        <router-view />
       </main>
     </div>
 
