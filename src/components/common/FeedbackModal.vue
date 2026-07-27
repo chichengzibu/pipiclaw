@@ -27,6 +27,14 @@
           placeholder="请留下您的联系方式（可选）"
         />
       </el-form-item>
+      <!-- P4-T5.4: 自动附加崩溃报告 -->
+      <el-form-item v-if="attachedCrashCount > 0" label="自动附加">
+        <el-tag type="warning" effect="plain">
+          <el-icon><WarningFilled /></el-icon>
+          已自动附加最近 {{ attachedCrashCount }} 条崩溃报告
+          <el-button text size="small" @click="loadCrashReports">查看详情</el-button>
+        </el-tag>
+      </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
@@ -36,8 +44,9 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue';
+import { reactive, computed, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
+import { WarningFilled } from '@element-plus/icons-vue';
 
 interface FormData {
   type: string;
@@ -63,6 +72,27 @@ const formData = reactive<FormData>({
   description: '',
   contact: ''
 });
+
+/** P4-T5.4: 自动附加崩溃报告 */
+const attachedCrashCount = ref(0)
+
+watch(visible, async (open) => {
+  if (open) await loadCrashReports()
+})
+
+async function loadCrashReports(): Promise<void> {
+  try {
+    const api = (window as unknown as { electronAPI?: { taskLog?: { crashCount?: () => Promise<{ success: boolean; data?: number }> } } }).electronAPI
+    if (!api?.taskLog?.crashCount) {
+      attachedCrashCount.value = 0
+      return
+    }
+    const res = await api.taskLog.crashCount()
+    attachedCrashCount.value = res?.data ?? 0
+  } catch {
+    attachedCrashCount.value = 0
+  }
+}
 
 function resetForm(): void {
   Object.assign(formData, {

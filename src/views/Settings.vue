@@ -22,6 +22,12 @@
                     {{ t('settings.openGuide') }}
                   </el-button>
                 </el-form-item>
+                <!-- P4-T5.4: 反馈按钮 → 自动附加崩溃报告 -->
+                <el-form-item :label="t('settings.feedback')">
+                  <el-button type="warning" size="small" @click="showFeedbackModal = true">
+                    {{ t('settings.openFeedback') }}
+                  </el-button>
+                </el-form-item>
               </el-form>
             </el-card>
 
