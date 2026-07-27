@@ -72,11 +72,56 @@ function onToast(e: Event): void {
 
 onMounted(() => {
   window.addEventListener('cmd:toast', onToast);
+  // 全局快捷键:Ctrl+K / Cmd+K 打开命令面板
+  window.addEventListener('keydown', onGlobalKeydown);
 });
 
 onUnmounted(() => {
   window.removeEventListener('cmd:toast', onToast);
+  window.removeEventListener('keydown', onGlobalKeydown);
 });
+
+/**
+ * 全局键盘快捷键
+ * - Ctrl+K / Cmd+K → 打开命令面板
+ * - Ctrl+/ → 打开命令面板(替代绑定,符合常见编辑器习惯)
+ *
+ * 注意:在 input / textarea / [contenteditable] 里不触发,避免冲突
+ * 双保险:同时检查 e.target(原始 event target) 和 document.activeElement
+ *  - e.target: 事件实际触发的元素(可能因冒泡/捕获而变化)
+ *  - document.activeElement: 当前焦点元素
+ * 任何一个是 input/textarea 就跳过
+ */
+function onGlobalKeydown(e: KeyboardEvent): void {
+  const candidates: (HTMLElement | null)[] = [
+    e.target as HTMLElement | null,
+    document.activeElement as HTMLElement | null
+  ]
+  for (const el of candidates) {
+    if (!el) continue
+    const tag = el.tagName?.toLowerCase()
+    if (tag === 'input' || tag === 'textarea' || el.isContentEditable) {
+      return
+    }
+  }
+
+  const isMod = e.metaKey || e.ctrlKey
+  if (!isMod) return
+
+  // Ctrl+K / Cmd+K
+  if (e.key === 'k' || e.key === 'K') {
+    e.preventDefault()
+    openPalette()
+    return
+  }
+
+  // Ctrl+/ (常见 IDE 快捷键)
+  if (e.key === '/') {
+    e.preventDefault()
+    openPalette()
+    return
+  }
+}
 </script>
 
 <style lang="scss" scoped>
