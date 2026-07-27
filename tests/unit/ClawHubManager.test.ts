@@ -299,6 +299,98 @@ describe('P1-06: ClawHubManager.rate', () => {
   })
 })
 
+describe('P3-05: ClawHubManager 多维评分', () => {
+  beforeEach(() => {
+    ;(ClawHubManager as unknown as { instance: ClawHubManager | null }).instance = null
+    if (fs.existsSync(TEST_USER_DATA)) {
+      fs.rmSync(TEST_USER_DATA, { recursive: true, force: true })
+    }
+  })
+
+  it('rate 支持多维评分 (usability/perf/security)', () => {
+    const mgr = ClawHubManager.getInstance()
+    const skill = mgr.publish({
+      name: 't', description: 'd', category: 'c', tags: [], manifestPath: '/p', authorId: 'u', authorName: 'n',
+    })
+    mgr.review(skill.id, true, 'admin')
+    const r = mgr.rate({
+      skillId: skill.id, userId: 'u1', userName: 'Alice', score: 5,
+      review: 'great', usability: 5, performance: 4, security: 5,
+    })
+    expect(r?.usability).toBe(5)
+    expect(r?.performance).toBe(4)
+    expect(r?.security).toBe(5)
+    const s = mgr.get(skill.id)!
+    expect(s.usabilitySum).toBe(5)
+    expect(s.usabilityCount).toBe(1)
+    expect(s.performanceSum).toBe(4)
+    expect(s.performanceCount).toBe(1)
+    expect(s.securitySum).toBe(5)
+    expect(s.securityCount).toBe(1)
+  })
+
+  it('rate 多维评分允许 0/undefined (视为未评该维度)', () => {
+    const mgr = ClawHubManager.getInstance()
+    const skill = mgr.publish({
+      name: 't', description: 'd', category: 'c', tags: [], manifestPath: '/p', authorId: 'u', authorName: 'n',
+    })
+    mgr.review(skill.id, true, 'admin')
+    const r = mgr.rate({
+      skillId: skill.id, userId: 'u1', userName: 'Alice', score: 4,
+      review: 'good', usability: 5, // performance/security 缺失
+    })
+    expect(r?.usability).toBe(5)
+    expect(r?.performance).toBeUndefined()
+    expect(r?.security).toBeUndefined()
+    const s = mgr.get(skill.id)!
+    expect(s.usabilityCount).toBe(1)
+    expect(s.performanceCount).toBe(0) // 未计
+    expect(s.securityCount).toBe(0)
+  })
+
+  it('rate 多维评分越界 1-5 抛错', () => {
+    const mgr = ClawHubManager.getInstance()
+    const skill = mgr.publish({
+      name: 't', description: 'd', category: 'c', tags: [], manifestPath: '/p', authorId: 'u', authorName: 'n',
+    })
+    mgr.review(skill.id, true, 'admin')
+    expect(() =>
+      mgr.rate({
+        skillId: skill.id, userId: 'u1', userName: 'A', score: 4, review: 'x', usability: 7,
+      })
+    ).toThrow(/usability 必须在 1-5/)
+  })
+
+  it('computeRatingBreakdown 返回多维快照', () => {
+    const mgr = ClawHubManager.getInstance()
+    const skill = mgr.publish({
+      name: 't', description: 'd', category: 'c', tags: [], manifestPath: '/p', authorId: 'u', authorName: 'n',
+    })
+    mgr.review(skill.id, true, 'admin')
+    mgr.rate({ skillId: skill.id, userId: 'u1', userName: 'A', score: 4, review: 'x', usability: 5, performance: 3 })
+    mgr.rate({ skillId: skill.id, userId: 'u2', userName: 'B', score: 5, review: 'y', usability: 4, security: 5 })
+    const breakdown = mgr.getRatingBreakdown(skill.id)!
+    expect(breakdown.overall).toBe(4.5) // (4+5)/2
+    expect(breakdown.usability).toBe(4.5) // (5+4)/2
+    expect(breakdown.performance).toBe(3) // 单评
+    expect(breakdown.security).toBe(5) // 单评
+    expect(breakdown.total).toBe(2)
+  })
+
+  it('computeRatingBreakdown 无评分时 overall=0 / 维度=null', () => {
+    const mgr = ClawHubManager.getInstance()
+    const skill = mgr.publish({
+      name: 't', description: 'd', category: 'c', tags: [], manifestPath: '/p', authorId: 'u', authorName: 'n',
+    })
+    const breakdown = mgr.getRatingBreakdown(skill.id)!
+    expect(breakdown.overall).toBe(0)
+    expect(breakdown.usability).toBeNull()
+    expect(breakdown.performance).toBeNull()
+    expect(breakdown.security).toBeNull()
+    expect(breakdown.total).toBe(0)
+  })
+})
+
 describe('P2-03: ClawHubManager 技能模板', () => {
   beforeEach(() => {
     ;(ClawHubManager as unknown as { instance: ClawHubManager | null }).instance = null

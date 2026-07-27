@@ -25,6 +25,36 @@ import { randomUUID } from 'node:crypto'
 
 export type ClawHubStatus = 'pending' | 'approved' | 'rejected' | 'flagged'
 
+/**
+ * 多维评分快照 (P3-05) — 供前端渲染雷达图 / 列表
+ */
+export interface ClawHubRatingBreakdown {
+  /** 1-5 总星 */
+  overall: number
+  /** 1-5 易用性 (用户填) */
+  usability: number | null
+  /** 1-5 性能 (用户填) */
+  performance: number | null
+  /** 1-5 安全性 (用户填) */
+  security: number | null
+  /** 评分总人数 */
+  total: number
+}
+
+/**
+ * 计算技能的多维评分快照 (P3-05)
+ * 缺失维度返回 null,前端可隐藏雷达图对应角
+ */
+export function computeRatingBreakdown(skill: ClawHubSkill): ClawHubRatingBreakdown {
+  return {
+    overall: skill.ratingCount > 0 ? skill.ratingSum / skill.ratingCount : 0,
+    usability: skill.usabilityCount > 0 ? skill.usabilitySum / skill.usabilityCount : null,
+    performance: skill.performanceCount > 0 ? skill.performanceSum / skill.performanceCount : null,
+    security: skill.securityCount > 0 ? skill.securitySum / skill.securityCount : null,
+    total: skill.ratingCount,
+  }
+}
+
 /** 技能模板(P2-03):预置技能骨架,用户可一键实例化 */
 export interface ClawHubTemplate {
   id: string
@@ -67,6 +97,13 @@ export interface ClawHubSkill {
   downloadCount: number
   ratingSum: number
   ratingCount: number
+  /** 多维评分 (P3-05): 易用性 / 性能 / 安全性 */
+  usabilitySum: number
+  usabilityCount: number
+  performanceSum: number
+  performanceCount: number
+  securitySum: number
+  securityCount: number
   /** 时间戳 */
   publishedAt: number
   updatedAt: number
@@ -83,6 +120,10 @@ export interface ClawHubReview {
   userName: string
   /** 1-5 星 */
   score: number
+  /** 多维评分 (P3-05): 0 表示用户未评该维度 */
+  usability?: number
+  performance?: number
+  security?: number
   /** 短评文字 */
   review: string
   createdAt: number
@@ -140,6 +181,12 @@ export class ClawHubManager {
       downloadCount: 0,
       ratingSum: 0,
       ratingCount: 0,
+      usabilitySum: 0,
+      usabilityCount: 0,
+      performanceSum: 0,
+      performanceCount: 0,
+      securitySum: 0,
+      securityCount: 0,
       publishedAt: now,
       updatedAt: now,
       source: args.source || 'community',
@@ -212,18 +259,34 @@ export class ClawHubManager {
     userName: string
     score: number
     review: string
+    /** P3-05 多维评分: 可选 0-5, 0/undefined 视为未评该维度 */
+    usability?: number
+    performance?: number
+    security?: number
   }): ClawHubReview | null {
     const skill = this.skills.get(args.skillId)
     if (!skill) return null
     if (args.score < 1 || args.score > 5) {
       throw new Error('score 必须在 1-5')
     }
+    const validateDim = (v: number | undefined, name: string): number | undefined => {
+      if (v === undefined || v === 0) return undefined
+      if (v < 1 || v > 5) throw new Error(`${name} 必须在 1-5`)
+      return v
+    }
+    const usability = validateDim(args.usability, 'usability')
+    const performance = validateDim(args.performance, 'performance')
+    const security = validateDim(args.security, 'security')
+
     const r: ClawHubReview = {
       id: `rev-${randomUUID().slice(0, 8)}`,
       skillId: args.skillId,
       userId: args.userId,
       userName: args.userName,
       score: args.score,
+      usability,
+      performance,
+      security,
       review: args.review,
       createdAt: Date.now(),
     }
@@ -232,6 +295,19 @@ export class ClawHubManager {
     this.reviews.set(args.skillId, list)
     skill.ratingSum += args.score
     skill.ratingCount += 1
+    // 累加多维评分 (P3-05)
+    if (usability) {
+      skill.usabilitySum += usability
+      skill.usabilityCount += 1
+    }
+    if (performance) {
+      skill.performanceSum += performance
+      skill.performanceCount += 1
+    }
+    if (security) {
+      skill.securitySum += security
+      skill.securityCount += 1
+    }
     skill.updatedAt = Date.now()
     this.persist()
     void this.bus.publish('clawhub:rated', { skillId: args.skillId, score: args.score })
@@ -257,6 +333,13 @@ export class ClawHubManager {
 
   avgRating(skill: ClawHubSkill): number {
     return skill.ratingCount > 0 ? skill.ratingSum / skill.ratingCount : 0
+  }
+
+  /** P3-05: 获取多维评分快照 */
+  getRatingBreakdown(skillId: string): ClawHubRatingBreakdown | null {
+    const skill = this.skills.get(skillId)
+    if (!skill) return null
+    return computeRatingBreakdown(skill)
   }
 
   incrementDownload(skillId: string): void {
@@ -338,6 +421,12 @@ export class ClawHubManager {
       downloadCount: 0,
       ratingSum: 0,
       ratingCount: 0,
+      usabilitySum: 0,
+      usabilityCount: 0,
+      performanceSum: 0,
+      performanceCount: 0,
+      securitySum: 0,
+      securityCount: 0,
       publishedAt: now,
       updatedAt: now,
       source: 'template',
