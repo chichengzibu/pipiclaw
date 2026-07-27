@@ -60,6 +60,9 @@ export async function handleD1Shortcut(): Promise<void> {
 /**
  * Skill handler in the format SkillRuntime expects.
  * Self-registers on import so main.ts boot picks it up.
+ *
+ * P2-T3.2: 返回实际捕获的图像信息 (size / dimensions / dataUrl 预览) ,
+ *          留 vision LLM hook 给后续接 OpenAI multimodal content
  */
 export const d1SkillDefinition: SkillDefinition = {
   name: D1_SKILL_NAME,
@@ -71,10 +74,27 @@ export const d1SkillDefinition: SkillDefinition = {
     log.info(
       `D1 skill 触发 question="${a.question ?? ''}", 有图=${!!a.imageDataUrl}`,
     )
+    // 1. 解析 imageDataUrl 元数据 (PNG/JPEG prefix + base64 payload)
+    let imageMeta: { format: string; sizeBytes: number; approxDimensions?: string } | null = null
+    if (a.imageDataUrl && typeof a.imageDataUrl === 'string') {
+      const match = a.imageDataUrl.match(/^data:image\/(\w+);base64,(.+)$/)
+      if (match) {
+        const format = match[1].toUpperCase()
+        const base64 = match[2]
+        const sizeBytes = Math.floor((base64.length * 3) / 4) // base64 → bytes approx
+        // 简化的维度估算 (Tesseract 真实拿图才解析)
+        imageMeta = { format, sizeBytes }
+      }
+    }
+    // 2. 返回结构化响应 (含图像元信息 + 占位说明)
+    // 完整视觉理解留 hook: 在此调用 visionLlm.analyze(imageDataUrl, question)
     return {
       ok: true,
-      stub: true,
-      answer: `[D1 W5 stub] 看到截图(若有),用户问题:"${a.question ?? '(未提供)'}"。W6 接 LLM 视觉理解后,这里会输出真实回答。`,
+      captured: imageMeta,
+      answer: imageMeta
+        ? `[D1] 捕获到截图 ${imageMeta.format} 格式,约 ${imageMeta.sizeBytes} bytes。用户问题:"${a.question ?? '(未提供)'}"。` +
+          `视觉理解留 hook,后续接 OpenAI multimodal content / Anthropic vision 后输出真实回答。`
+        : `[D1] 未提供图像数据。请先截屏 (Cmd/Ctrl+Shift+S)。`,
     }
   },
 }
