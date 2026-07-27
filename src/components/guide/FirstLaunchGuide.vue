@@ -99,7 +99,7 @@
     <template #footer>
       <div class="guide-footer">
         <el-button v-if="currentStep > 0" @click="prevStep">上一步</el-button>
-        <el-button v-if="currentStep < 3" type="primary" @click="nextStep">
+        <el-button v-if="currentStep < 3 && currentStep !== 1" type="primary" @click="nextStepWithTracking">
           {{ currentStep === 2 ? '完成配置' : '下一步' }}
         </el-button>
         <el-button v-if="currentStep === 3" type="primary" @click="handleFinish">
@@ -155,6 +155,8 @@ function handleSelectModel(type: string): void {
 async function handleFinish(): Promise<void> {
   try {
     appStore.markFirstLaunchComplete();
+    // P2-T4.1: 跟踪完成率 (本地存储, 用于产品分析)
+    trackCompletion();
     visible.value = false;
     await router.push('/chat');
     ElMessage.success('欢迎使用 PiPiClaw！');
@@ -162,6 +164,30 @@ async function handleFinish(): Promise<void> {
     console.error('路由跳转失败:', error);
     ElMessage.error('跳转失败，请手动访问对话页面');
   }
+}
+
+/** P2-T4.1: 步骤级埋点 + 完成率 */
+function nextStepWithTracking(): void {
+  trackStep(`step_${currentStep.value}_completed`)
+  nextStep()
+}
+
+function trackStep(stepName: string): void {
+  try {
+    const key = 'pipiclaw_onboarding_events'
+    const raw = localStorage.getItem(key)
+    const events: Array<{ step: string; ts: number }> = raw ? JSON.parse(raw) : []
+    events.push({ step: stepName, ts: Date.now() })
+    // 最多保留最近 100 条
+    if (events.length > 100) events.shift()
+    localStorage.setItem(key, JSON.stringify(events))
+  } catch {
+    // localStorage 不可用 (e.g. SSR / sandbox), 静默忽略
+  }
+}
+
+function trackCompletion(): void {
+  trackStep('onboarding_completed')
 }
 </script>
 
