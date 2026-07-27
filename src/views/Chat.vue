@@ -268,19 +268,13 @@
                     <span v-else class="user-avatar">👤</span>
                   </div>
                 <div class="message-content">
-                  <div class="message-text thinking-section" v-if="message.thinking">
-                    <div class="thinking-header" @click="toggleThinking(message.id)">
-                      <span class="thinking-icon">{{ expandedThinking[message.id] ? '▼' : '▶' }}</span>
-                      <span>🤔 思考过程</span>
-                      <div class="thinking-indicator">
-                        <div v-if="message.status === 'streaming'" class="thinking-spinner"></div>
-                        <span>{{ message.thinking.length }} 字</span>
-                      </div>
-                    </div>
-                    <div class="thinking-content" v-show="expandedThinking[message.id]">
-                      <pre class="thinking-pre">{{ message.thinking }}</pre>
-                    </div>
-                  </div>
+                  <!-- P1-4: thinking 可视化改用 ThinkingBlock (替代原 inline 实现) -->
+                  <!-- TODO v4.4: 接入 LLM 流式后,补 message.thinkingDurationMs / thinkingTokens 字段 -->
+                  <ThinkingBlock
+                    v-if="message.thinking"
+                    :reasoning="message.thinking"
+                    :streaming="message.status === 'streaming'"
+                  />
                   <!-- 任务执行结果详情 -->
                   <TaskResultCard 
                     v-if="message.taskResult"
@@ -679,6 +673,7 @@ import FilePreview from '@/components/chat/FilePreview.vue';
 import TaskResultCard from '@/components/chat/TaskResultCard.vue';
 import HermesMemoryDrawer from '@/components/chat/HermesMemoryDrawer.vue';
 import QuickPrompts from '@/components/chat/QuickPrompts.vue';
+import ThinkingBlock from '@/components/chat/ThinkingBlock.vue';
 
 import { useChatStore } from '@/stores/chat';
 import { useModelsStore } from '@/stores/models';
@@ -841,7 +836,7 @@ const ALLOWED_EXTENSIONS = new Set([
 
 const showSettings = ref(false);
 const messagesContainer = ref<HTMLElement | null>(null);
-const expandedThinking = reactive<Record<string, boolean>>({});
+// (P1-4: expandedThinking 移除 — ThinkingBlock 内部管理展开状态)
 const isAtBottom = ref(true); // 用户是否在聊天底部
 
 
@@ -1209,9 +1204,7 @@ async function handleContinue(): Promise<void> {
   await chatStore.continueGeneration();
 }
 
-async function toggleThinking(messageId: string): Promise<void> {
-  expandedThinking[messageId] = !expandedThinking[messageId];
-}
+// (P1-4: toggleThinking / expandedThinking watcher 移除 — ThinkingBlock 自管理展开状态)
 
 /**
  * 监听当前会话变化
@@ -1230,14 +1223,6 @@ watch(() => chatStore.currentConversationId, (newId, oldId) => {
     scrollToBottom(true);
   }
 });
-
-watch(() => chatStore.currentConversation?.messages, (messages) => {
-  messages?.forEach(msg => {
-    if (msg.thinking && expandedThinking[msg.id] === undefined) {
-      expandedThinking[msg.id] = true;
-    }
-  });
-}, { immediate: true, deep: true });
 
 async function handleNewChat(): Promise<void> {
   // 新建对话时，会自动继承上一个对话的模型（在 store 中处理）
@@ -1826,73 +1811,9 @@ async function handleSaveSettings(): Promise<void> {
   min-width: 0;
 }
 
-.thinking-section {
-  margin-bottom: var(--space-sm);
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.10) 100%);
-  border: 1px solid var(--el-color-primary-light-5);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.thinking-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  cursor: pointer;
-  font-size: var(--font-size-callout);
-  color: var(--el-color-primary);
-  font-weight: var(--font-weight-medium);
-  transition: background var(--duration-fast) var(--ease-standard);
-
-  &:hover {
-    background: rgba(245, 158, 11, 0.08);
-  }
-}
-
-.thinking-icon {
-  font-size: var(--icon-size-md);
-  transition: transform var(--duration-fast) var(--ease-standard);
-}
-
-.thinking-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-size: var(--font-size-caption-1);
-  color: var(--el-text-color-placeholder);
-  margin-left: auto;
-}
-
-.thinking-spinner {
-  width: var(--space-sm);
-  height: var(--space-sm);
-  border: 2px solid var(--el-color-primary-light-5);
-  border-top-color: var(--el-color-primary);
-  border-radius: var(--radius-pill);
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.thinking-content {
-  padding: 0 var(--space-md) var(--space-md);
-  border-top: 1px solid var(--el-border-color-lighter);
-}
-
-.thinking-pre {
-  margin: var(--space-sm) 0 0;
-  font-size: var(--font-size-caption-1);
-  line-height: var(--line-height-relaxed);
-  color: var(--el-text-color-secondary);
-  white-space: pre-wrap;
-  font-family: var(--font-family-mono);
-  background: var(--el-fill-color-light);
-  padding: var(--space-sm);
-  border-radius: var(--radius-md);
-}
+// (P1-4: .thinking-section / .thinking-header / .thinking-icon / .thinking-indicator /
+//  .thinking-spinner / @keyframes spin / .thinking-content / .thinking-pre 删除 —
+//  thinking UI 已迁移到 src/components/chat/ThinkingBlock.vue 组件)
 
 .message-text {
   padding: var(--space-sm) var(--space-md);
