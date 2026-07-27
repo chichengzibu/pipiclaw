@@ -18,6 +18,17 @@ export interface StoredMessage {
   conversationId?: string
 }
 
+/** P3-02 搜索命中 */
+export interface SearchHit {
+  message: StoredMessage
+  /** 命中分数 (关键词命中数 + 标题加权) */
+  score: number
+  /** 命中了哪些关键词 */
+  matchedTerms: string[]
+  /** 含命中关键词的上下文片段 */
+  snippet: string
+}
+
 /**
  * IMMessageStore: 内存 + 持久化消息存储(FIFO 上限 1000)
  * W7 阶段:内存 Map,W8+ 接 SQLite
@@ -69,6 +80,76 @@ export class IMMessageStore {
     if (opts.direction) result = result.filter(m => m.direction === opts.direction)
     if (sinceMs !== undefined) result = result.filter(m => m.ts >= sinceMs)
     return result.slice(-(opts.limit ?? 50))
+  }
+
+  /**
+   * P3-02: 全文搜索 (内存索引,等价 SQLite FTS5 API)
+   * - 支持多关键词 (空格分隔)
+   * - 按 channel / sender / 时间窗口过滤
+   * - 评分: 命中关键词数 / 命中位置权重
+   */
+  search(opts: {
+    query: string
+    channelId?: string
+    senderId?: string
+    sinceMs?: number
+    untilMs?: number
+    limit?: number
+  }): SearchHit[] {
+    const terms = opts.query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((t) => t.length >= 1)
+    if (terms.length === 0) return []
+
+    const candidates = this.messages.filter((m) => {
+      if (opts.channelId && m.channelId !== opts.channelId) return false
+      if (opts.senderId && m.message.from !== opts.senderId) return false
+      if (opts.sinceMs !== undefined && m.ts < opts.sinceMs) return false
+      if (opts.untilMs !== undefined && m.ts >= opts.untilMs) return false
+      return true
+    })
+
+    const hits: SearchHit[] = []
+    for (const m of candidates) {
+      const text = `${m.message.text || ''} ${m.message.subject || ''}`.toLowerCase()
+      const matchedTerms: string[] = []
+      let score = 0
+      for (const term of terms) {
+        if (text.includes(term)) {
+          matchedTerms.push(term)
+          // 标题 (subject) 命中权重更高
+          if ((m.message.subject || '').toLowerCase().includes(term)) score += 2
+          else score += 1
+        }
+      }
+      if (matchedTerms.length > 0) {
+        hits.push({
+          message: m,
+          score,
+          matchedTerms,
+          snippet: this.makeSnippet(m.message.text || m.message.subject || '', terms),
+        })
+      }
+    }
+    hits.sort((a, b) => b.score - a.score || b.message.ts - a.message.ts)
+    return hits.slice(0, opts.limit ?? 50)
+  }
+
+  /**
+   * 提取含命中关键词的上下文片段 (前后各 30 字)
+   */
+  private makeSnippet(text: string, terms: string[]): string {
+    const lower = text.toLowerCase()
+    let firstHit = -1
+    for (const term of terms) {
+      const idx = lower.indexOf(term)
+      if (idx !== -1 && (firstHit === -1 || idx < firstHit)) firstHit = idx
+    }
+    if (firstHit === -1) return text.slice(0, 60)
+    const start = Math.max(0, firstHit - 30)
+    const end = Math.min(text.length, firstHit + 60)
+    return (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '')
   }
 
   getById(id: string): StoredMessage | undefined {
