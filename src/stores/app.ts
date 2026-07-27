@@ -80,7 +80,22 @@ export const useAppStore = defineStore('app', () => {
         }
 
         // 读取用户保存的主题
-        const savedThemeResult = await window.electronAPI.config.get('theme');
+        // P1-7 bugfix: key 必须是 'app.theme' 匹配 ConfigStore 默认 schema (v4.2 重构遗留)
+        // 之前用 'theme' 会写到顶层,而 schema 默认 'dark' 在 app.theme,导致读取永远 undefined
+        let savedThemeResult = await window.electronAPI.config.get('app.theme');
+        // 兼容旧版顶层 'theme' key(v4.2 之前),自动迁移到 'app.theme'
+        if (!savedThemeResult?.success || !savedThemeResult.data) {
+          const legacyResult = await window.electronAPI.config.get('theme');
+          if (legacyResult?.success && legacyResult.data) {
+            const legacy = legacyResult.data as string;
+            if (legacy === 'light' || legacy === 'dark' || legacy === 'system') {
+              savedThemeResult = { success: true, data: legacy };
+              // 异步迁移,失败也不阻塞启动
+              window.electronAPI.config.set('app.theme', legacy).catch(() => {});
+              window.electronAPI.config.set('theme', undefined).catch(() => {});
+            }
+          }
+        }
         if (savedThemeResult?.success && savedThemeResult.data) {
           const saved = savedThemeResult.data as string;
           if (saved === 'light' || saved === 'dark' || saved === 'system') {
@@ -129,9 +144,9 @@ export const useAppStore = defineStore('app', () => {
     themeMode.value = mode;
     applyTheme();
 
-    // 持久化
+    // 持久化 — 与读取路径一致,用 'app.theme'
     if (window.electronAPI) {
-      window.electronAPI.config.set('theme', mode).catch((err) => {
+      window.electronAPI.config.set('app.theme', mode).catch((err) => {
         console.error('保存主题配置失败:', err);
       });
     }

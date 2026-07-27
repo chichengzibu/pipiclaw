@@ -1,20 +1,20 @@
 # PiPiClaw 性能基准报告
 
-生成时间: 2026-07-23T02:34:44.715Z
+生成时间: 2026-07-27T04:17:54.368Z
 commit: local
 
 ## 实测
 
 | 指标 | 实测 | 单位 | 阈值 | 状态 |
 | --- | ---: | --- | --- | --- |
-| B1.ipcMain.handle count (main.js) | 107 | 个 | 100 ~ 5000 | ✅ pass |
-| B2.ipcRenderer.invoke count (preload.js) | 111 | 个 | 100 ~ 5000 | ✅ pass |
-| B3.main.js size | 310 | KB | 1 ~ 8192 | ✅ pass |
-| B4.preload.js size | 19 | KB | 1 ~ 2048 | ✅ pass |
-| C1.renderer js total | 2216 | KB | 1 ~ 16384 | ✅ pass |
-| C2.renderer css total | 661 | KB | 1 ~ 4096 | ✅ pass |
-| C3.largest chunk size | 1042 | KB | 1 ~ 4096 | ✅ pass |
-| C4.js chunk count | 24 | 个 | 1 ~ 200 | ✅ pass |
+| B1.ipcMain.handle count (main.js) | 169 | 个 | 100 ~ 5000 | ✅ pass |
+| B2.ipcRenderer.invoke count (preload.js) | 172 | 个 | 100 ~ 5000 | ✅ pass |
+| B3.main.js size | 455 | KB | 1 ~ 8192 | ✅ pass |
+| B4.preload.js size | 18 | KB | 1 ~ 2048 | ✅ pass |
+| C1.renderer js total | 1094 | KB | 1 ~ 16384 | ✅ pass |
+| C2.renderer css total | 113 | KB | 1 ~ 4096 | ✅ pass |
+| C3.largest chunk size | 692 | KB | 1 ~ 4096 | ✅ pass |
+| C4.js chunk count | 31 | 个 | 1 ~ 200 | ✅ pass |
 
 ## 含义
 

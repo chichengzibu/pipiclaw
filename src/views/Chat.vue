@@ -174,81 +174,8 @@
           </div>
 
            <div class="messages-container" ref="messagesContainer">
-             <!-- Hermes记忆管理抽屉 -->
-             <el-drawer
-               v-model="hermesMemoryStore.showMemoryDrawer"
-               title="🧠 Hermes 记忆管理"
-               :size="480"
-               direction="rtl"
-             >
-               <div class="memory-drawer-content">
-                 <!-- 记忆开关 -->
-                 <div class="memory-section">
-                   <div class="section-title">功能开关</div>
-                   <div class="switch-container">
-                     <el-switch
-                       v-model="hermesMemoryStore.memoryEnabled"
-                       active-text="启用记忆注入"
-                       inactive-text="禁用记忆注入"
-                     />
-                   </div>
-                   <div class="help-text" v-if="hermesMemoryStore.memoryEnabled">
-                     开启后，核心记忆将在每次对话中自动注入到系统提示词中
-                   </div>
-                 </div>
-
-                 <!-- 核心记忆编辑 -->
-                 <div class="memory-section">
-                   <div class="section-title">核心记忆</div>
-                   <el-input
-                     v-model="hermesMemoryStore.editingCoreMemory"
-                     type="textarea"
-                     :rows="8"
-                     placeholder="输入您的核心记忆，例如：我的名字是李明，我喜欢编程，我在上海工作..."
-                     @input="handleCoreMemoryChange"
-                   />
-                   <div class="help-text">
-                     这里的内容将实时保存，所有对话都可以使用
-                   </div>
-                 </div>
-
-                 <!-- 本次对话注入预览 -->
-                 <div class="memory-section" v-if="hermesMemoryStore.memoryEnabled">
-                   <div class="section-title">本次对话注入预览</div>
-                   <div class="preview-box">
-                     <div v-if="!hermesMemoryStore.generateInjectedMemory()" class="empty-preview">
-                       暂无记忆内容
-                     </div>
-                     <div v-else class="memory-preview">
-                       {{ hermesMemoryStore.generateInjectedMemory() }}
-                     </div>
-                   </div>
-                 </div>
-
-                 <!-- 经验记忆（只读） -->
-                 <div class="memory-section" v-if="hermesMemoryStore.experienceMemory">
-                   <div class="section-title">经验记忆（只读）</div>
-                   <div class="readonly-box">
-                     {{ hermesMemoryStore.experienceMemory }}
-                   </div>
-                 </div>
-
-                 <!-- 对话记忆（只读） -->
-                 <div class="memory-section" v-if="hermesMemoryStore.memories.length > 0">
-                   <div class="section-title">对话记忆（只读）</div>
-                   <div class="memory-list-preview">
-                     <div
-                       v-for="mem in hermesMemoryStore.memories.slice(-5).reverse()"
-                       :key="mem.id"
-                       class="memory-item-preview"
-                     >
-                       <div class="memory-time">{{ new Date(mem.timestamp).toLocaleString() }}</div>
-                       <div class="memory-text">{{ mem.content }}</div>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </el-drawer>
+             <!-- Hermes 记忆管理抽屉 — 已抽出到 src/components/chat/HermesMemoryDrawer.vue -->
+             <HermesMemoryDrawer />
 
              <!-- Hermes记忆面板 -->
              <div v-if="hermesMemoryStore.showMemoryPanel" class="memory-panel">
@@ -525,19 +452,12 @@
               <p class="empty-desc">PiPiClaw 已经准备就绪。从下面挑一个开始,或者直接输入问题。</p>
             </div>
 
-            <div class="empty-prompts" v-if="enabledProviders.length > 0">
-              <button
-                v-for="p in QUICK_PROMPTS"
-                :key="p.id"
-                class="empty-prompt-card"
-                @click="handleQuickPrompt(p)"
-              >
-                <span class="empty-prompt-emoji">{{ p.emoji }}</span>
-                <div class="empty-prompt-body">
-                  <div class="empty-prompt-title">{{ p.title }}</div>
-                  <div class="empty-prompt-desc">{{ p.desc }}</div>
-                </div>
-              </button>
+            <div class="empty-prompts-host" v-if="enabledProviders.length > 0">
+              <!-- 已抽出到 src/components/chat/QuickPrompts.vue -->
+              <QuickPrompts
+                :enabled-providers-count="enabledProviders.length"
+                @prompt-selected="handleQuickPrompt"
+              />
             </div>
 
             <div class="empty-actions">
@@ -752,11 +672,13 @@ import { ref, computed, reactive, onMounted, watch, nextTick, onUnmounted } from
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, MoreFilled, Promotion, VideoPause, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading, Setting, WarningFilled } from '@element-plus/icons-vue';
-import { marked } from 'marked';
-import hljs from 'highlight.js';
+// P1-6: marked + highlight.js 改动态导入,避免 vendor-text 988KB 进首屏
+// (用户进入 Chat 页才会触发首条消息渲染,延迟加载 ≈0 感知)
 
 import FilePreview from '@/components/chat/FilePreview.vue';
 import TaskResultCard from '@/components/chat/TaskResultCard.vue';
+import HermesMemoryDrawer from '@/components/chat/HermesMemoryDrawer.vue';
+import QuickPrompts from '@/components/chat/QuickPrompts.vue';
 
 import { useChatStore } from '@/stores/chat';
 import { useModelsStore } from '@/stores/models';
@@ -766,21 +688,55 @@ import { useHermesMemoryStore } from '@/stores/hermesMemory';
 import { useGatewayStore } from '@/stores/gateway';
 import { usePermissionsStore } from '@/stores/permissions';
 
-marked.setOptions({
-  breaks: true,
-  gfm: true
-});
-// marked v18+ 不再支持 highlight 字段,改用扩展 hook
-marked.use({
-  renderer: {
-    code(code: string, lang?: string): string {
-      if (lang && hljs.getLanguage(lang)) {
-        return `<pre><code class="hljs language-${lang}">${hljs.highlight(code, { language: lang }).value}</code></pre>`;
+// P1-6: marked + highlight.js/core 首次渲染消息时再加载
+// 用 lib/core (不带全语言注册),仅按需注册 10 种常用语言
+// 避免 import 'highlight.js' 触发全 190+ 语言自动注册 (chunk ~947KB)
+const COMMON_LANGS = [
+  'javascript', 'typescript', 'python', 'java', 'go',
+  'json', 'xml', 'sql', 'bash', 'css',
+] as const;
+
+let markedInstance: typeof import('marked')['marked'] | null = null;
+let hljsInstance: typeof import('highlight.js').default | null = null;
+let markdownReady: Promise<void> | null = null;
+async function ensureMarkdownLoaded(): Promise<void> {
+  if (markdownReady) return markdownReady;
+  markdownReady = (async () => {
+    // 关键: 'highlight.js/lib/core' 不自动注册任何语言,纯核心 (~50KB)
+    const [{ marked }, hljsMod, ...langMods] = await Promise.all([
+      import('marked'),
+      import('highlight.js/lib/core'),
+      ...COMMON_LANGS.map(lang => import(`highlight.js/lib/languages/${lang}`)),
+    ]);
+    hljsInstance = hljsMod.default;
+    // 仅注册常用 10 种语言
+    langMods.forEach((mod, i) => {
+      const lang = COMMON_LANGS[i];
+      hljsInstance!.registerLanguage(lang, mod.default);
+    });
+    marked.setOptions({ breaks: true, gfm: true });
+    marked.use({
+      renderer: {
+        code(code: string, lang?: string): string {
+          if (lang && hljsInstance!.getLanguage(lang)) {
+            return `<pre><code class="hljs language-${lang}">${hljsInstance!.highlight(code, { language: lang }).value}</code></pre>`;
+          }
+          // 未知 / 未注册语言: 跳过高亮,escape HTML
+          return `<pre><code class="hljs">${escapeHtml(code)}</code></pre>`;
+        }
       }
-      return `<pre><code class="hljs">${hljs.highlightAuto(code).value}</code></pre>`;
-    }
-  }
-} as unknown as Parameters<typeof marked.use>[0]);
+    } as unknown as Parameters<typeof marked.use>[0]);
+    markedInstance = marked;
+  })();
+  return markdownReady;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]!));
+}
+
+// 提前开始加载,利用 idle 时间
+void ensureMarkdownLoaded();
 
 const chatStore = useChatStore();
 const modelsStore = useModelsStore();
@@ -796,15 +752,7 @@ const inputMessage = ref('');
 const chatSidebarWidth = ref(280);
 const CHAT_SIDEBAR_MIN_WIDTH = 200;
 
-// P5-UX: 快速提示词模板(空状态 + 命令面板同步)
-const QUICK_PROMPTS = [
-  { id: 'p1', emoji: '📝', title: '帮我写一份日报', desc: '从今天的 IM / 任务 / 文件汇总', prompt: '请帮我生成今天的工作日报,要包含:\n1. 今日完成的关键任务\n2. 仍在进行的事项及当前进度\n3. 风险 / 阻塞 / 需要协助的事项\n4. 明日计划' },
-  { id: 'p2', emoji: '🔍', title: '代码审查', desc: '粘贴 PR diff,自动 review', prompt: '请审查下面的代码改动,按 文件 → 改动 → 建议 三段输出,要标出风格 / 性能 / 安全 / 潜在 bug 四类问题:\n\n```diff\n\n```' },
-  { id: 'p3', emoji: '🌐', title: '翻译一段文字', desc: '中英日韩法德西俄 8 语种', prompt: '请把下面这段文字翻译成英文(同时给我 2 个备选版本),保留原文中所有专有名词:\n\n' },
-  { id: 'p4', emoji: '🐛', title: '帮我分析一个 bug', desc: '贴日志 / 报错 / 现象', prompt: '我遇到一个 bug,需要你帮我定位:\n\n【现象】\n\n【报错日志】\n\n【已尝试】\n\n请先复述我的问题确认理解,然后给出 3 个最可能的根因,按概率排序,每个根因给出验证方法。' },
-  { id: 'p5', emoji: '💡', title: '头脑风暴', desc: '给个主题,列 10 个角度', prompt: '我想就「__主题__」做一次头脑风暴。请从 10 个不同角度帮我展开(技术 / 用户 / 商业 / 风险 / 趋势 / 反方 / 等等),每个角度 2-3 句话。' },
-  { id: 'p6', emoji: '📅', title: '写周报', desc: '本周工作整理', prompt: '请基于本周我的工作生成结构化周报:\n1. 本周亮点(3 条以内)\n2. 主要进展(按项目 / 任务分类)\n3. 数据 / 指标变化\n4. 遇到的问题和解决方案\n5. 下周计划' },
-]
+// P5-UX: 快速提示词模板 — 已抽出到 src/components/chat/QuickPrompts.vue
 
 const greetingText = computed(() => {
   const hour = new Date().getHours()
@@ -1211,7 +1159,13 @@ function formatTime(timestamp: number): string {
 }
 
 function renderMarkdown(content: string): string {
-  return marked.parse(content) as string;
+  // 异步加载时 fallback: 简单转义,不让用户看到空白
+  if (!markedInstance) {
+    // 异步触发加载,本次返回转义后纯文本
+    void ensureMarkdownLoaded();
+    return content.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]!));
+  }
+  return markedInstance.parse(content) as string;
 }
 
 async function handleCopy(message: any): Promise<void> {
@@ -1563,16 +1517,7 @@ async function handleSaveSettings(): Promise<void> {
   ElMessage.success('设置已保存');
 }
 
-// 记忆编辑实时保存
-let memorySaveTimer: any = null;
-function handleCoreMemoryChange(value: string): void {
-  if (memorySaveTimer) {
-    clearTimeout(memorySaveTimer);
-  }
-  memorySaveTimer = setTimeout(async () => {
-    await hermesMemoryStore.updateCoreMemory(value);
-  }, 500); // 500ms 防抖
-}
+// (handleCoreMemoryChange + memorySaveTimer 已抽出到 HermesMemoryDrawer.vue)
 </script>
 
 <style lang="scss" scoped>

@@ -1,12 +1,13 @@
 /**
  * PiPiClaw - Vue应用入口
+ *
+ * P1-6: Element Plus 组件改由 unplugin-vue-components 自动按需导入,
+ * 不再走 app.use(ElementPlus) 全量注册,vendor-element-plus chunk 期望 915KB → <300KB
  */
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import ElementPlus from 'element-plus';
 import * as ElementPlusIcons from '@element-plus/icons-vue';
-import 'element-plus/dist/index.css';
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
 import enUs from 'element-plus/dist/locale/en.mjs';
 
@@ -28,16 +29,18 @@ for (const [name, comp] of Object.entries(ElementPlusIcons)) {
 app.use(createPinia());
 app.use(router);
 
-// 根据当前 i18n locale 切换 Element Plus 语言
+// Locale 切换辅助 (Element Plus 组件按需导入后, locale 仍由组件内部用 ElConfigProvider 注入或保留全局 i18n)
 const elementPlusLocaleMap: Record<string, unknown> = {
   'zh-CN': zhCn,
   'en-US': enUs
 };
-app.use(ElementPlus, {
-  locale: (elementPlusLocaleMap[i18n.global.locale.value as string] as never) ?? zhCn
-});
-app.use(i18n);
+// 导出给 ElConfigProvider 使用 (Chat.vue 等视图按需引入)
+export const elementPlusLocale = (() => {
+  const cur = i18n.global.locale.value as string;
+  return (elementPlusLocaleMap[cur] as never) ?? zhCn;
+})();
 
+app.use(i18n);
 app.mount('#app');
 
 // 暴露 setLocale 给浏览器调试或 electron preload（不导出 main 包）

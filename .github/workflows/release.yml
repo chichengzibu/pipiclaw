@@ -1,0 +1,119 @@
+name: PiPiClaw Release
+
+# 触发: 推送 v* 格式 tag (如 v4.3.1)
+# 行为: 3 平台 build installer → 上传 artifact → 生成 latest.yml → 创建 GitHub Release
+# 依赖: GH_TOKEN (自动提供), 需在 repo settings 配置 ELECTRON_BUILDER_CACHE 等可选变量
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v4.3.1)'
+        required: true
+
+jobs:
+  release:
+    name: Build & Release (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-13, ubuntu-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 需要 git tag history 给 electron-builder
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve tag (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        id: tag
+        run: |
+          echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+
+      - name: Build renderer + electron
+        # 注意: 不要加 --publish,自己用 gh release upload 上传(避免 electron-builder 自动创建 draft release)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Windows 用 ; 分隔,Unix 用 :
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'  # 暂未签证书,跳过
+        run: npm run build
+
+      - name: Upload artifacts (windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipiclaw-windows-x64
+          path: |
+            release/*.exe
+            release/*.blockmap
+            release/latest.yml
+
+      - name: Upload artifacts (macos)
+        if: matrix.os == 'macos-13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipiclaw-macos
+          path: |
+            release/*.dmg
+            release/*.blockmap
+            release/latest-mac.yml
+
+      - name: Upload artifacts (linux)
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipiclaw-linux-x64
+          path: |
+            release/*.AppImage
+            release/*.blockmap
+            release/latest-linux.yml
+
+  publish:
+    name: Publish GitHub Release
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-release
+
+      - name: List downloaded files
+        run: |
+          echo "=== Release artifacts ==="
+          ls -laR dist-release/
+          find dist-release -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.yml" -o -name "*.blockmap" \) | sort
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist-release/**/*.exe
+            dist-release/**/*.dmg
+            dist-release/**/*.AppImage
+            dist-release/**/*.yml
+            dist-release/**/*.blockmap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

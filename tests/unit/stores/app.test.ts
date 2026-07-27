@@ -83,10 +83,10 @@ describe('P5-UX: AppStore 主题系统 (light/dark/system)', () => {
     expect(store.currentTheme).toBe('light')
   })
 
-  it('setTheme 持久化到 config.set', async () => {
+  it('setTheme 持久化到 config.set (P1-7: key 用 app.theme 匹配 schema)', async () => {
     const store = useAppStore()
     await store.setTheme('dark')
-    expect((window as any).electronAPI.config.set).toHaveBeenCalledWith('theme', 'dark')
+    expect((window as any).electronAPI.config.set).toHaveBeenCalledWith('app.theme', 'dark')
   })
 
   it('toggleTheme:light → dark', () => {
@@ -146,14 +146,14 @@ describe('P5-UX: AppStore 主题系统 (light/dark/system)', () => {
   })
 
   it('initialize:读取已保存的主题', async () => {
-    mockConfigStore.theme = 'dark'
+    mockConfigStore['app.theme'] = 'dark'
     const store = useAppStore()
     await store.initialize()
     expect(store.themeMode).toBe('dark')
   })
 
   it('initialize:保存的主题非法 → 保持 system', async () => {
-    mockConfigStore.theme = 'rainbow'
+    mockConfigStore['app.theme'] = 'rainbow'
     const store = useAppStore()
     await store.initialize()
     expect(store.themeMode).toBe('system')
