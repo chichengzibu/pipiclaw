@@ -131,3 +131,100 @@ describe('P2-02: ModelUsageTracker', () => {
     expect(t.getAll()).toEqual([])
   })
 })
+
+describe('P3-03: getMonthlyPrediction 月度费用预测', () => {
+  beforeEach(() => {
+    ;(ModelUsageTracker as unknown as { instance: ModelUsageTracker | null }).instance = null
+    if (fs.existsSync('/tmp/pipiclaw-modelusage-test')) {
+      fs.rmSync('/tmp/pipiclaw-modelusage-test', { recursive: true, force: true })
+    }
+  })
+
+  it('无历史 → 全 0, confidence 最低 0.3', () => {
+    const t = ModelUsageTracker.getInstance()
+    const p = t.getMonthlyPrediction(7)
+    expect(p.pastCost).toBe(0)
+    expect(p.dailyCost).toBe(0)
+    expect(p.projectedCost).toBe(0)
+    expect(p.sampleCount).toBe(0)
+    expect(p.confidence).toBe(0.3)
+    expect(p.lowEstimate).toBe(0)
+    expect(p.highEstimate).toBe(0)
+  })
+
+  it('基于过去 7 天总费用, projectedCost = dailyCost × 30', () => {
+    const t = ModelUsageTracker.getInstance()
+    // 模拟 7 天内 7 次调用, 每次 $1
+    const now = Date.now()
+    const oneDay = 24 * 60 * 60 * 1000
+    for (let i = 0; i < 7; i++) {
+      // 直接通过 push 进入 callHistory (绕过 record 的 Date.now 限制)
+      ;(t as unknown as { callHistory: unknown[] }).callHistory.push({
+        timestamp: now - i * oneDay,
+        modelId: 'gpt-4',
+        provider: 'openai',
+        tokens: 1000,
+        cost: 1.0,
+      })
+    }
+    const p = t.getMonthlyPrediction(7)
+    expect(p.pastCost).toBe(7)
+    expect(p.dailyCost).toBeCloseTo(1, 5)
+    expect(p.projectedCost).toBeCloseTo(30, 5)
+    // 7 samples < 10 → margin=0.3 (扩大置信带)
+    expect(p.lowEstimate).toBeCloseTo(30 * 0.7, 5)  // 30 × 0.7
+    expect(p.highEstimate).toBeCloseTo(30 * 1.3, 5)
+    expect(p.sampleCount).toBe(7)
+  })
+
+  it('样本 < 10 时, 置信带放宽到 ±30%', () => {
+    const t = ModelUsageTracker.getInstance()
+    const now = Date.now()
+    const oneDay = 24 * 60 * 60 * 1000
+    ;(t as unknown as { callHistory: unknown[] }).callHistory.push({
+      timestamp: now - oneDay,
+      modelId: 'gpt-4', provider: 'openai', tokens: 100, cost: 1.0,
+    })
+    const p = t.getMonthlyPrediction(7)
+    // 1 sample, dailyCost = 1/7 ≈ 0.143, projected ≈ 4.286
+    // ±30% margin → low = 4.286 × 0.7 = 3, high = 4.286 × 1.3 ≈ 5.57
+    expect(p.lowEstimate).toBeCloseTo(p.projectedCost * 0.7, 5)
+    expect(p.highEstimate).toBeCloseTo(p.projectedCost * 1.3, 5)
+  })
+
+  it('超过 7 天的旧调用不计入预测', () => {
+    const t = ModelUsageTracker.getInstance()
+    const now = Date.now()
+    const oneDay = 24 * 60 * 60 * 1000
+    // 10 天前: $100 (不应计入)
+    ;(t as unknown as { callHistory: unknown[] }).callHistory.push({
+      timestamp: now - 10 * oneDay,
+      modelId: 'old', provider: 'p', tokens: 100, cost: 100,
+    })
+    // 3 天前: $3 (应计入)
+    ;(t as unknown as { callHistory: unknown[] }).callHistory.push({
+      timestamp: now - 3 * oneDay,
+      modelId: 'new', provider: 'p', tokens: 100, cost: 3,
+    })
+    const p = t.getMonthlyPrediction(7)
+    expect(p.pastCost).toBe(3)
+    expect(p.sampleCount).toBe(1)
+    expect(p.projectedCost).toBeCloseTo(3 / 7 * 30, 5)
+  })
+
+  it('样本 ≥ 30 → confidence 升到 1.0', () => {
+    const t = ModelUsageTracker.getInstance()
+    const now = Date.now()
+    const oneDay = 24 * 60 * 60 * 1000
+    for (let i = 0; i < 50; i++) {
+      ;(t as unknown as { callHistory: unknown[] }).callHistory.push({
+        timestamp: now - (i % 7) * oneDay, // 7 天内均匀分布
+        modelId: 'm', provider: 'p', tokens: 100, cost: 0.1,
+      })
+    }
+    const p = t.getMonthlyPrediction(7)
+    expect(p.sampleCount).toBe(50)
+    expect(p.confidence).toBeGreaterThanOrEqual(1)
+    expect(p.lowEstimate).toBeCloseTo(p.projectedCost * 0.8, 5)  // 50 > 10 → ±20%
+  })
+})
