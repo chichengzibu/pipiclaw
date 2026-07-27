@@ -37,12 +37,10 @@
           />
         </svg>
       </div>
-      <Transition name="brand-fade">
-        <div v-if="expanded" class="brand-text">
-          <div class="brand-name">PiPiClaw</div>
-          <div class="brand-tag">v{{ appStore.version }}</div>
-        </div>
-      </Transition>
+      <div v-if="expanded" class="brand-text">
+        <div class="brand-name">PiPiClaw</div>
+        <div class="brand-tag">v{{ appStore.version }}</div>
+      </div>
     </div>
 
     <!-- 分组导航 -->
@@ -52,10 +50,7 @@
         :key="group.title"
         class="nav-group"
       >
-        <Transition name="section-fade">
-          <div v-if="expanded" class="group-header">{{ group.title }}</div>
-        </Transition>
-
+        <div v-if="expanded" class="group-header">{{ group.title }}</div>
         <div class="group-items">
           <router-link
             v-for="item in group.items"
@@ -63,27 +58,13 @@
             :to="item.path"
             class="nav-item"
             :class="{ active: isActive(item.path) }"
+            :title="!expanded ? t(item.titleKey) : ''"
           >
-            <el-tooltip
-              :content="t(item.titleKey)"
-              placement="right"
-              :disabled="expanded"
-              :show-after="200"
-              :hide-after="0"
-              :enter-delay="200"
-            >
-              <div class="nav-item-inner">
-                <span class="nav-icon">
-                  <el-icon><component :is="item.icon" /></el-icon>
-                </span>
-                <Transition name="label-fade">
-                  <span v-if="expanded" class="nav-label">
-                    {{ t(item.titleKey) }}
-                  </span>
-                </Transition>
-                <span v-if="isActive(item.path)" class="active-dot"></span>
-              </div>
-            </el-tooltip>
+            <el-icon class="nav-icon"><component :is="item.icon" /></el-icon>
+            <span v-if="expanded" class="nav-label">
+              {{ t(item.titleKey) }}
+            </span>
+            <span v-if="isActive(item.path) && expanded" class="active-dot"></span>
           </router-link>
         </div>
       </div>

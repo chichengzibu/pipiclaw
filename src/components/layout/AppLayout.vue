@@ -129,8 +129,9 @@ function onGlobalKeydown(e: KeyboardEvent): void {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--bg-base);
-  /* 移除 padding — 由各 view 自己控制内边距 (Apple-style content breathing) */
+  /* padding 由各 view 自管 — 防止重复 padding */
 }
 
 /* ========== Floating command button (Spotlight style) ========== */
