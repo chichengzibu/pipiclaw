@@ -17,19 +17,16 @@
       </main>
     </div>
 
-    <div class="app-status-bar">
-      <button class="status-item status-shortcut" @click="openPalette" title="命令面板 (Ctrl+K)">
-        <el-icon><Search /></el-icon>
-        <span>命令</span>
-        <kbd>Ctrl K</kbd>
-      </button>
-      <span class="status-divider">|</span>
-      <span class="status-item">PiPiClaw v{{ appStore.version }}</span>
-      <span class="status-divider">|</span>
-      <span class="status-item">
-        <GatewayStatusBadge />
-      </span>
-    </div>
+    <!-- Floating command button (macOS Spotlight style) -->
+    <button
+      class="floating-cmd-btn"
+      title="命令面板 (Ctrl+K)"
+      @click="openPalette"
+    >
+      <el-icon><Search /></el-icon>
+      <span class="cmd-label">命令</span>
+      <kbd>⌘K</kbd>
+    </button>
 
     <!-- 全局命令面板 (Cmd+K) -->
     <CommandPalette />
@@ -40,14 +37,15 @@
 import { onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useAppStore } from '@/stores/app';
+import { useGatewayStore } from '@/stores/gateway';
 import TitleBar from './TitleBar.vue';
 import SideNav from './SideNav.vue';
-import GatewayStatusBadge from '@/components/common/GatewayStatusBadge.vue';
 import CommandPalette from '@/components/common/CommandPalette.vue';
 import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import { Search } from '@element-plus/icons-vue';
 
 const appStore = useAppStore();
+const gatewayStore = useGatewayStore();
 
 function openPalette(): void {
   window.dispatchEvent(new CustomEvent('cmd:open-palette'));
@@ -71,8 +69,9 @@ function onToast(e: Event): void {
 }
 
 onMounted(() => {
+  appStore.initialize();
+  gatewayStore.initialize();
   window.addEventListener('cmd:toast', onToast);
-  // 全局快捷键:Ctrl+K / Cmd+K 打开命令面板
   window.addEventListener('keydown', onGlobalKeydown);
 });
 
@@ -81,59 +80,42 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onGlobalKeydown);
 });
 
-/**
- * 全局键盘快捷键
- * - Ctrl+K / Cmd+K → 打开命令面板
- * - Ctrl+/ → 打开命令面板(替代绑定,符合常见编辑器习惯)
- *
- * 注意:在 input / textarea / [contenteditable] 里不触发,避免冲突
- * 双保险:同时检查 e.target(原始 event target) 和 document.activeElement
- *  - e.target: 事件实际触发的元素(可能因冒泡/捕获而变化)
- *  - document.activeElement: 当前焦点元素
- * 任何一个是 input/textarea 就跳过
- */
 function onGlobalKeydown(e: KeyboardEvent): void {
   const candidates: (HTMLElement | null)[] = [
     e.target as HTMLElement | null,
     document.activeElement as HTMLElement | null
-  ]
+  ];
   for (const el of candidates) {
-    if (!el) continue
-    const tag = el.tagName?.toLowerCase()
+    if (!el) continue;
+    const tag = el.tagName?.toLowerCase();
     if (tag === 'input' || tag === 'textarea' || el.isContentEditable) {
-      return
+      return;
     }
   }
-
-  const isMod = e.metaKey || e.ctrlKey
-  if (!isMod) return
-
-  // Ctrl+K / Cmd+K
+  const isMod = e.metaKey || e.ctrlKey;
+  if (!isMod) return;
   if (e.key === 'k' || e.key === 'K') {
-    e.preventDefault()
-    openPalette()
-    return
+    e.preventDefault();
+    openPalette();
+    return;
   }
-
-  // Ctrl+/ (常见 IDE 快捷键)
   if (e.key === '/') {
-    e.preventDefault()
-    openPalette()
-    return
+    e.preventDefault();
+    openPalette();
+    return;
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@use "@/styles/variables.scss" as *;
-
 .app-layout {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: var(--bg-color);
+  background: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
 }
 
 .app-content {
@@ -147,65 +129,60 @@ function onGlobalKeydown(e: KeyboardEvent): void {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  padding: $content-padding;
-  background-color: var(--bg-color-secondary);
+  background: var(--bg-base);
+  /* 移除 padding — 由各 view 自己控制内边距 (Apple-style content breathing) */
 }
 
-.app-status-bar {
+/* ========== Floating command button (Spotlight style) ========== */
+.floating-cmd-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
   display: flex;
   align-items: center;
-  height: 24px;
-  padding: 0 12px;
-  background-color: var(--bg-color);
-  border-top: 1px solid var(--border-color);
-  font-size: 12px;
-  color: var(--text-color-secondary);
-  flex-shrink: 0;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.status-divider {
-  margin: 0 8px;
-  color: var(--border-color);
-}
-
-.status-shortcut {
-  background: transparent;
-  border: 1px solid var(--border-base);
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px 0 14px;
+  border: none;
+  border-radius: 22px;
+  background: var(--bg-elevated);
   color: var(--fg-secondary);
-  padding: 0 8px;
-  height: 18px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 11px;
   font-family: inherit;
-  transition: background-color var(--duration-fast) var(--ease-standard),
-    border-color var(--duration-fast) var(--ease-standard);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 0.5px solid var(--border-base);
+  transition: transform var(--duration-fast) var(--ease-spring),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
 
   .el-icon {
-    font-size: 11px;
+    font-size: 16px;
   }
 
   kbd {
     font-family: var(--font-family-mono);
-    font-size: 9px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-base);
-    border-radius: 2px;
-    padding: 0 3px;
-    margin-left: 2px;
+    font-size: 11px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-xs);
+    padding: 1px 6px;
+    margin-left: 4px;
     color: var(--fg-tertiary);
   }
 
   &:hover {
-    background: var(--bg-hover);
-    border-color: var(--border-strong);
-    color: var(--fg-primary);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-xl);
+    background: var(--bg-elevated);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 80ms;
   }
 }
 </style>

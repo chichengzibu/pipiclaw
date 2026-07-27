@@ -1,214 +1,106 @@
 /**
- * PiPiClaw - Design Tokens (Light + Dark)
+ * PiPiClaw - Design Tokens (Apple HIG-inspired)
  *
  * 单一源真相:
- *   - 通过 document.documentElement.dataset.theme = 'light' | 'dark' 切换
- *   - 跟随系统:window.matchMedia('(prefers-color-scheme: dark)').matches
- *   - Element Plus 同步切换:document.documentElement.classList.toggle('dark', ...)
+ *   - document.documentElement.dataset.theme = 'light' | 'dark' 切换
+ *   - 跟随系统 prefers-color-scheme
+ *   - Element Plus 同步: root.classList.toggle('dark', ...)
  *
  * 设计参考:
- *   - Tare  - 极简白底,几乎只用黑白灰
- *   - Cursor - 深色 #1C1C1E + 蓝色 accent (#3B82F6)
+ *   - Apple macOS Sonoma / iOS 17 - SF Pro typography + system materials
+ *   - Linear / Raycast - subtle surfaces, refined motion
+ *
+ * 设计原则:
+ *   1. 4px 基础间距单位 (8 / 12 / 16 / 20 / 24 / 32 ...)
+ *   2. SF Pro typography scale (17 / 15 / 13 / 11 / 9pt)
+ *   3. 真黑 (dark mode #000) + 真白 (light mode #fff)
+ *   4. 玻璃材质 (backdrop-filter blur)
+ *   5. Spring easing (cubic-bezier(0.34, 1.56, 0.64, 1))
  *
  * 命名约定 (semantic):
- *   --bg-{base|elevated|hover|active}  背景层级
- *   --fg-{primary|secondary|tertiary}  文字层级
- *   --border-{base|strong}             边框
- *   --accent-{base|hover|fg}           强调色
- *   --success / --warning / --danger   功能色
+ *   --bg-{base|elevated|hover|active|material}  背景层级
+ *   --fg-{primary|secondary|tertiary|quaternary}  文字层级 (4 级)
+ *   --border-{subtle|base|strong}            边框
+ *   --accent-{base|hover|fg|soft|subtle}     强调色
+ *   --success / --warning / --danger / --info 功能色
  */
 
 :root,
 :root[data-theme='light'] {
-  /* ========== 背景 ========== */
+  /* ========== 背景 (Apple: 真白 + 5% 灰阶) ========== */
   --bg-base: #ffffff;
-  --bg-elevated: #fafafa;
-  --bg-hover: #f5f5f5;
-  --bg-active: #ebebeb;
-  --bg-inverse: #1a1a1a;
+  --bg-elevated: #ffffff;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #f5f5f7;
+  --bg-quaternary: #ececef;
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-active: rgba(0, 0, 0, 0.08);
+  --bg-material: rgba(255, 255, 255, 0.72);
+  --bg-inverse: #1d1d1f;
 
-  /* ========== 文字 ========== */
-  --fg-primary: #1a1a1a;
-  --fg-secondary: #555555;
-  --fg-tertiary: #999999;
+  /* ========== 文字 (Apple: 4 级透明度灰阶) ========== */
+  --fg-primary: rgba(0, 0, 0, 0.88);
+  --fg-secondary: rgba(0, 0, 0, 0.6);
+  --fg-tertiary: rgba(0, 0, 0, 0.38);
+  --fg-quaternary: rgba(0, 0, 0, 0.18);
   --fg-inverse: #fafafa;
   --fg-on-accent: #ffffff;
 
-  /* ========== 边框 ========== */
-  --border-base: #e5e5e5;
-  --border-strong: #d0d0d0;
+  /* ========== 边框 (Apple: 极轻分隔线) ========== */
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-base: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.16);
 
-  /* ========== 强调色 (蓝) ========== */
-  --accent-base: #2563eb;
-  --accent-hover: #1d4ed8;
+  /* ========== 强调色 (Apple System Blue) ========== */
+  --accent-base: #007aff;        /* iOS 系统蓝 */
+  --accent-hover: #0a84ff;
   --accent-fg: #ffffff;
-  --accent-soft: #eff6ff; /* 用于 hover/selected 背景 */
+  --accent-soft: rgba(0, 122, 255, 0.08);
+  --accent-subtle: rgba(0, 122, 255, 0.12);
 
-  /* ========== 功能色 ========== */
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --info: #6b7280;
+  /* ========== 功能色 (Apple SF Colors) ========== */
+  --success: #34c759;
+  --warning: #ff9500;
+  --danger: #ff3b30;
+  --info: #8e8e93;
 
-  /* ========== 阴影 ========== */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.12);
+  /* ========== 阴影 (Apple: 多层柔光) ========== */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.10), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.14), 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-focus: 0 0 0 4px rgba(0, 122, 255, 0.16);
 
-  /* ========== 滚动条 ========== */
+  /* ========== 滚动条 (macOS 风格: 自动隐藏) ========== */
   --scrollbar-thumb: rgba(0, 0, 0, 0.18);
   --scrollbar-thumb-hover: rgba(0, 0, 0, 0.32);
   --scrollbar-track: transparent;
 
-  /* ========== Element Plus 主题变量同步 (light) ========== */
-  --el-bg-color: #ffffff;
-  --el-bg-color-page: #fafafa;
-  --el-bg-color-overlay: #ffffff;
-  --el-text-color-primary: #1a1a1a;
-  --el-text-color-regular: #555555;
-  --el-text-color-secondary: #777777;
-  --el-text-color-placeholder: #999999;
-  --el-text-color-disabled: #c0c4cc;
-  --el-border-color: #e5e5e5;
-  --el-border-color-light: #ebeef5;
-  --el-border-color-lighter: #f2f6fc;
-  --el-border-color-extra-light: #fafafa;
-  --el-fill-color: #f5f5f5;
-  --el-fill-color-light: #fafafa;
-  --el-fill-color-lighter: #fafafa;
-  --el-fill-color-blank: #ffffff;
-  --el-mask-color: rgba(0, 0, 0, 0.5);
-  --el-color-primary: #2563eb;
-  --el-color-primary-light-3: #60a5fa;
-  --el-color-primary-light-5: #93c5fd;
-  --el-color-primary-light-7: #bfdbfe;
-  --el-color-primary-light-8: #dbeafe;
-  --el-color-primary-light-9: #eff6ff;
-  --el-color-primary-dark-2: #1d4ed8;
-  --el-color-success: #16a34a;
-  --el-color-warning: #d97706;
-  --el-color-danger: #dc2626;
-  --el-color-error: #dc2626;
-  --el-color-info: #6b7280;
-  --el-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
-  --el-box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
-  --el-disabled-bg-color: #f5f7fa;
-  --el-disabled-text-color: #c0c4cc;
-  --el-disabled-border-color: #e4e7ed;
-  --el-overlay-color: rgba(0, 0, 0, 0.5);
-  --el-mask-bg-color: rgba(255, 255, 255, 0.5);
-  color-scheme: light;
-}
+  /* ========== 动效 (Apple 弹簧 + 标准缓动) ========== */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Apple HIG 标准缓动别名 */
+  --ease-decelerate: var(--ease-out-expo);
+  --ease-accelerate: cubic-bezier(0.5, 0, 0.75, 0);
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-normal: 240ms;
+  --duration-slow: 360ms;
+  --duration-slower: 500ms;
 
-:root[data-theme='dark'] {
-  /* ========== 背景 (Tare/Cursor deep dark) ========== */
-  --bg-base: #0f0f10;
-  --bg-elevated: #1a1a1c;
-  --bg-hover: #252528;
-  --bg-active: #2f2f33;
-  --bg-inverse: #fafafa;
+  /* ========== 圆角 (Apple: 一致的小圆角) ========== */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-pill: 9999px;
 
-  /* ========== 文字 ========== */
-  --fg-primary: #fafafa;
-  --fg-secondary: #b0b0b5;
-  --fg-tertiary: #77777a;
-  --fg-inverse: #1a1a1a;
-  --fg-on-accent: #ffffff;
-
-  /* ========== 边框 ========== */
-  --border-base: #2c2c2e;
-  --border-strong: #3a3a3c;
-
-  /* ========== 强调色 (Cursor 风格 — 亮一档) ========== */
-  --accent-base: #3b82f6;
-  --accent-hover: #60a5fa;
-  --accent-fg: #ffffff;
-  --accent-soft: #1e3a8a; /* hover/selected 深色背景 */
-
-  /* ========== 功能色 ========== */
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #f87171;
-  --info: #9ca3af;
-
-  /* ========== 阴影 (深色模式更深) ========== */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.45);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.55);
-
-  /* ========== 滚动条 ========== */
-  --scrollbar-thumb: rgba(255, 255, 255, 0.18);
-  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.32);
-
-  /* ========== Element Plus 主题变量同步 (dark) ========== */
-  --el-bg-color: #1a1a1c;
-  --el-bg-color-page: #0f0f10;
-  --el-bg-color-overlay: #252528;
-  --el-text-color-primary: #fafafa;
-  --el-text-color-regular: #b0b0b5;
-  --el-text-color-secondary: #8a8a8e;
-  --el-text-color-placeholder: #77777a;
-  --el-text-color-disabled: #4a4a4d;
-  --el-border-color: #2c2c2e;
-  --el-border-color-light: #252528;
-  --el-border-color-lighter: #1f1f21;
-  --el-border-color-extra-light: #1a1a1c;
-  --el-fill-color: #252528;
-  --el-fill-color-light: #1f1f21;
-  --el-fill-color-lighter: #1a1a1c;
-  --el-fill-color-blank: #1a1a1c;
-  --el-mask-color: rgba(0, 0, 0, 0.7);
-  --el-color-primary: #3b82f6;
-  --el-color-primary-light-3: #60a5fa;
-  --el-color-primary-light-5: #93c5fd;
-  --el-color-primary-light-7: #bfdbfe;
-  --el-color-primary-light-8: #1e3a8a;
-  --el-color-primary-light-9: #172554;
-  --el-color-primary-dark-2: #2563eb;
-  --el-color-success: #22c55e;
-  --el-color-warning: #f59e0b;
-  --el-color-danger: #f87171;
-  --el-color-error: #f87171;
-  --el-color-info: #9ca3af;
-  --el-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.4);
-  --el-box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
-  --el-disabled-bg-color: #252528;
-  --el-disabled-text-color: #4a4a4d;
-  --el-disabled-border-color: #2c2c2e;
-  --el-overlay-color: rgba(0, 0, 0, 0.7);
-  --el-mask-bg-color: rgba(0, 0, 0, 0.7);
-  color-scheme: dark;
-}
-
-/* 跟随系统(未显式设置 data-theme 时) */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --bg-base: #0f0f10;
-    --bg-elevated: #1a1a1c;
-    --bg-hover: #252528;
-    --bg-active: #2f2f33;
-    --bg-inverse: #fafafa;
-    --fg-primary: #fafafa;
-    --fg-secondary: #b0b0b5;
-    --fg-tertiary: #77777a;
-    --fg-inverse: #1a1a1a;
-    --border-base: #2c2c2e;
-    --border-strong: #3a3a3c;
-    --accent-base: #3b82f6;
-    --accent-hover: #60a5fa;
-    --accent-soft: #1e3a8a;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.45);
-    --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.55);
-    color-scheme: dark;
-  }
-}
-
-/* ========== Spacing (4px 基准) ========== */
-:root {
+  /* ========== 间距 (4px 基础 + Apple HIG 命名) ========== */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -216,21 +108,41 @@
   --space-xl: 32px;
   --space-2xl: 48px;
   --space-3xl: 64px;
+  /* 数字命名 (代码可读性更好) */
+  --space-1: var(--space-xs);
+  --space-2: var(--space-sm);
+  --space-3: 12px;
+  --space-4: var(--space-md);
+  --space-5: 20px;
+  --space-6: var(--space-lg);
+  --space-8: var(--space-xl);
+  --space-10: 40px;
+  --space-12: var(--space-2xl);
 
-  /* ========== Typography ========== */
+  /* ========== 字体 (SF Pro stack + Apple HIG scale) ========== */
   --font-family-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
-    'Segoe UI Variable', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
-    'Helvetica Neue', Arial, sans-serif;
-  --font-family-mono: 'SF Mono', 'JetBrains Mono', 'Cascadia Code',
-    'Consolas', 'Courier New', monospace;
+    'SF Pro Text', 'Helvetica Neue', Helvetica, Arial,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    sans-serif;
+  --font-family-mono: 'SF Mono', 'JetBrains Mono', Menlo, Monaco,
+    Consolas, 'Courier New', monospace;
 
-  --font-size-display: 28px;
-  --font-size-title-1: 22px;
-  --font-size-title-2: 17px;
-  --font-size-body: 14px;
+  /* Apple HIG Typography Scale */
+  --font-size-caption-2: 11px;
+  --font-size-caption-1: 12px;
   --font-size-callout: 13px;
-  --font-size-caption-1: 11px;
-  --font-size-caption-2: 9px;
+  --font-size-body: 15px;
+  --font-size-title-3: 17px;
+  --font-size-title-2: 22px;
+  --font-size-title-1: 28px;
+  --font-size-display: 34px;
+
+  /* 别名 (向后兼容 + 简洁命名) */
+  --font-size-xs: var(--font-size-caption-2);
+  --font-size-sm: var(--font-size-callout);
+  --font-size-md: var(--font-size-body);
+  --font-size-lg: var(--font-size-title-3);
+  --font-size-xl: var(--font-size-title-2);
 
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -241,74 +153,252 @@
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.7;
 
-  /* ========== Motion (Tare/Cursor 风格:快、轻、丝滑) ========== */
-  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
-  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
-
-  --duration-fast: 120ms;
-  --duration-base: 200ms;
-  --duration-slow: 320ms;
-
-  /* ========== Radius ========== */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --radius-2xl: 16px;
-  --radius-pill: 9999px;
-
-  /* ========== Layout ========== */
-  --title-bar-height: 32px;
-  --side-nav-width: 200px;
-  --side-nav-width-collapsed: 56px;
-  --inspector-width: 360px;
+  /* ========== 布局 (Apple 标准尺寸) ========== */
+  --title-bar-height: 28px;
+  --side-nav-width: 240px;
+  --side-nav-width-collapsed: 64px;
+  --inspector-width: 320px;
   --content-max-width: 1200px;
-  --content-padding: var(--space-md);
+  --content-padding: 32px;
 
-  /* ========== Z-index ========== */
-  --z-base: 1;
+  /* ========== 组件尺寸 ========== */
+  --button-height-sm: 28px;
+  --button-height-md: 36px;
+  --button-height-lg: 44px;
+  --input-height-md: 36px;
+  --icon-size-sm: 14px;
+  --icon-size-md: 18px;
+  --icon-size-lg: 22px;
+  --icon-size-xl: 28px;
+
+  /* ========== Z-index 层级 ========== */
+  --z-base: 0;
   --z-elevated: 10;
   --z-dropdown: 100;
-  --z-sticky: 200;
   --z-modal: 1000;
   --z-toast: 2000;
   --z-tooltip: 3000;
 
-  /* ========== Component Sizes ========== */
-  --button-height-sm: 24px;
-  --button-height-md: 30px;
-  --button-height-lg: 38px;
-  --input-height-md: 32px;
-  --icon-size-sm: 14px;
-  --icon-size-md: 16px;
-  --icon-size-lg: 20px;
-  --icon-size-xl: 24px;
+  /* ========== Element Plus 变量同步 ========== */
+  --el-bg-color: #ffffff;
+  --el-bg-color-page: #fafafa;
+  --el-bg-color-overlay: #ffffff;
+  --el-text-color-primary: rgba(0, 0, 0, 0.88);
+  --el-text-color-regular: rgba(0, 0, 0, 0.6);
+  --el-text-color-secondary: rgba(0, 0, 0, 0.38);
+  --el-text-color-placeholder: rgba(0, 0, 0, 0.32);
+  --el-text-color-disabled: rgba(0, 0, 0, 0.18);
+  --el-border-color: rgba(0, 0, 0, 0.08);
+  --el-border-color-light: rgba(0, 0, 0, 0.04);
+  --el-border-color-lighter: rgba(0, 0, 0, 0.04);
+  --el-border-color-extra-light: rgba(0, 0, 0, 0.04);
+  --el-fill-color: rgba(0, 0, 0, 0.04);
+  --el-fill-color-light: rgba(0, 0, 0, 0.02);
+  --el-fill-color-lighter: rgba(0, 0, 0, 0.02);
+  --el-fill-color-blank: #ffffff;
+  --el-mask-color: rgba(0, 0, 0, 0.32);
+  --el-color-primary: #007aff;
+  --el-color-primary-light-3: #339cff;
+  --el-color-primary-light-5: #66b1ff;
+  --el-color-primary-light-7: #99c7ff;
+  --el-color-primary-light-8: #cce0ff;
+  --el-color-primary-light-9: rgba(0, 122, 255, 0.08);
+  --el-color-primary-dark-2: #0064d2;
+  --el-color-success: #34c759;
+  --el-color-warning: #ff9500;
+  --el-color-danger: #ff3b30;
+  --el-color-error: #ff3b30;
+  --el-color-info: #8e8e93;
+  --el-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --el-box-shadow-light: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --el-disabled-bg-color: rgba(0, 0, 0, 0.04);
+  --el-disabled-text-color: rgba(0, 0, 0, 0.18);
+  --el-disabled-border-color: rgba(0, 0, 0, 0.08);
+  --el-overlay-color: rgba(0, 0, 0, 0.32);
+  --el-mask-bg-color: rgba(0, 0, 0, 0.32);
+  color-scheme: light;
 }
 
-/* ========== 兼容旧 token 名称(过渡期) ========== */
-:root,
-:root[data-theme='light'],
 :root[data-theme='dark'] {
-  --page-bg: var(--bg-base);
-  --card-bg: var(--bg-elevated);
-  --card-bg-secondary: var(--bg-hover);
-  --bg-color: var(--bg-base);
-  --bg-color-secondary: var(--bg-elevated);
-  --bg-color-tertiary: var(--bg-hover);
-  --text-color: var(--fg-primary);
-  --text-color-secondary: var(--fg-secondary);
-  --text-color-placeholder: var(--fg-tertiary);
-  --text-primary: var(--fg-primary);
-  --text-secondary: var(--fg-secondary);
-  --text-placeholder: var(--fg-tertiary);
-  --border-color: var(--border-base);
-  --border-color-light: var(--border-base);
-  --hover-bg-color: var(--bg-hover);
-  --active-bg-color: var(--bg-active);
-  --color-primary: var(--accent-base);
-  --color-secondary: var(--accent-base);
-  --color-accent: var(--accent-base);
-  --primary-color: var(--accent-base);
+  /* ========== 背景 (macOS Sonoma: 真黑 + 5 级灰阶) ========== */
+  --bg-base: #000000;            /* Apple True Black (OLED 友好) */
+  --bg-elevated: #1c1c1e;        /* macOS dark surface 1 */
+  --bg-secondary: #2c2c2e;       /* macOS dark surface 2 */
+  --bg-tertiary: #3a3a3c;        /* macOS dark surface 3 */
+  --bg-quaternary: #48484a;      /* macOS dark surface 4 */
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.10);
+  --bg-material: rgba(28, 28, 30, 0.72);
+  --bg-inverse: #fafafa;
+
+  /* ========== 文字 (Apple dark: 4 级透明度) ========== */
+  --fg-primary: rgba(255, 255, 255, 0.92);
+  --fg-secondary: rgba(255, 255, 255, 0.62);
+  --fg-tertiary: rgba(255, 255, 255, 0.40);
+  --fg-quaternary: rgba(255, 255, 255, 0.20);
+  --fg-inverse: #1a1a1a;
+  --fg-on-accent: #ffffff;
+
+  /* ========== 边框 (dark: 更轻) ========== */
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-base: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  /* ========== 强调色 (Apple dark: 亮一档) ========== */
+  --accent-base: #0a84ff;
+  --accent-hover: #409cff;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(10, 132, 255, 0.16);
+  --accent-subtle: rgba(10, 132, 255, 0.20);
+
+  /* ========== 功能色 (dark 调亮) ========== */
+  --success: #30d158;
+  --warning: #ff9f0a;
+  --danger: #ff453a;
+  --info: #98989d;
+
+  /* ========== 阴影 (dark: 更深 + 黑色调) ========== */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.40);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.50), 0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.40);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.70), 0 8px 24px rgba(0, 0, 0, 0.50);
+  --shadow-focus: 0 0 0 4px rgba(10, 132, 255, 0.32);
+
+  /* ========== 滚动条 (dark) ========== */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.24);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.40);
+  --scrollbar-track: transparent;
+
+  /* ========== Element Plus dark ========== */
+  --el-bg-color: #1c1c1e;
+  --el-bg-color-page: #000000;
+  --el-bg-color-overlay: #2c2c2e;
+  --el-text-color-primary: rgba(255, 255, 255, 0.92);
+  --el-text-color-regular: rgba(255, 255, 255, 0.62);
+  --el-text-color-secondary: rgba(255, 255, 255, 0.40);
+  --el-text-color-placeholder: rgba(255, 255, 255, 0.32);
+  --el-text-color-disabled: rgba(255, 255, 255, 0.20);
+  --el-border-color: rgba(255, 255, 255, 0.10);
+  --el-border-color-light: rgba(255, 255, 255, 0.06);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.04);
+  --el-border-color-extra-light: rgba(255, 255, 255, 0.02);
+  --el-fill-color: rgba(255, 255, 255, 0.06);
+  --el-fill-color-light: rgba(255, 255, 255, 0.04);
+  --el-fill-color-lighter: rgba(255, 255, 255, 0.02);
+  --el-fill-color-blank: #1c1c1e;
+  --el-mask-color: rgba(0, 0, 0, 0.64);
+  --el-color-primary: #0a84ff;
+  --el-color-primary-light-3: #409cff;
+  --el-color-primary-light-5: #66b1ff;
+  --el-color-primary-light-7: #99c7ff;
+  --el-color-primary-light-8: #cce0ff;
+  --el-color-primary-light-9: rgba(10, 132, 255, 0.20);
+  --el-color-primary-dark-2: #0066cc;
+  --el-color-success: #30d158;
+  --el-color-warning: #ff9f0a;
+  --el-color-danger: #ff453a;
+  --el-color-error: #ff453a;
+  --el-color-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+  --el-box-shadow-light: 0 1px 3px rgba(0, 0, 0, 0.50);
+  --el-disabled-bg-color: rgba(255, 255, 255, 0.06);
+  --el-disabled-text-color: rgba(255, 255, 255, 0.20);
+  --el-disabled-border-color: rgba(255, 255, 255, 0.08);
+  --el-overlay-color: rgba(0, 0, 0, 0.64);
+  --el-mask-bg-color: rgba(0, 0, 0, 0.64);
+  color-scheme: dark;
+}
+
+/* 跟随系统(未显式设置 data-theme 时) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg-base: #000000;
+    --bg-elevated: #1c1c1e;
+    --bg-secondary: #2c2c2e;
+    --bg-tertiary: #3a3a3c;
+    --bg-quaternary: #48484a;
+    --bg-hover: rgba(255, 255, 255, 0.06);
+    --bg-active: rgba(255, 255, 255, 0.10);
+    --bg-material: rgba(28, 28, 30, 0.72);
+    --bg-inverse: #fafafa;
+
+    --fg-primary: rgba(255, 255, 255, 0.92);
+    --fg-secondary: rgba(255, 255, 255, 0.62);
+    --fg-tertiary: rgba(255, 255, 255, 255, 0.40);
+    --fg-quaternary: rgba(255, 255, 255, 0.20);
+
+    color-scheme: dark;
+  }
+}
+
+/* ========== 全局基础样式 (Apple SF Pro) ========== */
+html,
+body {
+  font-family: var(--font-family-system);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  letter-spacing: -0.01em;
+  color: var(--fg-primary);
+  background: var(--bg-base);
+}
+
+button {
+  font-family: inherit;
+  letter-spacing: inherit;
+}
+
+/* ========== 选中文字色 (Apple 蓝) ========== */
+::selection {
+  background: var(--accent-soft);
+  color: var(--fg-primary);
+}
+
+/* ========== 全局滚动条 (macOS 自动隐藏) ========== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+/* ========== 路由过渡 (subtle fade) ========== */
+.route-fade-enter-active,
+.route-fade-leave-active {
+  transition: opacity var(--duration-normal) var(--ease-standard),
+    transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.route-fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.route-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-2px);
+}
+
+/* ========== 全局 hover 微缩放 (Apple button feedback) ========== */
+button:not(:disabled):active {
+  transform: scale(0.97);
+  transition: transform 80ms var(--ease-standard);
 }
