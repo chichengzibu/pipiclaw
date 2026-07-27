@@ -104,6 +104,33 @@ describe('P2-01: ChannelRouter.send IM 消息快捷回复', () => {
     expect(callArg.error).toContain('网络超时')
   })
 
+  it('P3-04: send 失败 → 重试 3 次后失败 (maxAttempts 边界)', async () => {
+    const sendSpy = vi.fn(async () => {
+      throw new Error('503 service unavailable')
+    })
+    const router = ChannelRouter.getInstance()
+    router.register(makeStubChannel('im-retry-1', sendSpy), makeMeta('im-retry-1', 'im-feishu'))
+
+    const result = await router.send('im-retry-1', { to: 'u', text: 'hi' })
+    expect(result.ok).toBe(false)
+    expect(sendSpy).toHaveBeenCalledTimes(3) // RetryPolicy maxAttempts=3
+  }, 30000) // 重试延迟 ~1s+2s+4s 需 7s
+
+  it('P3-04: send 第 2 次成功 → 立即返回 ok=true,不重试', async () => {
+    let count = 0
+    const sendSpy = vi.fn(async () => {
+      count++
+      if (count < 2) throw new Error('network blip') // 'network' → transient → retryable
+      return undefined
+    })
+    const router = ChannelRouter.getInstance()
+    router.register(makeStubChannel('im-retry-2', sendSpy), makeMeta('im-retry-2', 'im-feishu'))
+
+    const result = await router.send('im-retry-2', { to: 'u', text: 'hi' })
+    expect(result.ok).toBe(true)
+    expect(sendSpy).toHaveBeenCalledTimes(2)
+  }, 30000)
+
   it('register / unregister / listMetadata 生命周期', () => {
     const router = ChannelRouter.getInstance()
     router.register(makeStubChannel('im-tg-1'), makeMeta('im-tg-1', 'im-telegram'))

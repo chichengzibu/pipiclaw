@@ -11,6 +11,7 @@
 import { LogManager } from '../core/LogManager'
 import { EventBus } from '../runtime/bridge/EventBus'
 import { IMMessageRouter } from './IMMessageRouter'
+import { RetryPolicy } from '../agent/RetryPolicy'
 import type {
   Channel,
   ChannelMessage,
@@ -82,8 +83,12 @@ export class ChannelRouter {
   async send(channelId: string, message: ChannelMessage): Promise<{ ok: boolean; error?: string }> {
     const channel = this.channels.get(channelId)
     if (!channel) return { ok: false, error: `channel ${channelId} not found` }
+    // P3-04: 失败重试 (exponential backoff via RetryPolicy)
+    // maxAttempts=3, baseDelay=1s, backoff 2x: 1s → 2s → 4s
+    // 不可重试错误 (4xx 等) 会立即抛出,不走 retry
+    const retry = new RetryPolicy({ maxAttempts: 3, baseDelayMs: 1000, maxDelayMs: 8000, backoffMultiplier: 2 })
     try {
-      await channel.send(message)
+      await retry.execute(() => channel.send(message), `channel-send:${channelId}`)
       void this.bus.publish('im:channel:send:ok', { channelId })
       return { ok: true }
     } catch (e) {
