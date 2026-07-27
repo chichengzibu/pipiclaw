@@ -196,98 +196,28 @@
             </div>
           </div>
 
-          <div class="input-area">
-            <div class="model-selector">
-              <el-select
-                v-model="currentProviderId"
-                placeholder="选择提供商"
-                size="small"
-                @change="handleProviderChange"
-              >
-                <el-option
-                  v-for="provider in enabledProviders"
-                  :key="provider.id"
-                  :label="provider.name"
-                  :value="provider.id"
-                  :disabled="provider.models.length === 0"
-                />
-              </el-select>
-              <el-select
-                v-model="currentModelId"
-                placeholder="选择模型"
-                size="small"
-                :disabled="!canSelectModel || currentModels.length === 0"
-              >
-                <el-option
-                  v-if="currentModels.length === 0"
-                  key="empty"
-                  label="暂无可用模型"
-                  :value="null"
-                  disabled
-                />
-                <el-option
-                  v-for="model in currentModels"
-                  :key="model.id"
-                  :label="model.name"
-                  :value="model.id"
-                />
-              </el-select>
-            </div>
-            
-            <!-- 文件/图片预览 -->
-            <FilePreview 
-              v-if="attachedFiles.length > 0" 
-              :files="attachedFiles" 
-              @remove="removeAttachedFile" 
-              @clear="clearAllAttachedFiles" 
-            />
-            
-            <!-- 引用消息预览 -->
-            <div v-if="chatStore.quotedMessage" class="quoted-message-preview">
-              <div class="quoted-header">
-                <span class="quoted-label">引用: {{ chatStore.quotedMessage.role === 'user' ? '你' : 'AI' }}</span>
-                <el-button size="small" text @click="chatStore.clearQuotedMessage">
-                  <el-icon><Close /></el-icon>
-                </el-button>
-              </div>
-              <div class="quoted-content">{{ chatStore.quotedMessage.content.substring(0, 100) }}{{ chatStore.quotedMessage.content.length > 100 ? '...' : '' }}</div>
-            </div>
-
-            <div 
-              class="input-row" 
-              @dragover.prevent="handleDragOver" 
-              @drop.prevent="handleDrop"
-              @paste="handlePaste"
-            >
-              <el-input
-                v-model="inputMessage"
-                type="textarea"
-                :rows="2"
-                placeholder="输入消息... (Shift+Enter 换行，Enter 发送)"
-                @keydown.enter.exact.prevent="handleSend"
-                @keydown.enter.shift.exact="handleShiftEnter"
-              />
-              <div class="input-actions">
-                <el-button
-                  v-if="chatStore.isGenerating"
-                  type="danger"
-                  @click="chatStore.stopGeneration"
-                >
-                  <el-icon><VideoPause /></el-icon>
-                  停止
-                </el-button>
-                <el-button
-                  v-else
-                  type="primary"
-                  :disabled="!inputMessage.trim() && attachedFiles.length === 0"
-                  @click="handleSend"
-                >
-                  <el-icon><Promotion /></el-icon>
-                  发送
-                </el-button>
-              </div>
-            </div>
-          </div>
+          <!-- 输入区已抽到 src/components/chat/ChatInput.vue -->
+          <ChatInput
+            v-model:model-value-provider="currentProviderId"
+            v-model:model-value-model="currentModelId"
+            v-model:model-value-input="inputMessage"
+            :enabled-providers="enabledProviders"
+            :current-models="currentModels"
+            :can-select-model="canSelectModel"
+            :attached-files="attachedFiles"
+            :is-generating="chatStore.isGenerating"
+            :quoted-message="chatStore.quotedMessage"
+            @provider-change="handleProviderChange"
+            @send="handleSend"
+            @shift-enter="handleShiftEnter"
+            @stop-generation="chatStore.stopGeneration"
+            @drag-over="handleDragOver"
+            @drop="handleDrop"
+            @paste="handlePaste"
+            @remove-attached="removeAttachedFile"
+            @clear-attached="clearAllAttachedFiles"
+            @clear-quoted="chatStore.clearQuotedMessage"
+          />
         </template>
 
         <div class="empty-chat" v-else>
@@ -517,16 +447,16 @@
 import { ref, computed, reactive, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Promotion, VideoPause, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading, Setting, WarningFilled } from '@element-plus/icons-vue';
+import { Plus, Promotion, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading, Setting, WarningFilled } from '@element-plus/icons-vue';
 // P1-6: marked + highlight.js 改动态导入,避免 vendor-text 988KB 进首屏
 // (用户进入 Chat 页才会触发首条消息渲染,延迟加载 ≈0 感知)
 
-import FilePreview from '@/components/chat/FilePreview.vue';
 import TaskResultCard from '@/components/chat/TaskResultCard.vue';
 import HermesMemoryDrawer from '@/components/chat/HermesMemoryDrawer.vue';
 import QuickPrompts from '@/components/chat/QuickPrompts.vue';
 import ThinkingBlock from '@/components/chat/ThinkingBlock.vue';
 import ChatSidebar from '@/components/chat/ChatSidebar.vue';
+import ChatInput from '@/components/chat/ChatInput.vue';
 
 import { useChatStore } from '@/stores/chat';
 import { useModelsStore } from '@/stores/models';
