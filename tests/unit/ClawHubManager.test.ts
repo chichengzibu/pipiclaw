@@ -521,3 +521,169 @@ describe('P2-03: ClawHubManager 技能模板', () => {
     expect(approved.find((s) => s.id === skill.id)).toBeDefined()
   })
 })
+
+describe('P3-01: 用户模板社区化 (publishUserTemplate)', () => {
+  beforeEach(() => {
+    ;(ClawHubManager as unknown as { instance: ClawHubManager | null }).instance = null
+    if (fs.existsSync(TEST_USER_DATA)) {
+      fs.rmSync(TEST_USER_DATA, { recursive: true, force: true })
+    }
+  })
+
+  it('publishUserTemplate 创建用户模板 + 标记 isBuiltin=false', () => {
+    const mgr = ClawHubManager.getInstance()
+    const tpl = mgr.publishUserTemplate({
+      name: '我的日报模板',
+      description: '这是一个用户自定义的每日工作总结模板, 用于团队协作',
+      useCase: '团队日报',
+      category: 'productivity',
+      tags: ['日报', '团队'],
+      manifestContent: '# name\nmypub\n## 描述\nd\n## 触发关键词\nk\n## 操作步骤\ns',
+      authorId: 'user-1',
+      authorName: 'Alice',
+    })
+    expect(tpl.id).toMatch(/^utpl-/)
+    expect(tpl.isBuiltin).toBe(false)
+    expect(tpl.authorId).toBe('user-1')
+    // 不应出现在 listTemplates (所有)
+    expect(mgr.listTemplates().find((t) => t.id === tpl.id)).toBeDefined()
+  })
+
+  it('publishUserTemplate 名称过短 → 抛错', () => {
+    const mgr = ClawHubManager.getInstance()
+    expect(() =>
+      mgr.publishUserTemplate({
+        name: 'ab',
+        description: '描述够长够长够长够长',
+        useCase: '',
+        category: 'c',
+        tags: [],
+        manifestContent: 'x',
+        authorId: 'u', authorName: 'n',
+      }),
+    ).toThrow(/长度必须在 3-60/)
+  })
+
+  it('publishUserTemplate 描述过短 → 抛错', () => {
+    const mgr = ClawHubManager.getInstance()
+    expect(() =>
+      mgr.publishUserTemplate({
+        name: '正常名字',
+        description: '太短',
+        useCase: '',
+        category: 'c',
+        tags: [],
+        manifestContent: 'x',
+        authorId: 'u', authorName: 'n',
+      }),
+    ).toThrow(/描述至少 20 字/)
+  })
+
+  it('publishUserTemplate 含敏感词 → 抛错 (anti-abuse)', () => {
+    const mgr = ClawHubManager.getInstance()
+    expect(() =>
+      mgr.publishUserTemplate({
+        name: 'hack 工具',
+        description: '这是个用来 hack 系统的工具, 请勿使用',
+        useCase: '',
+        category: 'c',
+        tags: [],
+        manifestContent: 'x',
+        authorId: 'u', authorName: 'n',
+      }),
+    ).toThrow(/敏感词/)
+  })
+
+  it('publishUserTemplate rate limit: 同用户 1 天最多 5 个', () => {
+    const mgr = ClawHubManager.getInstance()
+    for (let i = 0; i < 5; i++) {
+      mgr.publishUserTemplate({
+        name: `模板 ${i}`,
+        description: '描述够长够长够长够长够长够长够长够长够长',
+        useCase: '',
+        category: 'c',
+        tags: [],
+        manifestContent: 'x',
+        authorId: 'same-user',
+        authorName: 'Alice',
+      })
+    }
+    expect(() =>
+      mgr.publishUserTemplate({
+        name: '第 6 个',
+        description: '描述够长够长够长够长够长够长够长够长够长',
+        useCase: '',
+        category: 'c',
+        tags: [],
+        manifestContent: 'x',
+        authorId: 'same-user',
+        authorName: 'Alice',
+      }),
+    ).toThrow(/每天最多发布 5 个/)
+  })
+
+  it('publishUserTemplate 不同用户独立计数', () => {
+    const mgr = ClawHubManager.getInstance()
+    for (let i = 0; i < 5; i++) {
+      mgr.publishUserTemplate({
+        name: `A 模板 ${i}`,
+        description: '描述够长够长够长够长够长够长够长够长够长',
+        useCase: '',
+        category: 'c',
+        tags: [],
+        manifestContent: 'x',
+        authorId: 'user-A',
+        authorName: 'A',
+      })
+    }
+    // user-B 不应受 user-A 的 rate limit 影响
+    expect(() =>
+      mgr.publishUserTemplate({
+        name: 'B 模板',
+        description: '描述够长够长够长够长够长够长够长够长够长',
+        useCase: '',
+        category: 'c',
+        tags: [],
+        manifestContent: 'x',
+        authorId: 'user-B',
+        authorName: 'B',
+      }),
+    ).not.toThrow()
+  })
+
+  it('listUserTemplates 排除 builtin 模板', () => {
+    const mgr = ClawHubManager.getInstance()
+    mgr.publishUserTemplate({
+      name: '用户模板 A',
+      description: '描述够长够长够长够长够长够长够长够长够长',
+      useCase: '',
+      category: 'c',
+      tags: [],
+      manifestContent: 'x',
+      authorId: 'u',
+      authorName: 'A',
+    })
+    const userTemplates = mgr.listUserTemplates()
+    expect(userTemplates.length).toBe(1)
+    expect(userTemplates[0].isBuiltin).toBe(false)
+    expect(userTemplates[0].authorId).toBe('u')
+  })
+
+  it('listUserTemplates 按 authorId 过滤', () => {
+    const mgr = ClawHubManager.getInstance()
+    mgr.publishUserTemplate({
+      name: 'A 的模板',
+      description: '描述够长够长够长够长够长够长够长够长够长',
+      useCase: '', category: 'c', tags: [], manifestContent: 'x',
+      authorId: 'A', authorName: 'A',
+    })
+    mgr.publishUserTemplate({
+      name: 'B 的模板',
+      description: '描述够长够长够长够长够长够长够长够长够长',
+      useCase: '', category: 'c', tags: [], manifestContent: 'x',
+      authorId: 'B', authorName: 'B',
+    })
+    expect(mgr.listUserTemplates({ authorId: 'A' }).length).toBe(1)
+    expect(mgr.listUserTemplates({ authorId: 'B' }).length).toBe(1)
+  })
+})

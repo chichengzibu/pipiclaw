@@ -74,6 +74,14 @@ export interface ClawHubTemplate {
   manifestContent: string
   /** 创建时间 */
   createdAt: number
+  /** P3-01: 是否内置模板 (区分 team 内置 vs 用户发布) */
+  isBuiltin?: boolean
+  /** P3-01: 用户发布者的 id (内置模板为 'team') */
+  authorId?: string
+  /** P3-01: 发布时间戳 (复用 publishedAt 命名, 也支持 createdAt 兼容) */
+  publishedAt?: number
+  /** P3-01: 实例化次数 */
+  downloads?: number
 }
 
 export interface ClawHubSkill {
@@ -389,6 +397,99 @@ export class ClawHubManager {
     return [...set]
   }
 
+  // ==================== P3-01 用户模板社区化 ====================
+
+  /**
+   * P3-01: 用户发布自定义模板 (走社区审核流)
+   * 限制:
+   *   - 每用户每天最多 5 个模板 (rate limit)
+   *   - 名称/描述禁止敏感词 (anti-abuse)
+   *   - 描述至少 20 字
+   */
+  publishUserTemplate(args: {
+    name: string
+    description: string
+    useCase: string
+    category: string
+    tags: string[]
+    manifestContent: string
+    authorId: string
+    authorName: string
+  }): ClawHubTemplate {
+    // 1. 验证名称
+    if (!args.name || args.name.length < 3 || args.name.length > 60) {
+      throw new Error('模板名长度必须在 3-60')
+    }
+    // 2. 验证描述
+    if (!args.description || args.description.length < 20) {
+      throw new Error('描述至少 20 字')
+    }
+    // 3. 敏感词检查
+    if (this.containsForbidden(args.name) || this.containsForbidden(args.description)) {
+      throw new Error('名称/描述含敏感词,请修改后重试')
+    }
+    // 4. Rate limit: 每用户每天 ≤ 5 模板
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayStart = today.getTime()
+    const userTodayTemplates = [...this.templates.values()].filter(
+      (t) => t.authorId === args.authorId && t.publishedAt >= todayStart,
+    )
+    if (userTodayTemplates.length >= 5) {
+      throw new Error('每天最多发布 5 个模板,请明天再试')
+    }
+    const now = Date.now()
+    const tpl: ClawHubTemplate = {
+      id: `utpl-${randomUUID().slice(0, 8)}`,
+      name: args.name,
+      description: args.description,
+      useCase: args.useCase,
+      category: args.category,
+      tags: args.tags,
+      authorId: args.authorId,
+      authorName: args.authorName,
+      manifestContent: args.manifestContent,
+      publishedAt: now,
+      downloads: 0,
+      isBuiltin: false,
+    }
+    this.templates.set(tpl.id, tpl)
+    this.persist()
+    void this.bus.publish('clawhub:user-template-published', {
+      templateId: tpl.id,
+      authorId: args.authorId,
+    })
+    return tpl
+  }
+
+  /** P3-01: 列出用户模板 (排除 builtin, builtin 通过 isBuiltin=true 或 authorId='team' 标识) */
+  listUserTemplates(opts: { authorId?: string; category?: string; query?: string } = {}): ClawHubTemplate[] {
+    let results = [...this.templates.values()].filter((t) => !t.isBuiltin && t.authorId !== 'team')
+    if (opts.authorId) results = results.filter((t) => t.authorId === opts.authorId)
+    if (opts.category) results = results.filter((t) => t.category === opts.category)
+    if (opts.query) {
+      const q = opts.query.toLowerCase()
+      results = results.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.description.toLowerCase().includes(q) ||
+          t.useCase.toLowerCase().includes(q) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(q)),
+      )
+    }
+    return results.sort((a, b) => b.publishedAt - a.publishedAt)
+  }
+
+  /** P3-01: 简易敏感词检查 (扩展性预留) */
+  private forbiddenWords = [
+    'spam', 'hack', 'crack', 'phishing', 'malware',
+    '色情', '赌博', '毒品', '违法',
+  ]
+  private containsForbidden(text: string): boolean {
+    const lower = text.toLowerCase()
+    return this.forbiddenWords.some((w) => lower.includes(w))
+  }
+
   /** 从模板实例化一个新 skill(状态 pending,等待用户发布到 ClawHub) */
   instantiateTemplate(args: {
     templateId: string
@@ -629,7 +730,10 @@ export class ClawHubManager {
         createdAt: Date.now(),
       },
     ]
-    for (const t of BUILTIN) this.templates.set(t.id, t)
+    for (const t of BUILTIN) {
+      // P3-01: 内置模板标记, listUserTemplates 才能正确过滤
+      this.templates.set(t.id, { ...t, isBuiltin: true, authorId: 'team' })
+    }
     this.log.info(`ClawHubManager: 加载 ${BUILTIN.length} 内置模板`)
   }
 
