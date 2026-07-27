@@ -130,12 +130,50 @@ git push origin v4.3.1
 
 - Element Plus filterable select UI 实时切换在 Playwright 下 flaky(由 unit tests 覆盖)
 - v4.1 → v4.2 theme schema 遗留(顶层 theme vs app.theme,功能不受影响)
-- 真 Ctrl+K 全局键监听 ✅(v4.3.1 已修)
+- 真 Ctrl+K 全局键监听 ✅(v4.3.1 已修,`706e7e7`)
 
 ## 阻塞任务
 
 | ID | 任务 | 状态 |
 |----|------|------|
-| T0.1 | 配 GitHub PAT + push 229 commit | ⏳ 缺 PAT |
-| T0.2 | 创建 v4.3.1 GitHub Release | ⏳ 等 push |
-| T0.3 | 验证 auto-update 端到端 | ⏳ 等 release |
+| T0.1 | 配 GitHub PAT + push 229 commit | ✅ 配好 + 已 push 230 commit |
+| T0.2 | 创建 v4.3.1 GitHub Release | ✅ published,3 assets 上传 |
+| T0.3 | 验证 auto-update 端到端 | ⏳ 等用户在已装 v4.3.0 的机器上启动 |
+
+## 常见坑:Windows 上 curl.exe 创建/修改 GitHub Release 的 UTF-8 编码问题
+
+**症状**:Release body 里所有中文显示成 `?`(`Ship-Ready ??????` / `? ship ??` / `?? Ctrl+K`)。
+
+**原因**:Windows PowerShell 默认代码页是 CP936/GBK(中文系统),用
+`curl -d $body` 传 JSON 时,inline body 会被 PowerShell 编码成当前代码页字节
+再发出去,GitHub API 收到非 UTF-8 字节 → 解码失败 → 全部替换成 `?`。
+
+**正解**:把 body 写到 UTF-8 文件(无 BOM),用 `--data-binary @file` 上传:
+
+```powershell
+# 1. 把 release body 写到 UTF-8 文件(用 Python 而非 Out-File 避免 BOM)
+python -c "
+import json
+with open('release-body.md', 'r', encoding='utf-8') as f:
+    body = f.read()
+payload = {'body': body}
+with open('release-patch.json', 'w', encoding='utf-8') as f:
+    json.dump(payload, f, ensure_ascii=False, indent=2)
+"
+
+# 2. PATCH release(curl.exe 原生支持 UTF-8 文件)
+$TOKEN = "github_pat_..."
+curl.exe -s -X PATCH `
+  -H "Authorization: Bearer $TOKEN" `
+  -H "Accept: application/vnd.github+json" `
+  -H "X-GitHub-Api-Version: 2022-11-28" `
+  -H "Content-Type: application/json" `
+  --data-binary "@release-patch.json" `
+  "https://api.github.com/repos/{owner}/{repo}/releases/{id}"
+```
+
+**避坑要点**:
+- 永远不要 `-d "中文内容"`(命令体内联,会被 CP936 污染)
+- `Out-File -Encoding utf8` 会写 BOM,某些 API 不友好,优先用 Python `json.dump`
+- PATCH 前用 `[System.IO.File]::ReadAllBytes` 看前 4 字节确认无 BOM (`EF BB BF`)
+- 创建 release 也用同样模式(把整个 JSON payload 写到文件再 POST)
