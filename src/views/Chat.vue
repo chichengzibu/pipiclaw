@@ -1,165 +1,17 @@
 <template>
   <div class="chat-page">
     <div class="chat-layout">
-      <!-- 左侧会话列表 -->
-      <div class="sidebar" :style="{ width: chatSidebarWidth + 'px' }">
-        <div class="sidebar-header">
-          <span class="sidebar-title">会话</span>
-          <el-button
-            type="primary"
-            size="small"
-            @click="handleNewChat"
-            title="新建对话"
-            aria-label="新建对话"
-            class="new-chat-btn"
-          >
-            <el-icon><Plus /></el-icon>
-            <span class="new-chat-text">新建</span>
-          </el-button>
-        </div>
-        
-        <!-- 会话搜索框 -->
-        <div class="search-box">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索会话..."
-            size="small"
-            clearable
-            @input="handleSearch"
-          >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
-            </template>
-          </el-input>
-        </div>
-
-        <!-- 批量操作栏 -->
-        <div v-if="chatStore.selectedConversations.length > 0" class="batch-actions">
-          <span class="selected-count">已选中 {{ chatStore.selectedConversations.length }} 项</span>
-          <el-button size="small" type="danger" @click="handleBatchDelete">
-            批量删除
-          </el-button>
-          <el-button size="small" @click="handleBatchArchive">
-            批量归档
-          </el-button>
-          <el-button size="small" text @click="chatStore.clearConversationSelection">
-            取消
-          </el-button>
-        </div>
-
-        <el-scrollbar class="conversations-list">
-          <!-- 搜索结果 -->
-          <template v-if="searchKeyword && chatStore.searchResults.length > 0">
-            <div class="conversation-group">
-              <div class="group-label">搜索结果</div>
-              <div
-                v-for="conv in chatStore.searchResults"
-                :key="conv.id"
-                class="conversation-item"
-                :class="{ active: conv.id === chatStore.currentConversationId }"
-                @click="handleSelectConversation(conv.id)"
-              >
-                <el-checkbox
-                  :model-value="chatStore.selectedConversations.includes(conv.id)"
-                  @click.stop
-                  @change="chatStore.toggleConversationSelection(conv.id)"
-                />
-                <span class="conversation-icon">🔍</span>
-                <span class="conversation-title">{{ conv.title }}</span>
-              </div>
-            </div>
-          </template>
-
-          <!-- 置顶会话 -->
-          <div v-if="chatStore.pinnedConversations.length > 0" class="conversation-group">
-            <div class="group-label">置顶</div>
-            <div
-              v-for="conv in chatStore.pinnedConversations"
-              :key="conv.id"
-              class="conversation-item"
-              :class="{ active: conv.id === chatStore.currentConversationId }"
-              @click="handleSelectConversation(conv.id)"
-            >
-              <el-checkbox
-                :model-value="chatStore.selectedConversations.includes(conv.id)"
-                @click.stop
-                @change="chatStore.toggleConversationSelection(conv.id)"
-              />
-              <span class="conversation-icon">📌</span>
-              <span class="conversation-title">{{ conv.title }}</span>
-              <el-dropdown trigger="click" @command="(cmd: string) => handleConversationAction(cmd, conv)">
-                <el-icon class="more-icon"><MoreFilled /></el-icon>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="rename">重命名</el-dropdown-item>
-                    <el-dropdown-item command="unpin">取消置顶</el-dropdown-item>
-                    <el-dropdown-item command="archive">归档</el-dropdown-item>
-                    <el-dropdown-item command="export">导出</el-dropdown-item>
-                    <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </div>
-          </div>
-
-          <!-- 最近会话 -->
-          <div class="conversation-group">
-            <div class="group-label">最近</div>
-            <div
-              v-for="conv in displayedConversations"
-              :key="conv.id"
-              class="conversation-item"
-              :class="{ active: conv.id === chatStore.currentConversationId }"
-              @click="handleSelectConversation(conv.id)"
-            >
-              <el-checkbox
-                :model-value="chatStore.selectedConversations.includes(conv.id)"
-                @click.stop
-                @change="chatStore.toggleConversationSelection(conv.id)"
-              />
-              <span class="conversation-icon">💬</span>
-              <span class="conversation-title">{{ conv.title }}</span>
-              <el-dropdown trigger="click" @command="(cmd: string) => handleConversationAction(cmd, conv)">
-                <el-icon class="more-icon"><MoreFilled /></el-icon>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="pin">置顶</el-dropdown-item>
-                    <el-dropdown-item command="rename">重命名</el-dropdown-item>
-                    <el-dropdown-item command="archive">归档</el-dropdown-item>
-                    <el-dropdown-item command="export">导出</el-dropdown-item>
-                    <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </div>
-            <div v-if="displayedConversations.length === 0" class="empty-hint">
-              暂无会话
-            </div>
-          </div>
-
-          <!-- 归档会话 -->
-          <div v-if="chatStore.archivedConversations.length > 0" class="conversation-group">
-            <div class="group-label">已归档</div>
-            <div
-              v-for="conv in chatStore.archivedConversations"
-              :key="conv.id"
-              class="conversation-item archived"
-              @click="handleSelectConversation(conv.id)"
-            >
-              <span class="conversation-icon">📦</span>
-              <span class="conversation-title">{{ conv.title }}</span>
-              <el-button size="small" text type="primary" @click.stop="handleUnarchive(conv.id)">
-                恢复
-              </el-button>
-            </div>
-          </div>
-        </el-scrollbar>
-        
-        <div 
-          class="chat-sidebar-resize-handle"
-          @mousedown="startChatSidebarResize"
-        ></div>
-      </div>
+      <!-- 左侧会话列表 — 已抽出到 src/components/chat/ChatSidebar.vue -->
+      <ChatSidebar
+        :chat-sidebar-width="chatSidebarWidth"
+        @new-chat="handleNewChat"
+        @select="handleSelectConversation"
+        @action="handleConversationAction"
+        @unarchive="handleUnarchive"
+        @batch-delete="handleBatchDelete"
+        @batch-archive="handleBatchArchive"
+        @start-resize="startChatSidebarResize"
+      />
 
       <!-- 右侧聊天区域 -->
       <div class="chat-main">
@@ -665,7 +517,7 @@
 import { ref, computed, reactive, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, MoreFilled, Promotion, VideoPause, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading, Setting, WarningFilled } from '@element-plus/icons-vue';
+import { Plus, Promotion, VideoPause, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading, Setting, WarningFilled } from '@element-plus/icons-vue';
 // P1-6: marked + highlight.js 改动态导入,避免 vendor-text 988KB 进首屏
 // (用户进入 Chat 页才会触发首条消息渲染,延迟加载 ≈0 感知)
 
@@ -674,6 +526,7 @@ import TaskResultCard from '@/components/chat/TaskResultCard.vue';
 import HermesMemoryDrawer from '@/components/chat/HermesMemoryDrawer.vue';
 import QuickPrompts from '@/components/chat/QuickPrompts.vue';
 import ThinkingBlock from '@/components/chat/ThinkingBlock.vue';
+import ChatSidebar from '@/components/chat/ChatSidebar.vue';
 
 import { useChatStore } from '@/stores/chat';
 import { useModelsStore } from '@/stores/models';
@@ -972,24 +825,7 @@ watch([currentProviderId, currentModels], () => {
   }
 });
 
-const recentConversations = computed(() =>
-  chatStore.conversations
-    .filter(c => c.status === 'active' && !c.pinned)
-    .slice(0, 20)
-);
-
-const displayedConversations = computed(() => {
-  if (searchKeyword.value && chatStore.searchResults.length > 0) {
-    return [];
-  }
-  return recentConversations.value;
-});
-
-const searchKeyword = ref('');
-
-function handleSearch(): void {
-  chatStore.setSearchKeyword(searchKeyword.value);
-}
+// (P1-3b: displayedConversations / searchKeyword / handleSearch / recentConversations 已抽到 ChatSidebar.vue)
 
 /**
  * 当前选择的权限集ID
