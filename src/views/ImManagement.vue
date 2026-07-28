@@ -64,18 +64,18 @@
         </div>
         <div class="status-list">
           <h3>通道状态</h3>
-          <el-table :data="channels" stripe>
+          <el-table :data="channels" stripe empty-text="暂无数据">
             <el-table-column label="通道" prop="displayName" />
             <el-table-column label="状态" width="100">
-              <template #default="{ row }">
-                <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
-                  {{ row.enabled ? '已启用' : '未启用' }}
+              <template #default="scope">
+                <el-tag :type="scope.row.enabled ? 'success' : 'info'" size="small">
+                  {{ scope.row.enabled ? '已启用' : '未启用' }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="健康" width="100">
-              <template #default="{ row }">
-                {{ row.testError ? '❌' : row.enabled ? '✅' : '—' }}
+              <template #default="scope">
+                {{ scope.row.testError ? '❌' : scope.row.enabled ? '✅' : '—' }}
               </template>
             </el-table-column>
             <el-table-column label="最后测试" prop="lastTested" />
@@ -106,9 +106,9 @@
           <el-table-column label="发送方" prop="sender" width="120" />
           <el-table-column label="内容" prop="content" show-overflow-tooltip />
           <el-table-column label="状态" width="80">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 'ok' ? 'success' : 'danger'" size="small">
-                {{ row.status }}
+            <template #default="scope">
+              <el-tag :type="scope.row.status === 'ok' ? 'success' : 'danger'" size="small">
+                {{ scope.row.status }}
               </el-tag>
             </template>
           </el-table-column>
@@ -165,19 +165,19 @@
           <el-button type="primary" @click="openRuleDialog()">+ 新建规则</el-button>
           <span class="rules-meta">共 {{ routingRules.length }} 条规则</span>
         </div>
-        <el-table :data="routingRules" stripe>
+        <el-table :data="routingRules" stripe empty-text="暂无数据">
           <el-table-column label="优先级" prop="priority" width="80" sortable />
           <el-table-column label="触发词" prop="trigger" />
           <el-table-column label="目标通道" prop="targetChannel" width="120" />
           <el-table-column label="启用" width="80">
-            <template #default="{ row }">
-              <el-switch v-model="row.enabled" />
+            <template #default="scope">
+              <el-switch v-model="scope.row.enabled" />
             </template>
           </el-table-column>
           <el-table-column label="操作" width="180">
-            <template #default="{ row }">
-              <el-button size="small" @click="openRuleDialog(row)">编辑</el-button>
-              <el-button size="small" type="danger" @click="deleteRule(row)">删除</el-button>
+            <template #default="scope">
+              <el-button size="small" @click="openRuleDialog(scope.row)">编辑</el-button>
+              <el-button size="small" type="danger" @click="deleteRule(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -188,19 +188,19 @@
         <div class="permissions-header">
           <el-button type="primary" @click="openPermissionDialog()">+ 添加用户</el-button>
         </div>
-        <el-table :data="permissions" stripe>
+        <el-table :data="permissions" stripe empty-text="暂无数据">
           <el-table-column label="用户/群组" prop="subject" />
           <el-table-column label="级别" width="100">
-            <template #default="{ row }">
-              <el-tag :type="row.level === 'admin' ? 'danger' : row.level === 'member' ? 'warning' : 'success'" size="small">
-                {{ row.level }}
+            <template #default="scope">
+              <el-tag :type="scope.row.level === 'admin' ? 'danger' : scope.row.level === 'member' ? 'warning' : 'success'" size="small">
+                {{ scope.row.level }}
               </el-tag>
             </template>
           </el-table-column>
           <el-table-column label="作用范围" prop="scope" />
           <el-table-column label="操作" width="120">
-            <template #default="{ row }">
-              <el-button size="small" type="danger" @click="deletePermission(row)">删除</el-button>
+            <template #default="scope">
+              <el-button size="small" type="danger" @click="deletePermission(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -429,7 +429,7 @@ function applyTemplate(tpl: string): void {
 }
 
 function messageRowClass({ row }: { row: any }): string {
-  return selectedMessage.value && selectedMessage.value.id === row.id ? 'message-row-selected' : ''
+  return selectedMessage.value && selectedMessage.value.id === scope.row.id ? 'message-row-selected' : ''
 }
 
 async function sendQuickReply(): Promise<void> {

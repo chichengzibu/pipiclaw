@@ -17,7 +17,7 @@ export default defineConfig({
           importStyle: 'css',
         }),
       ],
-      dirs: ['src/components'],
+      dirs: ['src/components', 'src/views'],
       extensions: ['vue'],
       exclude: [/\.[jt]sx?$/, /\.vue$/, /\.vue\?vue/, /\.scss$/],
       dts: false,
