@@ -114,7 +114,7 @@
                         <span class="model-name">{{ model.name }}</span>
                         <span class="model-capabilities">
                           <el-tag
-                            v-for="cap in model.capabilities.slice(0, 2)"
+                            v-for="cap in (model.capabilities || []).slice(0, 2)"
                             :key="cap"
                             size="small"
                             effect="plain"

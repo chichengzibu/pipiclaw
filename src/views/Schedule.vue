@@ -23,27 +23,33 @@
         <el-table-column :label="t('common.name')" prop="name" min-width="160" />
         <el-table-column :label="t('schedule.instruction')" prop="instruction" min-width="240" show-overflow-tooltip />
         <el-table-column :label="t('schedule.scheduleType')" prop="scheduleType" width="120">
-          <template #default="scope"><template v-if="scope?.row">
+          <template #default="scope">
+<template v-if="scope?.row">
             <el-tag size="small">{{ getScheduleTypeLabel(scope.row?.scheduleType) }}</el-tag>
-          </template></template>
+          </template>
+</template>
         </el-table-column>
         <el-table-column :label="t('common.status')" prop="enabled" width="120">
-          <template #default="scope"><template v-if="scope?.row">
+          <template #default="scope">
+<template v-if="scope?.row">
             <el-switch
               :model-value="scope.row?.enabled"
               @change="(val: boolean) => handleToggle(scope.row?.id, val)"
             />
-          </template></template>
+          </template>
+</template>
         </el-table-column>
         <el-table-column :label="t('common.createTime')" prop="createdAt" width="180" />
         <el-table-column :label="t('common.actions')" width="200" fixed="right">
-          <template #default="scope"><template v-if="scope?.row">
+          <template #default="scope">
+<template v-if="scope?.row">
             <el-button size="small" @click="openEditDialog(row)">{{ t('common.edit') }}</el-button>
             <el-button size="small" @click="viewHistory(row)">{{ t('schedule.history') }}</el-button>
             <el-button size="small" type="danger" text @click="handleDelete(row)">
               {{ t('common.delete') }}
             </el-button>
-          </template></template>
+          </template>
+</template>
         </el-table-column>
       </el-table>
     </div>
@@ -97,9 +103,11 @@
       <el-table :data="history" stripe>
         <el-table-column :label="t('schedule.execTime')" prop="executedAt" width="180" />
         <el-table-column :label="t('common.status')" prop="status" width="100">
-          <template #default="scope"><template v-if="scope?.row">
+          <template #default="scope">
+<template v-if="scope?.row">
             <el-tag :type="getStatusTagType(scope.row?.status)">{{ getStatusLabel(scope.row?.status) }}</el-tag>
-          </template></template>
+          </template>
+</template>
         </el-table-column>
         <el-table-column :label="t('schedule.duration')" prop="duration" width="100" />
         <el-table-column :label="t('common.description')" prop="errorMessage" show-overflow-tooltip />

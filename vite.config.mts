@@ -7,6 +7,16 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import { resolve } from 'path';
 
 export default defineConfig({
+  // E2E-Bugfix: 让浏览器 fetch /ollama/* 代理到 localhost:11434, 绕过 CORS
+  server: {
+    proxy: {
+      '/ollama': {
+        target: 'http://localhost:11434',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ollama/, ''),
+      },
+    },
+  },
   plugins: [
     vue(),
     // P1-6: Element Plus 组件按需自动导入 — 替代全量 app.use(ElementPlus)
