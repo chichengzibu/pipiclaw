@@ -428,7 +428,9 @@ function applyTemplate(tpl: string): void {
   replyText.value = tpl
 }
 
-function messageRowClass({ row }: { row: any }): string {
+function messageRowClass(scope: { row?: any }): string {
+  // B2-Bugfix: el-table 空状态可能传 undefined scope, 防御性处理
+  if (!scope || !scope.row) return ''
   return selectedMessage.value && selectedMessage.value.id === scope.row.id ? 'message-row-selected' : ''
 }
 

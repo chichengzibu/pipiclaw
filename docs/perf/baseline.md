@@ -1,6 +1,6 @@
 # PiPiClaw 性能基准报告
 
-生成时间: 2026-07-27T07:59:18.214Z
+生成时间: 2026-07-28T01:05:27.851Z
 commit: local
 
 ## 实测
@@ -11,10 +11,10 @@ commit: local
 | B2.ipcRenderer.invoke count (preload.js) | 172 | 个 | 100 ~ 5000 | ✅ pass |
 | B3.main.js size | 466 | KB | 1 ~ 8192 | ✅ pass |
 | B4.preload.js size | 18 | KB | 1 ~ 2048 | ✅ pass |
-| C1.renderer js total | 1100 | KB | 1 ~ 16384 | ✅ pass |
+| C1.renderer js total | 1652 | KB | 1 ~ 16384 | ✅ pass |
 | C2.renderer css total | 122 | KB | 1 ~ 4096 | ✅ pass |
-| C3.largest chunk size | 692 | KB | 1 ~ 4096 | ✅ pass |
-| C4.js chunk count | 31 | 个 | 1 ~ 200 | ✅ pass |
+| C3.largest chunk size | 1087 | KB | 1 ~ 4096 | ✅ pass |
+| C4.js chunk count | 40 | 个 | 1 ~ 200 | ✅ pass |
 
 ## 含义
 

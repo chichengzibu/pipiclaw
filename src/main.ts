@@ -7,6 +7,7 @@
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import ElementPlus from 'element-plus';
 import * as ElementPlusIcons from '@element-plus/icons-vue';
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
 import enUs from 'element-plus/dist/locale/en.mjs';
@@ -19,7 +20,11 @@ import './styles/global.scss';
 
 const app = createApp(App);
 
-// 全局注册 Element Plus 图标（修复 SideNav 导航项不显示的问题）
+// B2-Bugfix: 全量注册 Element Plus 修复 dev 模式下 unplugin-vue-components 不解析
+// src/views/*.vue 里 <el-*> 组件的问题 (renderer 抛 "Cannot read row of undefined")
+app.use(ElementPlus, { locale: zhCn });
+
+// 全局注册 Element Plus 图标
 // SideNav.vue 使用 <component :is="item.icon" /> 配合字符串名('HomeFilled' 等),
 // 必须通过 app.component() 全局注册才能解析。
 for (const [name, comp] of Object.entries(ElementPlusIcons)) {

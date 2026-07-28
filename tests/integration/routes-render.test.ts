@@ -34,12 +34,16 @@ const CORE_ROUTES: RouteCase[] = [
   { path: '/chat', expectClass: 'chat-page' },
   { path: '/skills', expectClass: 'skills-page' },
   { path: '/models', expectClass: 'models-page' },
+  { path: '/im-management', expectClass: 'im-management' },
+  { path: '/tasks', expectClass: 'tasks-page' },
+  { path: '/schedule', expectClass: 'schedule-page' },
+  { path: '/permissions', expectClass: 'permissions-page' },
   { path: '/settings', expectClass: 'settings-page' },
   { path: '/help', expectClass: 'help-page' },
 ]
 
 /** TODO: 这些路由有预先存在的 row destructure 错误,留待后续修复 */
-const SKIP_ROUTES = ['/im-management', '/tasks', '/schedule', '/permissions']
+const SKIP_ROUTES: string[] = []
 
 describe('B1-Bugfix: 核心路由正确渲染 (no fallback to Dashboard)', () => {
   let browser: Browser | null = null
