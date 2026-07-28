@@ -33,7 +33,18 @@
         :title="isMaximized ? '还原' : '最大化'"
         :aria-label="isMaximized ? '还原' : '最大化'"
       >
-        <el-icon v-if="isMaximized"><CopyDocument /></el-icon>
+        <!-- 还原:两个嵌套方块 (Windows 标准 restore-down 图标) -->
+        <svg
+          v-if="isMaximized"
+          class="control-svg"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.2" fill="none" />
+          <path d="M2.5 10.5V3.5C2.5 2.95 2.95 2.5 3.5 2.5H10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none" />
+        </svg>
         <el-icon v-else><FullScreen /></el-icon>
       </button>
 
@@ -51,7 +62,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Minus, FullScreen, Close, CopyDocument, Setting, Sunny, Moon } from '@element-plus/icons-vue';
+import { Minus, FullScreen, Close, Setting, Sunny, Moon } from '@element-plus/icons-vue';
 import { useAppStore } from '@/stores/app';
 
 const appStore = useAppStore();
@@ -161,13 +172,15 @@ onUnmounted(() => {
   align-items: center;
   height: 100%;
   -webkit-app-region: no-drag;
+  border-left: 1px solid var(--border-base);
+  margin-left: 8px;
 }
 
 .control-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
+  width: 46px;
   height: 100%;
   border: none;
   background: transparent;
@@ -177,7 +190,13 @@ onUnmounted(() => {
     color var(--duration-fast) var(--ease-standard);
 
   .el-icon {
-    font-size: 14px;
+    font-size: 16px;
+  }
+
+  // 自定义 inline SVG(还原图标)尺寸
+  .control-svg {
+    width: 16px;
+    height: 16px;
   }
 }
 
@@ -190,12 +209,23 @@ onUnmounted(() => {
   background: var(--bg-active);
 }
 
-.control-btn.close:hover {
-  background: var(--danger);
-  color: var(--fg-on-accent);
+// 关闭按钮:静止时就有 danger 软底,提示"危险操作"
+.control-btn.close {
+  color: var(--fg-secondary);
+
+  &:hover {
+    background: var(--danger);
+    color: var(--fg-on-accent);
+  }
 }
 
-.control-btn.theme-toggle .el-icon {
-  font-size: 15px;
+.control-btn.theme-toggle {
+  width: 40px;
+  border-right: 1px solid var(--border-base);
+  margin-right: 4px;
+
+  .el-icon {
+    font-size: 16px;
+  }
 }
 </style>

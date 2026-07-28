@@ -391,7 +391,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 18px;
+  font-size: 20px;
   transition: transform var(--duration-fast) var(--ease-spring),
     color var(--duration-fast) var(--ease-standard);
 
