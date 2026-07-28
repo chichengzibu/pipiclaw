@@ -7,14 +7,17 @@
  *
  * 这个测试用 playwright + dev server 验证核心路由渲染正确。
  *
- * 注意事项:
- *   - 需要 dev server 运行: npm run dev (端口 5173)
- *   - 需要 playwright: npx playwright install chromium
- *   - 跳过的路由(im-management, tasks, schedule, permissions):
- *     这些页面有预先存在的 row destructure 错误,与本次 UI 重塑无关
- *     留待后续单独修复
+ * 跑法: 启 dev server 后 `npm test -- tests/integration/routes-render.test.ts`
+ *   (vitest 跑, 因为这文件用 vitest API)
  *
- * 跑法: npm run dev (后台) && npm test -- tests/integration/routes-render.test.ts
+ * ⚠️ 不要用 npx playwright test 跑这个文件:
+ *   @playwright/test 的 runner 看到 vitest 的 describe 会抛:
+ *   "Playwright Test did not expect test.describe() to be called here"
+ *   这是 vitest 跟 @playwright/test 的 API 不兼容
+ *
+ * 如果要跑 @playwright/test, 把这个文件改用
+ *   import { test, expect } from '@playwright/test' + test.describe()
+ *   并放到 e2e/ 目录, 配置 playwright.config.ts 的 testDir
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'

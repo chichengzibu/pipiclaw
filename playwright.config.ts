@@ -30,6 +30,10 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
+  // 显式只匹配 .spec.ts, 排除 vitest 的 .test.ts (B1-Bugfix: 防双 runner 冲突)
+  testMatch: /.*\.spec\.ts$/,
+  // 完全排除 vitest 测试目录 (B1-Bugfix: 用户误跑时, 不会扫到 vitest 的 describe/it 报错)
+  testIgnore: /.*(__tests__|\.test)\.ts$/,
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
