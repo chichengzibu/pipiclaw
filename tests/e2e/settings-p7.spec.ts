@@ -46,13 +46,13 @@ test.describe('Settings P7', () => {
     const activeTab = window.locator('.el-tabs__item.is-active').first()
     await expect(activeTab).toBeVisible({ timeout: 10_000 })
 
-    // 主题选择:页面内出现 "Select theme" / "请选择主题" 文本,旁边有 el-select
-    const themeLabel = window.locator(':text("Select theme"), :text("请选择主题")').first()
+    // 主题选择:页面内出现 "选择主题" / "Select theme" 文本(用 i18n key t('settings.selectTheme'))
+    const themeLabel = window.locator(':text("选择主题"), :text("Select theme")').first()
     await expect(themeLabel).toBeVisible({ timeout: 10_000 })
-    // 至少有一个 el-select 元素
-    await expect(window.locator('.el-select').first()).toBeVisible()
+    // 主题切换改用 el-radio-group (light/dark/system),而不是 el-select
+    await expect(window.locator('.el-radio-group').first()).toBeVisible()
 
-    // 快捷键设置区:保存按钮 + 恢复默认按钮(中英文都覆盖)
+    // 快捷键设置区:保存按钮 + 恢复默认按钮(i18n key: saveShortcut / resetShortcut)
     const saveBtn = window.locator('button:has-text("保存设置"), button:has-text("Save Settings")')
     const resetBtn = window.locator('button:has-text("恢复默认"), button:has-text("Reset to Default")')
     await expect(saveBtn.first()).toBeVisible()
