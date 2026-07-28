@@ -1748,11 +1748,15 @@ async function handleSaveSettings(): Promise<void> {
   display: flex;
   gap: var(--space-xs);
   margin-top: var(--space-sm);
-  opacity: 0;
+  opacity: 0.4;
   transition: opacity var(--duration-fast) var(--ease-standard);
 
   .message:hover & {
     opacity: 1;
+  }
+
+  .el-icon {
+    font-size: 15px;
   }
 }
 
