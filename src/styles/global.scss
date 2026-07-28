@@ -39,6 +39,41 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+// ==================== Element Plus Icon 全局兜底 ====================
+// 背景: unplugin-vue-components + ElementPlusResolver 只对 <el-icon> 组件
+// 自动导入 el-icon.css,但 @element-plus/icons-vue v2.x 渲染出 <i class="el-icon">
+// 时不会触发 resolver,导致 .el-icon { width:1em; height:1em } 缺失。
+// 现象: 标题栏 / 侧边栏 / 按钮里的所有图标 width:0 height:0,完全不可见。
+// 兜底: 在全局给 .el-icon 和内层 svg 显式尺寸,这样 1em = 组件自身 font-size。
+// 用 !important 压过 .el-icon[data-v-xxx] 这种 scoped 高特异性规则。
+// 参考: element-plus/theme-chalk/el-icon.css 的核心规则。
+
+.el-icon,
+.el-icon[data-v-002c38d7],
+.el-icon[data-v-43f34b0e] {
+  width: 1em !important;
+  height: 1em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  fill: currentColor !important;
+
+  svg {
+    width: 1em !important;
+    height: 1em !important;
+  }
+
+  &.is-loading {
+    animation: rotating 2s linear infinite;
+  }
+}
+
+@keyframes rotating {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(360deg); }
+}
+
 #app {
   min-width: 1280px;
 }
