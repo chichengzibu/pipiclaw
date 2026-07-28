@@ -93,6 +93,7 @@ export default {
     saveCoreMemory: 'Save Core Memory',
     clearAllMemory: 'Clear All Memory',
     feedback: 'Feedback & Help',
+    openFeedback: 'Open Feedback',
     submitFeedback: 'Submit Feedback',
     themeChanged: 'Theme switched',
     shortcutSaved: 'Shortcut saved',

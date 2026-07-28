@@ -107,6 +107,7 @@ export default {
     saveCoreMemory: '保存核心记忆',
     clearAllMemory: '清空所有记忆',
     feedback: '反馈与帮助',
+    openFeedback: '打开反馈',
     submitFeedback: '提交反馈',
     themeChanged: '主题已切换',
     shortcutSaved: '快捷键设置已保存',
