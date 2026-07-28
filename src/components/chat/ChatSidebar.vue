@@ -263,6 +263,8 @@ const displayedConversations = computed(() => {
   padding: 8px 16px;
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-standard);
+  position: relative;
+  border-left: 2px solid transparent;
 
   &:hover {
     background: var(--bg-hover);
@@ -271,6 +273,7 @@ const displayedConversations = computed(() => {
   &.active {
     background: var(--accent-soft);
     color: var(--accent-fg);
+    border-left-color: var(--accent-base);
   }
 
   &.archived {
@@ -279,7 +282,8 @@ const displayedConversations = computed(() => {
 
   .conversation-icon {
     flex-shrink: 0;
-    font-size: 14px;
+    font-size: 16px;
+    line-height: 1;
   }
 
   .conversation-title {
@@ -293,12 +297,12 @@ const displayedConversations = computed(() => {
 
   .more-icon {
     flex-shrink: 0;
-    opacity: 0;
+    opacity: 0.4;
     transition: opacity var(--duration-fast) var(--ease-standard);
   }
 
   &:hover .more-icon {
-    opacity: 0.6;
+    opacity: 1;
   }
 }
 

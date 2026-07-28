@@ -77,6 +77,8 @@
         <el-button
           v-if="isGenerating"
           type="danger"
+          size="default"
+          class="send-btn"
           @click="emit('stop-generation')"
         >
           <el-icon><VideoPause /></el-icon>
@@ -85,6 +87,8 @@
         <el-button
           v-else
           type="primary"
+          size="default"
+          class="send-btn"
           :disabled="!inputMessageLocal.trim() && attachedFiles.length === 0"
           @click="handleSendClick"
         >
@@ -219,7 +223,12 @@ function handleSendClick(): void {
 
 .input-actions {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: flex-end;
+  flex-shrink: 0;
+
+  .send-btn {
+    height: auto;
+    min-height: 60px;
+  }
 }
 </style>
