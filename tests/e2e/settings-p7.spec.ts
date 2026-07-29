@@ -43,7 +43,7 @@ test.describe('Settings P7', () => {
     await window.waitForURL(/#\/settings/)
 
     // 基础设置 / Basic tab 默认激活
-    const activeTab = window.locator('.el-tabs__item.is-active').first()
+    const activeTab = window.locator('.settings-nav__btn.is-active').first()
     await expect(activeTab).toBeVisible({ timeout: 10_000 })
 
     // 主题选择:页面内出现 "选择主题" / "Select theme" 文本(用 i18n key t('settings.selectTheme'))
@@ -62,11 +62,11 @@ test.describe('Settings P7', () => {
   test('can switch to models tab and see provider count', async ({ window }) => {
     await window.click('a.nav-item[href$="#/settings"]')
     await window.waitForURL(/#\/settings/)
-    const modelsTab = window.locator('.el-tabs__item:has-text("模型管理"), .el-tabs__item:has-text("Models")').first()
+    const modelsTab = window.locator('.settings-nav__btn:has-text("模型管理"), .settings-nav__btn:has-text("Models")').first()
     await modelsTab.click()
     // 等 element-plus 切换 active + 渲染
     await window.waitForFunction(() => {
-      const active = document.querySelector('.el-tabs__item.is-active')
+      const active = document.querySelector('.settings-nav__btn.is-active')
       return active && /Models|模型管理/.test(active.textContent ?? '')
     }, { timeout: 5_000 })
 
@@ -82,11 +82,11 @@ test.describe('Settings P7', () => {
   test('mcp tab is reachable even when empty', async ({ window }) => {
     await window.click('a.nav-item[href$="#/settings"]')
     await window.waitForURL(/#\/settings/)
-    const mcpTab = window.locator('.el-tabs__item:has-text("MCP")').first()
+    const mcpTab = window.locator('.settings-nav__btn:has-text("MCP")').first()
     await mcpTab.click()
     // 等 element-plus 切换 active + 渲染
     await window.waitForFunction(() => {
-      const active = document.querySelector('.el-tabs__item.is-active')
+      const active = document.querySelector('.settings-nav__btn.is-active')
       return active && /MCP/.test(active.textContent ?? '')
     }, { timeout: 5_000 })
 

@@ -58,7 +58,7 @@ test.describe('T+510 Auto-updater 事件流', () => {
     await window.waitForTimeout(800)
 
     // 找 About tab
-    const aboutTab = window.locator('.el-tabs__item:has-text("关于"), .el-tabs__item:has-text("About")').first()
+    const aboutTab = window.locator('.settings-nav__btn:has-text("关于"), .settings-nav__btn:has-text("About")').first()
     if (await aboutTab.count() > 0) {
       await aboutTab.click()
       await window.waitForTimeout(500)

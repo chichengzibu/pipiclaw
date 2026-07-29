@@ -5,8 +5,35 @@
     </div>
 
     <div class="settings-content">
-      <el-tabs v-model="activeTab" class="settings-tabs">
-        <el-tab-pane :label="t('settings.basicTab')" name="basic">
+      <nav class="settings-nav" role="tablist" :aria-label="t('settings.title')">
+        <button
+          v-for="tab in navTabs"
+          :key="tab.key"
+          type="button"
+          role="tab"
+          :id="`settings-tab-${tab.key}`"
+          :aria-selected="activeTab === tab.key"
+          :aria-controls="`settings-panel-${tab.key}`"
+          :tabindex="activeTab === tab.key ? 0 : -1"
+          :class="['settings-nav__btn', { 'is-active': activeTab === tab.key }]"
+          @click="activeTab = tab.key"
+          @keydown.left.prevent="focusSiblingTab(-1)"
+          @keydown.right.prevent="focusSiblingTab(1)"
+        >
+          <span class="settings-nav__icon" aria-hidden="true">{{ tab.icon }}</span>
+          <span class="settings-nav__label">{{ tab.label }}</span>
+          <span v-if="tab.count" class="settings-nav__count">{{ tab.count }}</span>
+        </button>
+      </nav>
+
+      <div class="settings-panels">
+        <div
+          v-show="activeTab === 'basic'"
+          id="settings-panel-basic"
+          class="settings-panel"
+          role="tabpanel"
+          aria-labelledby="settings-tab-basic"
+        >
           <div class="tab-content">
             <el-card class="settings-card">
               <el-form label-width="140px">
@@ -48,9 +75,15 @@
               </el-form>
             </el-card>
           </div>
-        </el-tab-pane>
+        </div>
 
-        <el-tab-pane :label="t('settings.modelsTab')" name="models">
+        <div
+          v-show="activeTab === 'models'"
+          id="settings-panel-models"
+          class="settings-panel"
+          role="tabpanel"
+          aria-labelledby="settings-tab-models"
+        >
           <div class="tab-content">
             <div class="section-header">
               <div class="section-info">
@@ -164,9 +197,15 @@
               </el-card>
             </div>
           </div>
-        </el-tab-pane>
+        </div>
 
-        <el-tab-pane :label="t('settings.mcpTab')" name="mcp">
+        <div
+          v-show="activeTab === 'mcp'"
+          id="settings-panel-mcp"
+          class="settings-panel"
+          role="tabpanel"
+          aria-labelledby="settings-tab-mcp"
+        >
           <div class="tab-content">
             <div class="section-header">
               <span class="mcp-count">{{ mcpServers.length }} 个已配置</span>
@@ -191,9 +230,15 @@
               />
             </div>
           </div>
-        </el-tab-pane>
+        </div>
 
-        <el-tab-pane :label="t('settings.memoryTab')" name="memory">
+        <div
+          v-show="activeTab === 'memory'"
+          id="settings-panel-memory"
+          class="settings-panel"
+          role="tabpanel"
+          aria-labelledby="settings-tab-memory"
+        >
           <div class="tab-content">
             <el-card class="settings-card">
               <el-form label-width="120px">
@@ -217,9 +262,15 @@
               </el-form>
             </el-card>
           </div>
-        </el-tab-pane>
+        </div>
 
-        <el-tab-pane :label="t('settings.aboutTab')" name="about">
+        <div
+          v-show="activeTab === 'about'"
+          id="settings-panel-about"
+          class="settings-panel"
+          role="tabpanel"
+          aria-labelledby="settings-tab-about"
+        >
           <div class="tab-content">
             <el-card class="settings-card">
               <template #header><span>{{ t('about.appInfo') }}</span></template>
@@ -260,8 +311,8 @@
               </el-form>
             </el-card>
           </div>
-        </el-tab-pane>
-      </el-tabs>
+        </div>
+      </div>
     </div>
 
     <!-- 模型管理对话框 -->
@@ -416,7 +467,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, nextTick } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import ShortcutRecorder from '@/components/settings/ShortcutRecorder.vue';
@@ -437,6 +488,38 @@ const modelsStore = useModelsStore();
 const activeTab = ref('basic');
 const selectedTheme = ref(appStore.themeMode);
 const showFeedbackModal = ref(false);
+
+const navTabs = computed(() => [
+  { key: 'basic', label: t('settings.basicTab'), icon: '⚙️' },
+  {
+    key: 'models',
+    label: t('settings.modelsTab'),
+    icon: '🤖',
+    count: modelsStore.providers.length > 0
+      ? `${modelsStore.enabledCount}/${modelsStore.totalCount}`
+      : ''
+  },
+  {
+    key: 'mcp',
+    label: t('settings.mcpTab'),
+    icon: '🔌',
+    count: mcpServers.value.length > 0 ? String(mcpServers.value.length) : ''
+  },
+  { key: 'memory', label: t('settings.memoryTab'), icon: '🧠' },
+  { key: 'about', label: t('settings.aboutTab'), icon: 'ℹ️' }
+]);
+
+function focusSiblingTab(direction: -1 | 1): void {
+  const keys = navTabs.value.map(tab => tab.key);
+  const idx = keys.indexOf(activeTab.value);
+  if (idx < 0) return;
+  const nextIdx = (idx + direction + keys.length) % keys.length;
+  activeTab.value = keys[nextIdx];
+  nextTick(() => {
+    const el = document.getElementById(`settings-tab-${keys[nextIdx]}`) as HTMLButtonElement | null;
+    el?.focus();
+  });
+}
 
 const shortcutConfig = ref({ toggle: 'Ctrl+Alt+P' });
 
@@ -1042,50 +1125,80 @@ onMounted(async () => {
   overflow-y: auto;
 }
 
-.settings-tabs {
-  height: 100%;
+.settings-nav {
+  display: flex;
+  gap: 2px;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  border-bottom: 1px solid var(--border-base);
 
-  :deep(.el-tabs__header) {
-    margin: 0 0 var(--space-3);
-    border-bottom: 1px solid var(--border-base);
-  }
-
-  :deep(.el-tabs__nav-wrap)::after { background: transparent; }
-
-  :deep(.el-tabs__item) {
+  &__btn {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    padding: 0 var(--space-3);
     height: 36px;
-    line-height: 36px;
+    line-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     font-size: var(--font-size-callout);
     color: var(--fg-tertiary);
-    padding: 0 var(--space-3);
-    transition: color var(--duration-fast) var(--ease-standard);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-standard),
+                border-color var(--duration-fast) var(--ease-standard),
+                background var(--duration-fast) var(--ease-standard);
+    margin-bottom: -1px;
+    font-family: inherit;
+
+    &:hover { color: var(--fg-primary); }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-base);
+      outline-offset: 2px;
+      border-radius: var(--radius-sm);
+    }
+
+    &.is-active {
+      color: var(--accent-base);
+      font-weight: var(--font-weight-medium);
+      border-bottom-color: var(--accent-base);
+    }
   }
 
-  :deep(.el-tabs__item:hover) { color: var(--fg-primary); }
+  &__icon {
+    font-size: 14px;
+    line-height: 1;
+  }
 
-  :deep(.el-tabs__item.is-active) {
+  &__count {
+    font-size: var(--font-size-caption-1);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-base);
+    color: var(--fg-tertiary);
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-pill);
+    line-height: 18px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  &__btn.is-active &__count {
+    background: var(--accent-soft);
     color: var(--accent-base);
-    font-weight: var(--font-weight-medium);
-  }
-
-  :deep(.el-tabs__active-bar) { background-color: var(--accent-base); }
-
-  :deep(.el-tabs__content) {
-    height: calc(100% - 48px);
-    overflow-y: auto;
-    padding: 0;
+    border-color: transparent;
   }
 }
 
-/* v4.4 增强: 改用更紧凑的标签栏,左对齐 active 蓝条 */
-:deep(.el-tabs--left .el-tabs__header.is-left) {
-  margin-right: var(--space-4);
+.settings-panels {
+  height: calc(100% - 48px);
+  overflow-y: auto;
+  padding: 0;
 }
 
-:deep(.el-tabs--left .el-tabs__item.is-active) {
-  background: var(--accent-soft);
-  border-radius: var(--radius-sm);
-  color: var(--accent-base);
+.settings-panel {
+  outline: none;
 }
 
 .tab-content {

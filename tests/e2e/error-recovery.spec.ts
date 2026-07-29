@@ -223,7 +223,7 @@ test.describe('T+480 Chat 错误处理 / 降级 UX', () => {
     await window.click('a.nav-item[href$="#/settings"]')
     await window.waitForURL(/#\/settings/)
     await window.waitForTimeout(800)
-    const modelsTab = window.locator('.el-tabs__item:has-text("模型管理"), .el-tabs__item:has-text("Models")').first()
+    const modelsTab = window.locator('.settings-nav__btn:has-text("模型管理"), .settings-nav__btn:has-text("Models")').first()
     await modelsTab.click()
     await window.waitForTimeout(500)
 
