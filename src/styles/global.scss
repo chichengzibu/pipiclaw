@@ -28,6 +28,28 @@ body,
   overflow: hidden;
 }
 
+// ==================== Focus (WCAG 2.4.7) ====================
+// 全局焦点环:键盘用户(空格/回车/Tab 焦点)显示,鼠标点击不显示
+// 2px outline + 2px offset,深色/浅色主题自适应(--accent-base 已切)
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent-base);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+// Element Plus 组件 focus-visible 兼容
+.el-button:focus-visible,
+.el-input__wrapper:focus-visible,
+.el-textarea__inner:focus-visible,
+.el-select__wrapper:focus-visible {
+  outline: 2px solid var(--accent-base);
+  outline-offset: 2px;
+}
+
 html,
 body {
   background: var(--bg-base);

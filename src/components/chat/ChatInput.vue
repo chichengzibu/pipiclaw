@@ -178,14 +178,14 @@ function handleSendClick(): void {
 <style lang="scss" scoped>
 .input-area {
   border-top: 1px solid var(--border-base);
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-3);
   background: var(--bg-elevated);
 }
 
 .model-selector {
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
 }
 
 .quoted-message-preview {

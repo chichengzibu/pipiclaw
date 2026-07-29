@@ -40,9 +40,9 @@
 
   /* ========== 文字 (Apple: 4 级透明度灰阶) ========== */
   --fg-primary: rgba(0, 0, 0, 0.88);
-  --fg-secondary: rgba(0, 0, 0, 0.6);
-  --fg-tertiary: rgba(0, 0, 0, 0.38);
-  --fg-quaternary: rgba(0, 0, 0, 0.18);
+  --fg-secondary: rgba(0, 0, 0, 0.66);
+  --fg-tertiary: rgba(0, 0, 0, 0.52);  /* WCAG AA 4.5:1 on #fff base (12px+) */
+  --fg-quaternary: rgba(0, 0, 0, 0.22);
   --fg-inverse: #fafafa;
   --fg-on-accent: #ffffff;
 
@@ -233,9 +233,9 @@
 
   /* ========== 文字 (Apple dark: 4 级透明度) ========== */
   --fg-primary: rgba(255, 255, 255, 0.92);
-  --fg-secondary: rgba(255, 255, 255, 0.62);
-  --fg-tertiary: rgba(255, 255, 255, 0.40);
-  --fg-quaternary: rgba(255, 255, 255, 0.20);
+  --fg-secondary: rgba(255, 255, 255, 0.72);
+  --fg-tertiary: rgba(255, 255, 255, 0.58);  /* WCAG AA 4.5:1 on #000 base */
+  --fg-quaternary: rgba(255, 255, 255, 0.30);
   --fg-inverse: #1a1a1a;
   --fg-on-accent: #ffffff;
 
@@ -323,9 +323,9 @@
     --bg-inverse: #fafafa;
 
     --fg-primary: rgba(255, 255, 255, 0.92);
-    --fg-secondary: rgba(255, 255, 255, 0.62);
-    --fg-tertiary: rgba(255, 255, 255, 255, 0.40);
-    --fg-quaternary: rgba(255, 255, 255, 0.20);
+    --fg-secondary: rgba(255, 255, 255, 0.72);
+    --fg-tertiary: rgba(255, 255, 255, 0.58);
+    --fg-quaternary: rgba(255, 255, 255, 0.30);
 
     color-scheme: dark;
   }
