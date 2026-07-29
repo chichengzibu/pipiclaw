@@ -20,29 +20,26 @@
       </el-empty>
 
       <div v-else class="provider-grid">
-        <el-card
+        <div
           v-for="provider in modelsStore.providers"
           :key="provider.id"
           class="provider-card"
-          :class="{ enabled: provider.enabled, disabled: !provider.enabled }"
-          shadow="never"
+          :class="['shape-' + getProviderShape(provider.type), { enabled: provider.enabled, disabled: !provider.enabled }]"
         >
-          <template #header>
-            <div class="provider-header">
-              <div class="provider-info">
-                <span class="provider-icon">{{ getProviderIcon(provider.type, provider.name) }}</span>
-                <div class="provider-title">
-                  <span class="provider-name">{{ provider.name }}</span>
-                  <span class="provider-type">{{ getProviderTypeName(provider.type, provider.name) }}</span>
-                </div>
+          <div class="provider-header">
+            <div class="provider-info">
+              <span class="provider-icon">{{ getProviderIcon(provider.type, provider.name) }}</span>
+              <div class="provider-title">
+                <span class="provider-name">{{ provider.name }}</span>
+                <span class="provider-type">{{ getProviderTypeName(provider.type, provider.name) }}</span>
               </div>
-              <el-switch
-                :model-value="provider.enabled"
-                @change="(val: boolean) => handleToggle(provider.id, val)"
-                :loading="isToggling(provider.id)"
-              />
             </div>
-          </template>
+            <el-switch
+              :model-value="provider.enabled"
+              @change="(val: boolean) => handleToggle(provider.id, val)"
+              :loading="isToggling(provider.id)"
+            />
+          </div>
 
           <div class="provider-body">
             <div class="connection-status">
@@ -78,39 +75,37 @@
             </div>
           </div>
 
-          <template #footer>
-            <div class="provider-actions">
-              <el-button
-                size="small"
-                :loading="modelsStore.isTesting(provider.id)"
-                @click="handleTest(provider.id)"
-              >
-                {{ t('models.testConnection') }}
-              </el-button>
-              <el-button size="small" @click="handleManageModels(provider)">
-                {{ t('models.manageModels') }}
-              </el-button>
-              <el-button
-                v-if="!isVolcEngineProvider(provider)"
-                size="small"
-                @click="handleFetchModels(provider.id)"
-              >
-                {{ t('models.fetchModels') }}
-              </el-button>
-              <el-button size="small" @click="handleEdit(provider)">
-                {{ t('common.edit') }}
-              </el-button>
-              <el-button
-                size="small"
-                type="danger"
-                text
-                @click="handleDelete(provider.id, provider.name)"
-              >
-                {{ t('common.delete') }}
-              </el-button>
-            </div>
-          </template>
-        </el-card>
+          <div class="provider-actions">
+            <el-button
+              size="small"
+              :loading="modelsStore.isTesting(provider.id)"
+              @click="handleTest(provider.id)"
+            >
+              {{ t('models.testConnection') }}
+            </el-button>
+            <el-button size="small" @click="handleManageModels(provider)">
+              {{ t('models.manageModels') }}
+            </el-button>
+            <el-button
+              v-if="!isVolcEngineProvider(provider)"
+              size="small"
+              @click="handleFetchModels(provider.id)"
+            >
+              {{ t('models.fetchModels') }}
+            </el-button>
+            <el-button size="small" @click="handleEdit(provider)">
+              {{ t('common.edit') }}
+            </el-button>
+            <el-button
+              size="small"
+              type="danger"
+              text
+              @click="handleDelete(provider.id, provider.name)"
+            >
+              {{ t('common.delete') }}
+            </el-button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -368,6 +363,17 @@ function getProviderTypeName(type: string, name?: string): string {
     '硅基流动': t('models.typeSilicon')
   };
   return names[type] || (name ? names[name] || type : type);
+}
+
+// v4.4: provider-card 4 档形状 (跟 mockup 一致)
+function getProviderShape(type: string): 'rounded' | 'circle' | 'hex' | 'square' {
+  const shapes: Record<string, 'rounded' | 'circle' | 'hex' | 'square'> = {
+    ollama: 'circle',
+    openai: 'rounded',
+    anthropic: 'square',
+    volc_ark: 'hex',
+  };
+  return shapes[type] || 'rounded';
 }
 
 function getProviderIcon(type: string, name?: string): string {
@@ -651,6 +657,9 @@ async function handleDelete(id: string, name: string): Promise<void> {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-base);
   background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 
   &.enabled {
     border-color: var(--accent-base);
@@ -664,29 +673,6 @@ async function handleDelete(id: string, name: string): Promise<void> {
     width: 3px;
     background: var(--accent-base);
     border-radius: 0 2px 2px 0;
-  }
-
-  :deep(.el-card__header) {
-    padding: var(--space-2) var(--space-3);
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  :deep(.el-card__body) {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: var(--space-3);
-  }
-
-  :deep(.el-card__footer) {
-    padding: var(--space-2) var(--space-3);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    border-top: 1px solid var(--border-subtle);
   }
 
   &.disabled {
@@ -703,6 +689,8 @@ async function handleDelete(id: string, name: string): Promise<void> {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .provider-info {
@@ -728,9 +716,15 @@ async function handleDelete(id: string, name: string): Promise<void> {
   border-radius: var(--radius-md);
 }
 
-.provider-icon.shape-circle { border-radius: 50%; }
-.provider-icon.shape-square { border-radius: 4px; }
-.provider-icon.shape-hex { border-radius: 6px; }
+/* v4.4: provider-card 4 档形状 (跟 mockup 一致) */
+.shape-circle .provider-icon { border-radius: 50%; background: rgba(16, 185, 129, 0.10); color: #065f46; }
+.shape-square .provider-icon { border-radius: 4px; background: rgba(168, 85, 247, 0.10); color: #6b21a8; }
+.shape-hex .provider-icon { border-radius: 6px; background: rgba(245, 158, 11, 0.10); color: #92400e; }
+.shape-rounded .provider-icon { border-radius: var(--radius-md); }
+[data-theme="dark"] .shape-circle .provider-icon { background: rgba(52, 211, 153, 0.18); color: #6ee7b7; }
+[data-theme="dark"] .shape-square .provider-icon { background: rgba(192, 132, 252, 0.18); color: #d8b4fe; }
+[data-theme="dark"] .shape-hex .provider-icon { background: rgba(251, 191, 36, 0.18); color: #fcd34d; }
+[data-theme="dark"] .shape-rounded .provider-icon { background: var(--accent-subtle); }
 
 .provider-title {
   display: flex;
@@ -758,6 +752,7 @@ async function handleDelete(id: string, name: string): Promise<void> {
   flex-direction: column;
   gap: var(--space-2);
   min-height: 0;
+  padding: var(--space-3);
 }
 
 .connection-status {
@@ -803,6 +798,8 @@ async function handleDelete(id: string, name: string): Promise<void> {
   flex-wrap: wrap;
   justify-content: flex-end;
   width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .form-tip {

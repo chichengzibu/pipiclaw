@@ -1077,6 +1077,17 @@ onMounted(async () => {
   }
 }
 
+/* v4.4 增强: 改用更紧凑的标签栏,左对齐 active 蓝条 */
+:deep(.el-tabs--left .el-tabs__header.is-left) {
+  margin-right: var(--space-4);
+}
+
+:deep(.el-tabs--left .el-tabs__item.is-active) {
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  color: var(--accent-base);
+}
+
 .tab-content {
   display: flex;
   flex-direction: column;
