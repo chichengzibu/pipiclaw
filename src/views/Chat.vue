@@ -1600,33 +1600,36 @@ async function handleSaveSettings(): Promise<void> {
 //  thinking UI 已迁移到 src/components/chat/ThinkingBlock.vue 组件)
 
 .message-text {
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-xl);
-  background: var(--el-fill-color-light);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   font-size: var(--font-size-body);
-  line-height: var(--line-height-relaxed);
-  color: var(--el-text-color-primary) !important;
+  line-height: var(--line-height-normal);
+  color: var(--fg-primary);
   word-break: break-word;
   word-wrap: break-word;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--duration-fast) var(--ease-standard);
+  transition: all var(--duration-fast) var(--ease-standard);
   /* 防止流式输出抖动的关键样式 */
   min-height: 2.5em;
   white-space: pre-wrap;
   overflow-wrap: break-word;
 
   &:hover {
-    box-shadow: var(--shadow-md);
+    border-color: var(--border-base);
   }
 
   .message.user & {
-    background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, var(--el-color-primary-light-8) 100%);
-    border-bottom-right-radius: var(--radius-sm);
+    background: var(--accent-base);
+    border-color: var(--accent-base);
+    color: var(--fg-on-accent);
+    border-bottom-right-radius: var(--radius-xs);
   }
 
   .message.assistant & {
-    background: var(--el-fill-color-lighter);
-    border-bottom-left-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    border-color: var(--border-subtle);
+    border-bottom-left-radius: var(--radius-xs);
   }
 
   :deep(pre) {
@@ -1746,9 +1749,9 @@ async function handleSaveSettings(): Promise<void> {
 
 .message-actions {
   display: flex;
-  gap: var(--space-xs);
-  margin-top: var(--space-sm);
-  opacity: 0.4;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  opacity: 0.5;
   transition: opacity var(--duration-fast) var(--ease-standard);
 
   .message:hover & {
@@ -1756,7 +1759,7 @@ async function handleSaveSettings(): Promise<void> {
   }
 
   .el-icon {
-    font-size: 15px;
+    font-size: var(--icon-size-md);
   }
 }
 

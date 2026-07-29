@@ -210,30 +210,37 @@ const displayedConversations = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border-base);
 
   .sidebar-title {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: var(--font-size-callout);
+    font-weight: var(--font-weight-semibold);
     color: var(--fg-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .new-chat-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
   }
 }
 
 .search-box {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .batch-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   background: var(--bg-hover);
   border-bottom: 1px solid var(--border-base);
 
   .selected-count {
-    font-size: 12px;
+    font-size: var(--font-size-caption-1);
     color: var(--fg-secondary);
     margin-right: auto;
   }
@@ -245,26 +252,29 @@ const displayedConversations = computed(() => {
 }
 
 .conversation-group {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-2);
 
   .group-label {
-    padding: 8px 16px 4px;
-    font-size: 11px;
+    padding: var(--space-2) var(--space-3) var(--space-1);
+    font-size: var(--font-size-caption-2);
     color: var(--fg-tertiary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.04em;
+    font-weight: var(--font-weight-medium);
   }
 }
 
 .conversation-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  margin: 0 var(--space-1);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-standard);
+  transition: all var(--duration-fast) var(--ease-standard);
   position: relative;
-  border-left: 2px solid transparent;
+  font-size: var(--font-size-callout);
 
   &:hover {
     background: var(--bg-hover);
@@ -272,18 +282,30 @@ const displayedConversations = computed(() => {
 
   &.active {
     background: var(--accent-soft);
-    color: var(--accent-fg);
-    border-left-color: var(--accent-base);
+    color: var(--accent-base);
+    font-weight: var(--font-weight-medium);
+
+    .conversation-icon { color: var(--accent-base); }
+  }
+
+  &.active::before {
+    content: "";
+    position: absolute;
+    left: -4px; top: 6px; bottom: 6px;
+    width: 2px;
+    background: var(--accent-base);
+    border-radius: 0 2px 2px 0;
   }
 
   &.archived {
-    opacity: 0.6;
+    opacity: 0.55;
   }
 
   .conversation-icon {
     flex-shrink: 0;
-    font-size: 16px;
+    font-size: var(--icon-size-md);
     line-height: 1;
+    color: var(--fg-tertiary);
   }
 
   .conversation-title {
@@ -292,7 +314,6 @@ const displayedConversations = computed(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 13px;
   }
 
   .more-icon {
@@ -301,16 +322,14 @@ const displayedConversations = computed(() => {
     transition: opacity var(--duration-fast) var(--ease-standard);
   }
 
-  &:hover .more-icon {
-    opacity: 1;
-  }
+  &:hover .more-icon { opacity: 1; }
 }
 
 .empty-hint {
-  padding: 24px;
+  padding: var(--space-4);
   text-align: center;
   color: var(--fg-tertiary);
-  font-size: 12px;
+  font-size: var(--font-size-caption-1);
 }
 
 .chat-sidebar-resize-handle {
@@ -323,8 +342,6 @@ const displayedConversations = computed(() => {
   background: transparent;
   transition: background var(--duration-fast) var(--ease-standard);
 
-  &:hover {
-    background: var(--accent-base);
-  }
+  &:hover { background: var(--accent-base); }
 }
 </style>
