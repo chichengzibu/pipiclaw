@@ -1016,74 +1016,118 @@ onMounted(async () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: var(--page-bg) !important;
-  color: var(--text-primary) !important;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .page-header {
-  margin-bottom: var(--content-padding);
   flex-shrink: 0;
 }
 
 .page-title {
   font-size: var(--font-size-title-1);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary) !important;
+  color: var(--fg-primary);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .settings-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  background-color: var(--page-bg) !important;
 }
 
 .settings-tabs {
   height: 100%;
 
   :deep(.el-tabs__header) {
-    margin: 0;
+    margin: 0 0 var(--space-3);
+    border-bottom: 1px solid var(--border-base);
   }
 
+  :deep(.el-tabs__nav-wrap)::after { background: transparent; }
+
+  :deep(.el-tabs__item) {
+    height: 36px;
+    line-height: 36px;
+    font-size: var(--font-size-callout);
+    color: var(--fg-tertiary);
+    padding: 0 var(--space-3);
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+
+  :deep(.el-tabs__item:hover) { color: var(--fg-primary); }
+
+  :deep(.el-tabs__item.is-active) {
+    color: var(--accent-base);
+    font-weight: var(--font-weight-medium);
+  }
+
+  :deep(.el-tabs__active-bar) { background-color: var(--accent-base); }
+
   :deep(.el-tabs__content) {
-    height: calc(100% - 60px);
+    height: calc(100% - 48px);
     overflow-y: auto;
-    padding-top: var(--content-padding);
+    padding: 0;
   }
 }
 
 .tab-content {
   display: flex;
   flex-direction: column;
-  gap: var(--content-padding);
-  padding: 0 var(--content-padding);
+  gap: var(--space-3);
+  max-width: 720px;
 }
 
 .settings-card {
-  background-color: var(--card-bg) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  color: var(--fg-primary);
+  transition: border-color var(--duration-fast) var(--ease-standard);
+
+  &:hover { border-color: var(--border-strong); }
 
   :deep(.el-card__header) {
-    border-color: var(--border-color) !important;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  :deep(.el-card__body) {
+    padding: var(--space-3) var(--space-4);
   }
 }
 
 .settings-card :deep(.el-form-item__label) {
-  color: var(--text-primary) !important;
+  color: var(--fg-primary);
+  font-size: var(--font-size-callout);
+  font-weight: var(--font-weight-medium);
 }
 
 .settings-card :deep(.el-input__wrapper) {
-  background-color: var(--card-bg) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--border-color) !important;
+  background: var(--bg-elevated);
+  color: var(--fg-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 1px var(--border-base) inset;
+}
+
+.settings-card :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--border-strong) inset;
+}
+
+.settings-card :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px var(--accent-base) inset;
 }
 
 .form-tip {
   font-size: var(--font-size-caption-1);
-  color: var(--text-secondary) !important;
-  margin-left: var(--space-sm);
+  color: var(--fg-tertiary);
+  margin-left: var(--space-2);
 }
 
 .section-header {

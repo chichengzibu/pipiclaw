@@ -24,8 +24,8 @@
           v-for="provider in modelsStore.providers"
           :key="provider.id"
           class="provider-card"
-          :class="{ disabled: !provider.enabled }"
-          shadow="hover"
+          :class="{ enabled: provider.enabled, disabled: !provider.enabled }"
+          shadow="never"
         >
           <template #header>
             <div class="provider-header">
@@ -594,38 +594,43 @@ async function handleDelete(id: string, name: string): Promise<void> {
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--content-padding);
   flex-shrink: 0;
 }
 
 .header-left {
   display: flex;
-  align-items: center;
-  gap: var(--space-md);
+  align-items: baseline;
+  gap: var(--space-2);
 }
 
 .page-title {
   font-size: var(--font-size-title-1);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-color);
+  color: var(--fg-primary);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .provider-count {
-  font-size: var(--font-size-body);
-  color: var(--el-text-color-secondary);
+  font-size: var(--font-size-callout);
+  color: var(--fg-tertiary);
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-2);
 }
 
 .models-content {
@@ -636,47 +641,59 @@ async function handleDelete(id: string, name: string): Promise<void> {
 
 .provider-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: var(--space-md);
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
 }
 
 .provider-card {
   transition: all var(--duration-base) var(--ease-standard);
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-md);
+  position: relative;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-base);
+  background: var(--bg-elevated);
+
+  &.enabled {
+    border-color: var(--accent-base);
+    background: var(--accent-soft);
+  }
+
+  &.enabled::before {
+    content: "";
+    position: absolute;
+    left: -1px; top: 6px; bottom: 6px;
+    width: 3px;
+    background: var(--accent-base);
+    border-radius: 0 2px 2px 0;
+  }
 
   :deep(.el-card__header) {
-    height: var(--space-2xl);
-    padding: 0;
+    padding: var(--space-2) var(--space-3);
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   :deep(.el-card__body) {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 0;
+    padding: var(--space-3);
   }
 
   :deep(.el-card__footer) {
-    height: var(--button-height-lg);
-    padding: 0;
+    padding: var(--space-2) var(--space-3);
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    border-top: 1px solid var(--border-subtle);
   }
 
   &.disabled {
-    opacity: 0.7;
+    opacity: 0.85;
 
-    .provider-header {
-      .provider-name {
-        color: var(--el-text-color-secondary);
-      }
+    .provider-name {
+      color: var(--fg-secondary);
     }
   }
 }
@@ -686,32 +703,46 @@ async function handleDelete(id: string, name: string): Promise<void> {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  height: 100%;
 }
 
 .provider-info {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-2);
   flex: 1;
   min-width: 0;
 }
 
+/* 4 档 provider icon 形状 (跟模型形状对齐) */
 .provider-icon {
-  font-size: var(--space-xl);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-callout);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+  background: var(--accent-subtle);
+  color: var(--accent-base);
+  border-radius: var(--radius-md);
 }
+
+.provider-icon.shape-circle { border-radius: 50%; }
+.provider-icon.shape-square { border-radius: 4px; }
+.provider-icon.shape-hex { border-radius: 6px; }
 
 .provider-title {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 2px;
   min-width: 0;
 }
 
 .provider-name {
-  font-size: var(--font-size-title-2);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-color);
+  color: var(--fg-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -719,58 +750,56 @@ async function handleDelete(id: string, name: string): Promise<void> {
 
 .provider-type {
   font-size: var(--font-size-caption-1);
-  color: var(--el-text-color-secondary);
+  color: var(--fg-tertiary);
 }
 
 .provider-body {
-  padding: var(--space-sm) 0;
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-2);
   min-height: 0;
 }
 
 .connection-status {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-2);
 }
 
 .model-count {
   font-size: var(--font-size-caption-1);
-  color: var(--el-text-color-secondary);
+  color: var(--fg-tertiary);
 }
 
 .models-tag-cloud {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-xs);
+  gap: var(--space-1);
   align-items: center;
   overflow-y: auto;
 }
 
 .model-cap-tag {
   font-size: 10px;
-  color: var(--el-text-color-secondary);
-  margin-left: var(--space-xs);
+  color: var(--fg-tertiary);
+  margin-left: 4px;
 }
 
 .more-models-tip {
   font-size: var(--font-size-caption-1);
-  color: var(--el-text-color-secondary);
+  color: var(--fg-tertiary);
 }
 
 .no-models {
   font-size: var(--font-size-callout);
-  color: var(--el-text-color-secondary);
+  color: var(--fg-tertiary);
   text-align: center;
-  padding: var(--space-sm);
+  padding: var(--space-2);
 }
 
 .provider-actions {
   display: flex;
-  gap: var(--space-xs);
+  gap: var(--space-1);
   flex-wrap: wrap;
   justify-content: flex-end;
   width: 100%;
@@ -778,8 +807,8 @@ async function handleDelete(id: string, name: string): Promise<void> {
 
 .form-tip {
   font-size: var(--font-size-caption-1);
-  color: var(--el-text-color-secondary);
-  margin-left: var(--space-sm);
+  color: var(--fg-tertiary);
+  margin-left: var(--space-2);
 }
 
 .model-list {
@@ -791,9 +820,10 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-sm);
-  margin-bottom: var(--space-sm);
-  background: var(--el-fill-color-light);
+  padding: var(--space-2);
+  margin-bottom: var(--space-1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
 }
 

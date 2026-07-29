@@ -389,12 +389,12 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
-  padding: var(--space-lg);
+  gap: var(--space-3);
+  padding: var(--space-3);
   box-sizing: border-box;
   overflow: hidden;
-  background-color: var(--page-bg) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
 }
 
 .page-header {
@@ -406,7 +406,7 @@ onUnmounted(() => {
 
 .header-actions {
   display: flex;
-  gap: var(--space-md);
+  gap: var(--space-2);
 }
 
 .header-left {
