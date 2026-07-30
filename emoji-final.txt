@@ -1,8 +1,0 @@
-﻿
-=== views\Settings.vue (7 个 emoji) ===
-  L796: 🤖  | openai: '🤖',
-  L797: 🧠  | anthropic: '🧠',
-  L800: 🦙  | ollama: '🦙',
-  L801: 🌐  | openrouter: '🌐',
-  L803: ⚙️  | custom: '⚙️'
-  ... 2 more

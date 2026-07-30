@@ -12,13 +12,10 @@
 -->
 <template>
   <aside
-    class="side-nav"
-    :class="{ collapsed: !expanded, expanded: expanded }"
-    @mouseenter="scheduleExpand"
-    @mouseleave="scheduleCollapse"
+    class="side-nav expanded"
   >
-    <!-- 顶部品牌区 -->
-    <div class="brand">
+    <!-- 顶部品牌 (极简:只 logo) -->
+    <div class="brand" :title="`PiPiClaw v${appStore.version}`">
       <div class="brand-icon">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -37,64 +34,26 @@
           />
         </svg>
       </div>
-      <div v-if="expanded" class="brand-text">
-        <div class="brand-name">PiPiClaw</div>
-        <div class="brand-tag">v{{ appStore.version }}</div>
-      </div>
     </div>
 
-    <!-- 分组导航 -->
-    <nav class="nav-groups">
-      <div
-        v-for="group in navGroups"
-        :key="group.title"
-        class="nav-group"
+    <!-- 核心导航 (8 个,无分组无 header,Linear / Raycast 风格) -->
+    <nav class="nav-list">
+      <router-link
+        v-for="item in navItems"
+        :key="item.path"
+        :to="item.path"
+        class="nav-item"
+        :class="{ active: isActive(item.path) }"
+        :title="!expanded ? t(item.titleKey) : ''"
       >
-        <div v-if="expanded" class="group-header">{{ group.title }}</div>
-        <div class="group-items">
-          <router-link
-            v-for="item in group.items"
-            :key="item.path"
-            :to="item.path"
-            class="nav-item"
-            :class="{ active: isActive(item.path) }"
-            :title="!expanded ? t(item.titleKey) : ''"
-          >
-            <el-icon class="nav-icon"><component :is="item.icon" /></el-icon>
-            <span v-if="expanded" class="nav-label">
-              {{ t(item.titleKey) }}
-            </span>
-            <span v-if="isActive(item.path) && expanded" class="active-dot"></span>
-          </router-link>
-        </div>
-      </div>
+        <el-icon class="nav-icon"><component :is="item.icon" /></el-icon>
+        <span v-if="expanded" class="nav-label">{{ t(item.titleKey) }}</span>
+      </router-link>
     </nav>
 
-    <!-- 底部用户区 -->
+    <!-- 底部仅 user avatar (无 theme 切换 / collapse 按钮) -->
     <div class="nav-footer">
-      <button
-        v-if="expanded"
-        class="footer-btn theme-btn"
-        :title="`主题: ${themeIconLabel}`"
-        @click="appStore.toggleTheme()"
-      >
-        <el-icon><component :is="themeIcon" /></el-icon>
-      </button>
-
-      <button
-        class="footer-btn collapse-btn"
-        :title="expanded ? '收起侧栏 (⌘\\)' : '固定展开'"
-        @click="togglePin"
-      >
-        <el-icon>
-          <component :is="expanded ? 'Expand' : 'Fold'" />
-        </el-icon>
-      </button>
-
-      <div
-        class="user-avatar"
-        :title="appStore.version ? `PiPiClaw v${appStore.version}` : ''"
-      >
+      <div class="user-avatar" :title="`PiPiClaw v${appStore.version}`">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="9" r="3.5" stroke="currentColor" stroke-width="1.5" />
           <path
@@ -110,15 +69,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
-import {
-  Moon,
-  Sunny,
-  Monitor,
-} from '@element-plus/icons-vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -129,119 +83,31 @@ interface NavItem {
   titleKey: string
   icon: string
 }
-interface NavGroup {
-  title: string
-  items: NavItem[]
-}
 
-const navGroups: NavGroup[] = [
-  {
-    title: '工作区',
-    items: [
-      { path: '/dashboard', titleKey: 'nav.dashboard', icon: 'HomeFilled' },
-      { path: '/chat', titleKey: 'nav.chat', icon: 'ChatDotRound' },
-      { path: '/tasks', titleKey: 'nav.tasks', icon: 'List' },
-    ],
-  },
-  {
-    title: '工具',
-    items: [
-      { path: '/skills', titleKey: 'nav.skills', icon: 'Box' },
-      { path: '/clawhub', titleKey: 'nav.clawhub', icon: 'Goods' },
-      { path: '/models', titleKey: 'nav.models', icon: 'Cpu' },
-      { path: '/model-compare', titleKey: 'nav.modelCompare', icon: 'DataAnalysis' },
-      { path: '/im-management', titleKey: 'nav.imManagement', icon: 'ChatLineRound' },
-      { path: '/schedule', titleKey: 'nav.schedule', icon: 'Calendar' },
-    ],
-  },
-  {
-    title: '管理',
-    items: [
-      { path: '/permissions', titleKey: 'nav.permissions', icon: 'Lock' },
-      { path: '/plugin-market', titleKey: 'nav.plugins', icon: 'Shop' },
-      { path: '/remote-control', titleKey: 'nav.remoteControl', icon: 'Connection' },
-      { path: '/settings', titleKey: 'nav.settings', icon: 'Setting' },
-      { path: '/help', titleKey: 'nav.help', icon: 'QuestionFilled' },
-    ],
-  },
+/** 8 个核心 (Linear / Raycast 风格:无分组,极简) */
+const navItems: NavItem[] = [
+  { path: '/dashboard',    titleKey: 'nav.dashboard',    icon: 'HomeFilled' },
+  { path: '/chat',         titleKey: 'nav.chat',         icon: 'ChatDotRound' },
+  { path: '/skills',       titleKey: 'nav.skills',       icon: 'Box' },
+  { path: '/models',       titleKey: 'nav.models',       icon: 'Cpu' },
+  { path: '/tasks',        titleKey: 'nav.tasks',        icon: 'List' },
+  { path: '/im-management', titleKey: 'nav.imManagement', icon: 'ChatLineRound' },
+  { path: '/schedule',     titleKey: 'nav.schedule',     icon: 'Calendar' },
+  { path: '/settings',     titleKey: 'nav.settings',     icon: 'Setting' },
 ]
 
-/** 展开/收起状态: hover 自动展开,pinned 强制展开 */
-const expanded = ref(false)
-const pinned = ref(false)
-let hoverTimer: ReturnType<typeof setTimeout> | null = null
-const HOVER_DELAY = 80
-
-function scheduleExpand(): void {
-  if (hoverTimer) clearTimeout(hoverTimer)
-  if (pinned.value) return
-  hoverTimer = setTimeout(() => {
-    expanded.value = true
-  }, HOVER_DELAY)
-}
-
-function scheduleCollapse(): void {
-  if (hoverTimer) clearTimeout(hoverTimer)
-  if (pinned.value) return
-  hoverTimer = setTimeout(() => {
-    expanded.value = false
-  }, 200)
-}
-
-function togglePin(): void {
-  pinned.value = !pinned.value
-  expanded.value = pinned.value
-  if (pinned.value) {
-    localStorage.setItem('pipiclaw_sidebar_pinned', '1')
-  } else {
-    localStorage.setItem('pipiclaw_sidebar_pinned', '0')
-  }
-}
-
-/** 主题图标跟随 mode 切换 */
-const themeIcon = computed(() => {
-  if (appStore.themeMode === 'dark') return Moon
-  if (appStore.themeMode === 'light') return Sunny
-  return Monitor
-})
-const themeIconLabel = computed(() => {
-  if (appStore.themeMode === 'dark') return '深色'
-  if (appStore.themeMode === 'light') return '浅色'
-  return '跟随系统'
-})
+/** 始终展开 (Linear / Raycast 风格:无折叠) */
+const expanded = ref(true)
 
 const isActive = (path: string): boolean =>
   route.path === path || route.path.startsWith(path + '/')
-
-/** Cmd+\ 切换 pinned */
-function onKeydown(e: KeyboardEvent): void {
-  const isMod = e.metaKey || e.ctrlKey
-  if (isMod && e.key === '\\') {
-    e.preventDefault()
-    togglePin()
-  }
-}
-
-onMounted(() => {
-  // 恢复 pinned 状态
-  const saved = localStorage.getItem('pipiclaw_sidebar_pinned')
-  if (saved === '1') {
-    pinned.value = true
-    expanded.value = true
-  }
-  window.addEventListener('keydown', onKeydown)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', onKeydown)
-  if (hoverTimer) clearTimeout(hoverTimer)
-})
 </script>
 
 <style lang="scss" scoped>
+/* ========== 容器 (极简 Linear 风格) ========== */
 .side-nav {
-  --nav-width: 64px;
-  --nav-width-expanded: 240px;
+  --nav-width: 56px;
+  --nav-width-expanded: 200px;
   display: flex;
   flex-direction: column;
   width: var(--nav-width);
@@ -261,206 +127,121 @@ onUnmounted(() => {
   }
 }
 
-/* ========== 品牌区 ========== */
+/* ========== 品牌 (只 logo) ========== */
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 12px;
-  height: 56px;
+  justify-content: center;
+  padding: 14px 0 16px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border-subtle);
 }
 
 .brand-icon {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent-base);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   background: var(--accent-soft);
 
   svg {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
   }
 }
 
-.brand-text {
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.brand-name {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  color: var(--fg-primary);
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-}
-
-.brand-tag {
-  font-size: var(--font-size-xs);
-  color: var(--fg-tertiary);
-  line-height: 1.4;
-  margin-top: 1px;
-}
-
-/* ========== 导航分组 ========== */
-.nav-groups {
+/* ========== 核心导航 (单列,无分组) ========== */
+.nav-list {
   flex: 1;
-  padding: 12px 8px;
+  padding: 4px 8px;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1px;
 
   &::-webkit-scrollbar {
-    width: 4px;
+    width: 0;
   }
 }
 
-.nav-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.group-header {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--fg-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 4px 12px 6px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.group-items {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-/* ========== 导航项 ========== */
+/* ========== 导航项 (Linear / Raycast 风) ========== */
 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  height: 36px;
+  border-radius: 8px;
   text-decoration: none;
   color: var(--fg-secondary);
-  border-radius: var(--radius-md);
-  transition: background-color var(--duration-fast) var(--ease-standard),
-    color var(--duration-fast) var(--ease-standard);
+  position: relative;
+  transition: background-color 120ms var(--ease-standard),
+    color 120ms var(--ease-standard);
 
   &:hover {
     background: var(--bg-hover);
     color: var(--fg-primary);
   }
 
-  &:active {
-    background: var(--bg-active);
-  }
-
   &.active {
-    color: var(--accent-base);
     background: var(--accent-soft);
+    color: var(--accent-base);
 
     .nav-icon {
       color: var(--accent-base);
     }
   }
-}
 
-.nav-item-inner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  height: 36px;
-  position: relative;
-  overflow: hidden;
+  /* 选中左侧 2px 蓝条 (Raycast 风格) */
+  &.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--accent-base);
+    border-radius: 0 2px 2px 0;
+  }
 }
 
 .nav-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 20px;
-  transition: transform var(--duration-fast) var(--ease-spring),
-    color var(--duration-fast) var(--ease-standard);
-
-  .nav-item:hover & {
-    transform: scale(1.08);
-  }
+  font-size: 18px;
+  transition: color 120ms var(--ease-standard);
 }
 
 .nav-label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.01em;
   flex: 1;
 }
 
-/* Active dot indicator (Apple Mail style) */
-.active-dot {
-  position: absolute;
-  right: 8px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--accent-base);
-}
-
-/* ========== 底部 ========== */
+/* ========== 底部 (极简,只 user) ========== */
 .nav-footer {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 12px;
-  border-top: 1px solid var(--border-subtle);
-  flex-shrink: 0;
   justify-content: center;
-}
-
-.footer-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  color: var(--fg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color var(--duration-fast) var(--ease-standard),
-    color var(--duration-fast) var(--ease-standard),
-    transform var(--duration-fast) var(--ease-spring);
+  padding: 10px 0 14px;
   flex-shrink: 0;
-  font-size: 16px;
-
-  &:hover {
-    background: var(--bg-hover);
-    color: var(--fg-primary);
-  }
-
-  &:active {
-    transform: scale(0.92);
-  }
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--accent-soft);
   color: var(--accent-base);
@@ -468,13 +249,12 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-left: auto;
   cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease-spring);
+  transition: transform 120ms var(--ease-spring);
 
   svg {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
   }
 
   &:hover {
@@ -484,59 +264,5 @@ onUnmounted(() => {
   &:active {
     transform: scale(0.95);
   }
-}
-
-/* ========== 过渡动画 ========== */
-
-/* 品牌文字 fade */
-.brand-fade-enter-active,
-.brand-fade-leave-active {
-  transition: opacity var(--duration-fast) var(--ease-standard),
-    transform var(--duration-fast) var(--ease-spring);
-}
-
-.brand-fade-enter-from,
-.brand-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-8px);
-}
-
-/* 分组标题 fade */
-.section-fade-enter-active,
-.section-fade-leave-active {
-  transition: opacity var(--duration-fast) var(--ease-standard);
-}
-
-.section-fade-enter-from,
-.section-fade-leave-to {
-  opacity: 0;
-}
-
-/* 标签 fade (with slight slide) */
-.label-fade-enter-active,
-.label-fade-leave-active {
-  transition: opacity var(--duration-fast) var(--ease-standard),
-    transform var(--duration-fast) var(--ease-spring);
-}
-
-.label-fade-enter-from,
-.label-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-6px);
-}
-
-/* ========== Tooltip 定制 (Apple dark style) ========== */
-:deep(.el-tooltip__popper) {
-  font-size: var(--font-size-xs) !important;
-  font-weight: var(--font-weight-medium) !important;
-  letter-spacing: -0.01em !important;
-  border-radius: var(--radius-sm) !important;
-  padding: 4px 8px !important;
-}
-
-:deep(.el-tooltip__popper.is-dark) {
-  background: rgba(0, 0, 0, 0.85) !important;
-  color: #fff !important;
-  backdrop-filter: blur(8px);
 }
 </style>
