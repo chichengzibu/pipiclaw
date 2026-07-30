@@ -1,0 +1,3 @@
+﻿L32: ✨ | <div class="banner-icon">✨</div>
+L69: 📦 | <div class="empty-icon">📦</div>
+L192: ✅ | <div class="no-candidates-icon">✅</div>

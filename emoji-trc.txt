@@ -1,0 +1,10 @@
+﻿L5: ✅ | <span class="result-icon">{{ success ? '✅' : '❌' }}</span>
+L5: ❌ | <span class="result-icon">{{ success ? '✅' : '❌' }}</span>
+L25: ✅ | {{ step.status === 'success' ? '✅' : step.status === 'failed' ? '❌' : step.status === 'running' ? '🔄' : '⏳' }}
+L25: ❌ | {{ step.status === 'success' ? '✅' : step.status === 'failed' ? '❌' : step.status === 'running' ? '🔄' : '⏳' }}
+L25: 🔄 | {{ step.status === 'success' ? '✅' : step.status === 'failed' ? '❌' : step.status === 'running' ? '🔄' : '⏳' }}
+L31: 📁 | 📁 路径：<code>{{ step.params.filePath || step.params.path }}</code>
+L34: 📝 | 📝 内容：<code>{{ getContentPreview(step.params.content) }}</code>
+L37: 💻 | 💻 命令：<code>{{ step.params.command }}</code>
+L40: 🔄 | 🔄 新路径：<code>{{ step.params.newPath }}</code>
+L43: 🌐 | 🌐 URL：<code>{{ step.params.url }}</code>

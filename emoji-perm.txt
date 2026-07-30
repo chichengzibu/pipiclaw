@@ -1,0 +1,13 @@
+﻿L280: 🛡 | safe: '🛡️',
+L281: ⚖ | standard: '⚖️',
+L282: 🔓 | permissive: '🔓',
+L283: ✏ | custom: '✏️'
+L285: 📋 | return icons[template] || '📋';
+L300: 📁 | filesystem: '📁',
+L301: 🌐 | network: '🌐',
+L302: ⚙ | process: '⚙️',
+L303: 🖥 | system: '🖥️',
+L304: 📋 | clipboard: '📋',
+L305: 💻 | shell: '💻',
+L306: 🔧 | environment: '🔧'
+L308: 📦 | return icons[category] || '📦';

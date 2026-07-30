@@ -33,7 +33,7 @@
             >
               <div class="set-info">
                 <div class="set-header">
-                  <span class="set-icon">{{ getSetIcon(set.template) }}</span>
+                  <el-icon class="set-icon" :size="20"><component :is="getSetIcon(set.template)" /></el-icon>
                   <span class="set-name">{{ set.name }}</span>
                   <el-tag v-if="set.id === permissionsStore.activeSetId" size="small" type="success">
                     {{ t('permissions.active') }}
@@ -49,7 +49,7 @@
         <div class="detail-panel" v-if="selectedSet">
           <div class="detail-header">
             <div class="detail-title">
-              <span class="detail-icon">{{ getSetIcon(selectedSet.template) }}</span>
+              <el-icon class="detail-icon" :size="22"><component :is="getSetIcon(selectedSet.template)" /></el-icon>
               <span>{{ selectedSet.name }}</span>
             </div>
             <div class="detail-actions">
@@ -107,7 +107,7 @@
                 class="rule-item"
               >
                 <div class="rule-header">
-                  <span class="rule-icon">{{ getCategoryIcon(rule.category) }}</span>
+                  <el-icon class="rule-icon" :size="14"><component :is="getCategoryIcon(rule.category)" /></el-icon>
                   <span class="rule-name">{{ getCategoryName(rule.category) }}</span>
                   <el-tooltip :content="rule.description" placement="top">
                     <el-icon class="rule-info"><InfoFilled /></el-icon>
@@ -235,7 +235,7 @@ import { ref, reactive, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import Breadcrumb from '@/components/layout/Breadcrumb.vue';
-import { Plus, InfoFilled } from '@element-plus/icons-vue';
+import { Plus, InfoFilled, Lock, Promotion, Unlock, EditPen, Document, Folder, Connection, Operation, Monitor, Lightning, Tools, Box } from '@element-plus/icons-vue';
 import { usePermissionsStore, type PermissionSet, type PermissionLevel } from '@/stores/permissions';
 
 const { t } = useI18n();
@@ -277,12 +277,12 @@ onMounted(async () => {
 
 function getSetIcon(template: string): string {
   const icons: Record<string, string> = {
-    safe: '🛡️',
-    standard: '⚖️',
-    permissive: '🔓',
-    custom: '✏️'
+    safe: 'Lock',
+    standard: 'Promotion',
+    permissive: 'Unlock',
+    custom: 'EditPen'
   };
-  return icons[template] || '📋';
+  return icons[template] || 'Document';
 }
 
 function getTemplateName(template: string): string {
@@ -297,15 +297,15 @@ function getTemplateName(template: string): string {
 
 function getCategoryIcon(category: string): string {
   const icons: Record<string, string> = {
-    filesystem: '📁',
-    network: '🌐',
-    process: '⚙️',
-    system: '🖥️',
-    clipboard: '📋',
-    shell: '💻',
-    environment: '🔧'
+    filesystem: 'Folder',
+    network: 'Connection',
+    process: 'Operation',
+    system: 'Monitor',
+    clipboard: 'Document',
+    shell: 'Lightning',
+    environment: 'Tools'
   };
-  return icons[category] || '📦';
+  return icons[category] || 'Box';
 }
 
 function getCategoryName(category: string): string {
@@ -524,7 +524,14 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 }
 
 .set-icon {
-  font-size: var(--font-size-title-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-base);
 }
 
 .set-name {
@@ -574,7 +581,14 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 }
 
 .detail-icon {
-  font-size: var(--font-size-display);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent-base);
 }
 
 .detail-actions {
@@ -636,7 +650,10 @@ async function handleLevelChange(ruleId: string, level: PermissionLevel): Promis
 }
 
 .rule-icon {
-  font-size: var(--font-size-title-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-secondary);
 }
 
 .rule-name {

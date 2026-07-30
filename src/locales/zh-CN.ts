@@ -156,7 +156,7 @@ export default {
     archived: '已归档',
     searchResult: '搜索结果',
     noConversations: '暂无会话',
-    hermesMemoryTitle: '🧠 Hermes 记忆管理',
+    hermesMemoryTitle: 'Hermes 记忆管理',
     hermesMemoryPanel: 'Hermes 记忆注入',
     memoryEnabled: '启用',
     memoryDisabled: '禁用',

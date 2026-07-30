@@ -42,13 +42,13 @@ export const PERMISSION_CATEGORIES: Record<PermissionCategory, {
   description: string;
   icon: string;
 }> = {
-  filesystem: { name: '文件系统', description: '读写文件和目录', icon: '📁' },
-  network: { name: '网络', description: '发起网络请求和连接', icon: '🌐' },
-  process: { name: '进程', description: '启动和管理进程', icon: '⚙️' },
-  system: { name: '系统', description: '系统级别操作', icon: '🖥️' },
-  clipboard: { name: '剪贴板', description: '读写剪贴板内容', icon: '📋' },
-  shell: { name: 'Shell', description: '执行shell命令', icon: '💻' },
-  environment: { name: '环境变量', description: '读取和修改环境变量', icon: '🔧' }
+  filesystem: { name: '文件系统', description: '读写文件和目录', icon: 'Folder' },
+  network: { name: '网络', description: '发起网络请求和连接', icon: 'Connection' },
+  process: { name: '进程', description: '启动和管理进程', icon: 'Operation' },
+  system: { name: '系统', description: '系统级别操作', icon: 'Monitor' },
+  clipboard: { name: '剪贴板', description: '读写剪贴板内容', icon: 'Document' },
+  shell: { name: 'Shell', description: '执行shell命令', icon: 'Lightning' },
+  environment: { name: '环境变量', description: '读取和修改环境变量', icon: 'Tools' }
 };
 
 export const PERMISSION_LEVELS: Record<PermissionLevel, {

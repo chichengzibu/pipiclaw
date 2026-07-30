@@ -1,7 +1,7 @@
 <template>
   <div class="skill-card" :class="{ disabled: !skill.enabled }">
     <div class="skill-icon" :style="{ backgroundColor: iconColor }">
-      <span class="icon-emoji">📦</span>
+      <el-icon class="icon-emoji" :size="28" color="#fff"><Box /></el-icon>
     </div>
     
     <div class="skill-content">
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { View, CircleCheck, Document } from '@element-plus/icons-vue';
+import { View, CircleCheck, Document, Box } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
 interface SkillProps {
@@ -128,7 +128,9 @@ const handleToggle = (value: boolean) => {
 }
 
 .icon-emoji {
-  font-size: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .skill-content {

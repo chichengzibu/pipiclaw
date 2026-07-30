@@ -1,0 +1,13 @@
+﻿L344: ✅ | case 'success': return '✅';
+L345: ❌ | case 'failed': return '❌';
+L346: 🔄 | case 'running': return '🔄';
+L348: ❓ | default: return '❓';
+L354: 🔒 | case 'safe': return '🔒';
+L355: ⚖ | case 'plan': return '⚖️';
+L356: 🔓 | case 'craft': return '🔓';
+L357: ⚡ | default: return '⚡';
+L393: 🔄 | case 'running': return '🔄';
+L394: ✅ | case 'success': return '✅';
+L395: ❌ | case 'failed': return '❌';
+L397: 🚫 | case 'blocked': return '🚫';
+L398: ❓ | default: return '❓';

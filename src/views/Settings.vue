@@ -20,7 +20,9 @@
           @keydown.up.prevent="focusSiblingTab(-1)"
           @keydown.down.prevent="focusSiblingTab(1)"
         >
-          <span class="settings-nav__icon" aria-hidden="true">{{ tab.icon }}</span>
+          <el-icon class="settings-nav__icon" aria-hidden="true" :size="16">
+            <component :is="tab.icon" />
+          </el-icon>
           <span class="settings-nav__label">{{ tab.label }}</span>
           <span v-if="tab.count" class="settings-nav__count">{{ tab.count }}</span>
         </button>
@@ -198,7 +200,9 @@
                 <template #header>
                   <div class="provider-header">
                     <div class="provider-info">
-                      <span class="provider-icon">{{ getProviderIcon(provider.type) }}</span>
+                      <span class="provider-icon">
+                        <el-icon :size="16"><component :is="getProviderIcon(provider.type)" /></el-icon>
+                      </span>
                       <div class="provider-title">
                         <span class="provider-name">{{ provider.name }}</span>
                         <span class="provider-type">{{ getProviderTypeName(provider.type) }}</span>
@@ -427,7 +431,9 @@
               :key="template.type"
               :value="template.type"
             >
-              <span style="margin-right: var(--space-sm);">{{ getProviderIcon(template.type) }}</span>
+              <span style="margin-right: var(--space-sm); display: inline-flex; align-items: center;">
+                <el-icon :size="14"><component :is="getProviderIcon(template.type)" /></el-icon>
+              </span>
               {{ template.name }}
             </el-option>
           </el-select>
@@ -565,7 +571,7 @@ import McpServerFormDialog from '@/components/settings/McpServerFormDialog.vue';
 import { useAppStore } from '@/stores/app';
 import { useHermesMemoryStore } from '@/stores/hermesMemory';
 import { useModelsStore, PROVIDER_DEFAULTS, type ProviderConfig, type ProviderFormData } from '@/stores/models';
-import { Plus } from '@element-plus/icons-vue';
+import { Plus, MagicStick, Memo, Connection, Sunny, Box, Lightning, Setting } from '@element-plus/icons-vue';
 import { setLocale, type SupportedLocale } from '@/locales';
 
 const { t } = useI18n();
@@ -603,11 +609,11 @@ function handleLanguageChange(locale: SupportedLocale): void {
 }
 
 const navTabs = computed(() => [
-  { key: 'basic', label: t('settings.basicTab'), icon: '⚙️' },
+  { key: 'basic', label: t('settings.basicTab'), icon: 'Setting' },
   {
     key: 'models',
     label: t('settings.modelsTab'),
-    icon: '🤖',
+    icon: 'MagicStick',
     count: modelsStore.providers.length > 0
       ? `${modelsStore.enabledCount}/${modelsStore.totalCount}`
       : ''
@@ -615,11 +621,11 @@ const navTabs = computed(() => [
   {
     key: 'mcp',
     label: t('settings.mcpTab'),
-    icon: '🔌',
+    icon: 'Connection',
     count: mcpServers.value.length > 0 ? String(mcpServers.value.length) : ''
   },
-  { key: 'memory', label: t('settings.memoryTab'), icon: '🧠' },
-  { key: 'about', label: t('settings.aboutTab'), icon: 'ℹ️' }
+  { key: 'memory', label: t('settings.memoryTab'), icon: 'Memo' },
+  { key: 'about', label: t('settings.aboutTab'), icon: 'InfoFilled' }
 ]);
 
 function focusSiblingTab(direction: -1 | 1): void {
@@ -791,16 +797,16 @@ async function clearAllMemories(): Promise<void> {
 
 function getProviderIcon(type: string): string {
   const icons: Record<string, string> = {
-    openai: '🤖',
-    anthropic: '🧠',
-    deepseek: '🔮',
-    azure: '☁️',
-    ollama: '🦙',
-    openrouter: '🌐',
-    volc_ark: '🌋',
-    custom: '⚙️'
+    openai: 'MagicStick',
+    anthropic: 'Memo',
+    deepseek: 'Connection',
+    azure: 'Sunny',
+    ollama: 'Box',
+    openrouter: 'Connection',
+    volc_ark: 'Lightning',
+    custom: 'Setting'
   };
-  return icons[type] || '📦';
+  return icons[type] || 'Box';
 }
 
 function getProviderTypeName(type: string): string {

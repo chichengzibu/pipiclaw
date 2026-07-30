@@ -28,7 +28,9 @@
         >
           <div class="provider-header">
             <div class="provider-info">
-              <span class="provider-icon">{{ getProviderIcon(provider.type, provider.name) }}</span>
+              <span class="provider-icon">
+                <el-icon :size="18"><component :is="getProviderIcon(provider.type, provider.name)" /></el-icon>
+              </span>
               <div class="provider-title">
                 <span class="provider-name">{{ provider.name }}</span>
                 <span class="provider-type">{{ getProviderTypeName(provider.type, provider.name) }}</span>
@@ -133,7 +135,9 @@
               :key="template.type"
               :value="template.type"
             >
-              <span style="margin-right: var(--space-sm);">{{ getProviderIcon(template.type, template.name) }}</span>
+              <span style="margin-right: var(--space-sm); display: inline-flex; align-items: center;">
+                <el-icon :size="14"><component :is="getProviderIcon(template.type, template.name)" /></el-icon>
+              </span>
               {{ template.name }}
             </el-option>
           </el-select>
@@ -379,28 +383,28 @@ function getProviderShape(type: string): 'rounded' | 'circle' | 'hex' | 'square'
 function getProviderIcon(type: string, name?: string): string {
   if (type === 'custom' && name) {
     const customIcons: Record<string, string> = {
-      '智谱 AI': '💡',
-      '月之暗面': '🌙',
-      'MiniMax': '⭐',
-      '零一万物': '✨',
-      '百川智能': '🌊',
-      '火山引擎': '🌋',
-      '阿里百炼': '🐏',
-      '硅基流动': '🔬'
+      '智谱 AI': 'MagicStick',
+      '月之暗面': 'Moon',
+      'MiniMax': 'Star',
+      '零一万物': 'MagicStick',
+      '百川智能': 'Connection',
+      '火山引擎': 'Lightning',
+      '阿里百炼': 'Promotion',
+      '硅基流动': 'Search'
     };
-    return customIcons[name] || '⚙️';
+    return customIcons[name] || 'Setting';
   }
   const icons: Record<string, string> = {
-    openai: '🤖',
-    anthropic: '🧠',
-    deepseek: '🔮',
-    azure: '☁️',
-    ollama: '🦙',
-    openrouter: '🌐',
-    volc_ark: '🌋',
-    custom: '⚙️'
+    openai: 'MagicStick',
+    anthropic: 'Memo',
+    deepseek: 'Connection',
+    azure: 'Sunny',
+    ollama: 'Box',
+    openrouter: 'Connection',
+    volc_ark: 'Lightning',
+    custom: 'Setting'
   };
-  return icons[type] || '📦';
+  return icons[type] || 'Box';
 }
 
 function handleManageModels(provider: ProviderConfig): void {
@@ -708,8 +712,6 @@ async function handleDelete(id: string, name: string): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-callout);
-  font-weight: var(--font-weight-semibold);
   flex-shrink: 0;
   background: var(--accent-subtle);
   color: var(--accent-base);

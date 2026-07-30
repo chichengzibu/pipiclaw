@@ -693,9 +693,9 @@ export const useChatStore = defineStore('chat', () => {
       return false;
     }
 
-    console.log('[ChatStore] ========== 🚀 sendMessage 被调用 ==========');
-    console.log('[ChatStore] 📝 消息内容:', content);
-    console.log('[ChatStore] 🤖 Provider:', providerId, 'Model:', modelId);
+    console.log('[ChatStore] ========== [SEND] sendMessage 被调用 ==========');
+    console.log('[ChatStore] [MSG] 消息内容:', content);
+    console.log('[ChatStore] [PROV] Provider:', providerId, 'Model:', modelId);
 
     if (!currentConversationId.value) {
       await createConversation({ providerId, modelId });

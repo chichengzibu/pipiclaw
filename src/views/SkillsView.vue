@@ -29,7 +29,7 @@
     <!-- 技能提案横幅 -->
     <div v-if="pendingProposal" class="proposal-banner">
       <div class="banner-content">
-        <div class="banner-icon">✨</div>
+        <el-icon class="banner-icon" :size="22" color="var(--accent-base)"><MagicStick /></el-icon>
         <div class="banner-text">
           <div class="banner-title">发现新的技能模式！</div>
           <div class="banner-desc">我分析了你的操作，自动生成了技能"{{ pendingProposal.name }}"</div>
@@ -66,7 +66,7 @@
       </div>
       
       <div v-else class="empty-state">
-        <div class="empty-icon">📦</div>
+        <el-icon class="empty-icon" :size="40" color="var(--fg-tertiary)"><Box /></el-icon>
         <h3 class="empty-title">暂无技能</h3>
         <p class="empty-desc">
           从 skills/ 目录导入技能，或创建新的技能模板
@@ -189,7 +189,7 @@
         </div>
       </div>
       <div v-else class="no-candidates">
-        <div class="no-candidates-icon">✅</div>
+        <el-icon class="no-candidates-icon" :size="36" color="var(--el-color-success)"><SuccessFilled /></el-icon>
         <p>没有发现可合并的技能，所有技能都是唯一的！</p>
       </div>
       
@@ -202,7 +202,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Upload, MagicStick } from '@element-plus/icons-vue';
+import { Upload, MagicStick, Box, SuccessFilled } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import SkillCard from '@/components/skills/SkillCard.vue';
 import SkillImportDialog from '@/components/skills/SkillImportDialog.vue';
@@ -443,8 +443,14 @@ onUnmounted(() => {
 }
 
 .banner-icon {
-  font-size: var(--space-xl);
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent-soft);
 }
 
 .banner-text {
@@ -499,7 +505,13 @@ onUnmounted(() => {
 }
 
 .empty-icon {
-  font-size: var(--space-3xl);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: var(--bg-elevated);
   margin-bottom: var(--space-md);
 }
 
@@ -620,7 +632,13 @@ onUnmounted(() => {
 }
 
 .no-candidates-icon {
-  font-size: var(--space-3xl);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(16, 185, 129, 0.10);
   margin-bottom: var(--space-md);
 }
 </style>

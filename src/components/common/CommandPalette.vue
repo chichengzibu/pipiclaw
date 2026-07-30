@@ -60,7 +60,6 @@
                 <el-icon v-if="item.icon" class="palette-item-icon">
                   <component :is="item.icon" />
                 </el-icon>
-                <span v-else-if="item.emoji" class="palette-item-emoji">{{ item.emoji }}</span>
                 <div class="palette-item-body">
                   <div class="palette-item-title">{{ item.title }}</div>
                   <div v-if="item.subtitle" class="palette-item-subtitle">{{ item.subtitle }}</div>
@@ -101,7 +100,6 @@ interface CommandItem {
   title: string
   subtitle?: string
   icon?: Component | string
-  emoji?: string
   badge?: string
   keywords?: string[] // 模糊匹配扩展
   action: () => unknown | Promise<unknown>
@@ -143,7 +141,7 @@ const recentConversations = computed<CommandItem[]>(() => {
         kind: 'recent',
         title: r.title,
         subtitle: '继续对话',
-        emoji: '💬',
+        icon: 'ChatDotRound',
         action: () => router.push({ path: '/chat', query: { c: r.id } }),
       }))
   } catch {
@@ -154,62 +152,62 @@ const recentConversations = computed<CommandItem[]>(() => {
 const navigationCommands = computed<CommandItem[]>(() => {
   const items: CommandItem[] = [
     {
-      id: 'nav-dashboard', kind: 'nav', title: '工作台', subtitle: '回到首页', emoji: '🏠',
+      id: 'nav-dashboard', kind: 'nav', title: '工作台', subtitle: '回到首页', icon: 'House',
       keywords: ['home', '首页', '工作台', '概览'],
       action: () => router.push('/dashboard'),
     },
     {
-      id: 'nav-chat', kind: 'nav', title: 'AI 对话', subtitle: '开启新对话或继续历史', emoji: '💬',
+      id: 'nav-chat', kind: 'nav', title: 'AI 对话', subtitle: '开启新对话或继续历史', icon: 'ChatDotRound',
       keywords: ['chat', '对话', '聊天', 'ai'],
       action: () => router.push('/chat'),
     },
     {
-      id: 'nav-chat-new', kind: 'nav', title: '新建对话', subtitle: '开一个新会话', emoji: '✨',
+      id: 'nav-chat-new', kind: 'nav', title: '新建对话', subtitle: '开一个新会话', icon: 'EditPen',
       keywords: ['new', '新', '创建'],
       action: () => router.push('/chat').then(() => window.dispatchEvent(new CustomEvent('cmd:new-chat'))),
     },
     {
-      id: 'nav-skills', kind: 'nav', title: '技能管理', subtitle: '已安装的技能', emoji: '🧩',
+      id: 'nav-skills', kind: 'nav', title: '技能管理', subtitle: '已安装的技能', icon: 'Tools',
       keywords: ['skills', '技能'],
       action: () => router.push('/skills'),
     },
     {
-      id: 'nav-clawhub', kind: 'nav', title: 'ClawHub 技能市场', subtitle: '浏览 / 发布 / 审核技能', emoji: '🛒',
+      id: 'nav-clawhub', kind: 'nav', title: 'ClawHub 技能市场', subtitle: '浏览 / 发布 / 审核技能', icon: 'Box',
       keywords: ['clawhub', 'market', '市场', '模板'],
       action: () => router.push('/clawhub'),
     },
     {
-      id: 'nav-models', kind: 'nav', title: '模型管理', subtitle: '配置 LLM 提供商', emoji: '🤖',
+      id: 'nav-models', kind: 'nav', title: '模型管理', subtitle: '配置 LLM 提供商', icon: 'MagicStick',
       keywords: ['models', '模型', 'llm'],
       action: () => router.push('/models'),
     },
     {
-      id: 'nav-model-compare', kind: 'nav', title: '模型对比', subtitle: '性价比 + 社区评分', emoji: '⚖️',
+      id: 'nav-model-compare', kind: 'nav', title: '模型对比', subtitle: '性价比 + 社区评分', icon: 'Lightning',
       keywords: ['compare', '对比', '价格'],
       action: () => router.push('/model-compare'),
     },
     {
-      id: 'nav-im', kind: 'nav', title: 'IM 管理', subtitle: '11 个 IM 平台配置', emoji: '📨',
+      id: 'nav-im', kind: 'nav', title: 'IM 管理', subtitle: '11 个 IM 平台配置', icon: 'Message',
       keywords: ['im', 'feishu', 'telegram', 'discord', '钉钉', '飞书'],
       action: () => router.push('/im-management'),
     },
     {
-      id: 'nav-tasks', kind: 'nav', title: '自动化任务', subtitle: '查看运行中的任务', emoji: '⚡',
+      id: 'nav-tasks', kind: 'nav', title: '自动化任务', subtitle: '查看运行中的任务', icon: 'Lightning',
       keywords: ['tasks', '任务'],
       action: () => router.push('/tasks'),
     },
     {
-      id: 'nav-schedule', kind: 'nav', title: '定时任务', subtitle: 'Cron 计划', emoji: '⏰',
+      id: 'nav-schedule', kind: 'nav', title: '定时任务', subtitle: 'Cron 计划', icon: 'Clock',
       keywords: ['schedule', 'cron', '定时', '计划'],
       action: () => router.push('/schedule'),
     },
     {
-      id: 'nav-permissions', kind: 'nav', title: '权限管理', subtitle: '用户 / 群组权限', emoji: '🔒',
+      id: 'nav-permissions', kind: 'nav', title: '权限管理', subtitle: '用户 / 群组权限', icon: 'Lock',
       keywords: ['permission', '权限', 'rbac'],
       action: () => router.push('/permissions'),
     },
     {
-      id: 'nav-settings', kind: 'nav', title: '系统设置', subtitle: '主题 / 快捷键 / 自动更新', emoji: '⚙️',
+      id: 'nav-settings', kind: 'nav', title: '系统设置', subtitle: '主题 / 快捷键 / 自动更新', icon: 'Setting',
       keywords: ['settings', '设置', 'preferences', '偏好'],
       action: () => router.push('/settings'),
     },
@@ -222,19 +220,19 @@ const actionCommands = computed<CommandItem[]>(() => {
   return [
     {
       id: 'action-toggle-theme', kind: 'action', title: isDark ? '切换到浅色主题' : '切换到深色主题',
-      subtitle: '主题切换', emoji: isDark ? '☀️' : '🌙',
+      subtitle: '主题切换', icon: isDark ? 'Sunny' : 'Moon',
       action: () => appStore.toggleTheme(),
     },
     {
-      id: 'action-reload', kind: 'action', title: '重新加载窗口', subtitle: 'Ctrl+Shift+R', emoji: '🔄',
+      id: 'action-reload', kind: 'action', title: '重新加载窗口', subtitle: 'Ctrl+Shift+R', icon: 'Refresh',
       action: () => window.location.reload(),
     },
     {
-      id: 'action-devtools', kind: 'action', title: '打开开发者工具', subtitle: '调试用', emoji: '🛠️',
+      id: 'action-devtools', kind: 'action', title: '打开开发者工具', subtitle: '调试用', icon: 'Tools',
       action: () => (window as any).electronAPI?.window?.openDevTools?.(),
     },
     {
-      id: 'action-clear-cache', kind: 'action', title: '清空本地缓存', subtitle: '不影响云端', emoji: '🧹',
+      id: 'action-clear-cache', kind: 'action', title: '清空本地缓存', subtitle: '不影响云端', icon: 'Delete',
       action: async () => {
         localStorage.clear()
         sessionStorage.clear()
@@ -247,23 +245,23 @@ const actionCommands = computed<CommandItem[]>(() => {
 
 const promptTemplates = computed<CommandItem[]>(() => [
   {
-    id: 'prompt-translate', kind: 'prompt', title: '翻译一段文字', subtitle: '中英日韩法德西俄 8 语种', emoji: '🌐',
+    id: 'prompt-translate', kind: 'prompt', title: '翻译一段文字', subtitle: '中英日韩法德西俄 8 语种', icon: 'Connection',
     action: () => router.push('/chat').then(() => fillInput('请帮我把下面这段文字翻译成英文:\n\n')),
   },
   {
-    id: 'prompt-code-review', kind: 'prompt', title: '代码审查', subtitle: '粘贴 PR diff,自动 review', emoji: '🔍',
+    id: 'prompt-code-review', kind: 'prompt', title: '代码审查', subtitle: '粘贴 PR diff,自动 review', icon: 'Search',
     action: () => router.push('/chat').then(() => fillInput('请审查以下代码改动,给出风格 / 性能 / 安全建议:\n\n```diff\n\n```')),
   },
   {
-    id: 'prompt-daily', kind: 'prompt', title: '生成今日工作日报', subtitle: '从 IM / 任务自动汇总', emoji: '📅',
+    id: 'prompt-daily', kind: 'prompt', title: '生成今日工作日报', subtitle: '从 IM / 任务自动汇总', icon: 'Document',
     action: () => router.push('/chat').then(() => fillInput('帮我生成今天的工作日报,要包含: 完成任务、进行中、风险/阻塞')),
   },
   {
-    id: 'prompt-bug', kind: 'prompt', title: '分析一个 bug', subtitle: '贴日志 / 报错信息', emoji: '🐛',
+    id: 'prompt-bug', kind: 'prompt', title: '分析一个 bug', subtitle: '贴日志 / 报错信息', icon: 'Warning',
     action: () => router.push('/chat').then(() => fillInput('我遇到一个 bug,错误信息如下,请帮我分析:\n\n')),
   },
   {
-    id: 'prompt-idea', kind: 'prompt', title: '头脑风暴', subtitle: '给一个主题,列 10 个角度', emoji: '💡',
+    id: 'prompt-idea', kind: 'prompt', title: '头脑风暴', subtitle: '给一个主题,列 10 个角度', icon: 'MagicStick',
     action: () => router.push('/chat').then(() => fillInput('我想头脑风暴一个想法。主题是:\n\n请从 10 个不同角度帮我展开。')),
   },
 ])
@@ -324,9 +322,9 @@ const filteredCommands = computed<CommandItem[]>(() => {
 const groupedResults = computed(() => {
   const groups: Record<string, { key: string; label: string; items: CommandItem[] }> = {
     recent: { key: 'recent', label: '最近对话', items: [] },
-    prompt: { key: 'prompt', label: '💡 提示词模板', items: [] },
-    action: { key: 'action', label: '⚡ 动作', items: [] },
-    nav: { key: 'nav', label: '📍 页面', items: [] },
+    prompt: { key: 'prompt', label: '提示词模板', items: [] },
+    action: { key: 'action', label: '动作', items: [] },
+    nav: { key: 'nav', label: '页面', items: [] },
   }
   for (const it of filteredCommands.value) {
     groups[it.kind].items.push(it)
@@ -573,8 +571,8 @@ watch([activeGroupIdx, activeItemIdx], () => {
   }
 
   &--recent {
-    .palette-item-emoji {
-      filter: grayscale(0.3);
+    .palette-item-icon {
+      color: var(--fg-tertiary);
     }
   }
 }
@@ -587,13 +585,6 @@ watch([activeGroupIdx, activeItemIdx], () => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.palette-item-emoji {
-  font-size: 18px;
-  flex-shrink: 0;
-  width: 20px;
-  text-align: center;
 }
 
 .palette-item-body {

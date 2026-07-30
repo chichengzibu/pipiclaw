@@ -33,7 +33,7 @@
              <div v-if="hermesMemoryStore.showMemoryPanel" class="memory-panel">
                <div class="memory-panel-header">
                  <div class="memory-panel-title">
-                   <span class="memory-panel-icon">🧠</span>
+                   <el-icon class="memory-panel-icon" :size="16"><Memo /></el-icon>
                    <span>Hermes 记忆注入</span>
                  </div>
                  <div class="memory-panel-actions">
@@ -57,15 +57,15 @@
                  </div>
                  <div v-else class="memory-content">
                    <div v-if="hermesMemoryStore.coreMemory" class="memory-section">
-                     <div class="memory-section-title">📝 核心记忆</div>
+                     <div class="memory-section-title"><el-icon :size="13"><EditPen /></el-icon> 核心记忆</div>
                      <div class="memory-section-content">{{ hermesMemoryStore.coreMemory }}</div>
                    </div>
                    <div v-if="hermesMemoryStore.experienceMemory" class="memory-section">
-                     <div class="memory-section-title">💡 经验记忆</div>
+                     <div class="memory-section-title"><el-icon :size="13"><MagicStick /></el-icon> 经验记忆</div>
                      <div class="memory-section-content">{{ hermesMemoryStore.experienceMemory }}</div>
                    </div>
                    <div v-if="hermesMemoryStore.memories.length > 0" class="memory-section">
-                     <div class="memory-section-title">💬 对话记忆 ({{ hermesMemoryStore.memories.length }})</div>
+                     <div class="memory-section-title"><el-icon :size="13"><ChatDotRound /></el-icon> 对话记忆 ({{ hermesMemoryStore.memories.length }})</div>
                      <div class="memory-list">
                        <div 
                          v-for="mem in hermesMemoryStore.memories.slice(-5).reverse()" 
@@ -84,7 +84,7 @@
              <!-- Phase 6: 任务执行状态显示 -->
              <div v-if="chatStore.executingTask" class="task-execution-status">
               <div class="task-status-header">
-                <span class="task-status-icon">⚡</span>
+                <el-icon class="task-status-icon" :size="14"><Lightning /></el-icon>
                 <span class="task-status-text">任务执行中...</span>
                 <div class="task-status-spinner"></div>
               </div>
@@ -96,7 +96,9 @@
                   :class="step.status"
                 >
                   <span class="step-icon">
-                    {{ step.status === 'success' ? '✅' : step.status === 'failed' ? '❌' : step.status === 'running' ? '🔄' : '⏳' }}
+                    <el-icon :size="14" :class="['step-icon-svg', `is-${step.status}`]">
+                      <component :is="stepStatusIcon(step.status)" />
+                    </el-icon>
                   </span>
                   <span class="step-desc">{{ step.description }}</span>
                 </div>
@@ -114,10 +116,10 @@
                   <div class="message-avatar" :class="message.role">
                     <span v-if="message.role === 'assistant'" class="pixel-avatar">
                       <div class="pixel-avatar-inner">
-                        <span class="pixel-pip">🦐</span>
+                        <el-icon class="pixel-pip" :size="20" color="var(--accent-base)"><MagicStick /></el-icon>
                       </div>
                     </span>
-                    <span v-else class="user-avatar">👤</span>
+                    <span v-else class="user-avatar"><el-icon :size="20"><User /></el-icon></span>
                   </div>
                 <div class="message-content">
                   <!-- P1-4: thinking 可视化改用 ThinkingBlock (替代原 inline 实现) -->
@@ -223,7 +225,7 @@
         <div class="empty-chat" v-else>
           <div class="empty-content">
             <div class="empty-greeting">
-              <span class="empty-icon">👋</span>
+              <el-icon class="empty-icon" :size="36" color="var(--fg-tertiary)"><Sunny /></el-icon>
               <h2 class="empty-title">{{ greetingText }}</h2>
               <p class="empty-desc">PiPiClaw 已经准备就绪。从下面挑一个开始,或者直接输入问题。</p>
             </div>
@@ -447,7 +449,7 @@
 import { ref, computed, reactive, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Promotion, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading, Setting, WarningFilled } from '@element-plus/icons-vue';
+import { Plus, Promotion, CopyDocument, RefreshRight, DArrowRight, Search, Close, Loading, Setting, WarningFilled, Memo, EditPen, MagicStick, ChatDotRound, Lightning, User, Sunny, CircleCheck, CircleClose, Refresh, Clock } from '@element-plus/icons-vue';
 // P1-6: marked + highlight.js 改动态导入,避免 vendor-text 988KB 进首屏
 // (用户进入 Chat 页才会触发首条消息渲染,延迟加载 ≈0 感知)
 
@@ -553,12 +555,22 @@ const CHAT_SIDEBAR_MIN_WIDTH = 200;
 const greetingText = computed(() => {
   const hour = new Date().getHours()
   if (hour < 6) return '夜深了 — 还有我能帮的吗?'
-  if (hour < 12) return '早上好 ☀️'
+  if (hour < 12) return '早上好'
   if (hour < 14) return '中午好,该吃饭啦'
   if (hour < 18) return '下午好,继续加油'
   if (hour < 22) return '晚上好,辛苦了一天'
   return '深夜了 — 别忘了休息'
 })
+
+/** 任务步骤状态 → Element Plus icon 名 */
+function stepStatusIcon(status: string): string {
+  switch (status) {
+    case 'success': return 'CircleCheck'
+    case 'failed': return 'CircleClose'
+    case 'running': return 'Refresh'
+    default: return 'Clock'
+  }
+}
 
 async function handleQuickPrompt(p: { prompt: string }): Promise<void> {
   if (enabledProviders.value.length === 0) {
@@ -1566,12 +1578,21 @@ async function handleSaveSettings(): Promise<void> {
 }
 
 .pixel-pip {
-  font-size: var(--font-size-title-1);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .user-avatar {
-  font-size: var(--font-size-title-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-base);
 }
 
 @keyframes pixelSparkle {
@@ -1905,10 +1926,14 @@ async function handleSaveSettings(): Promise<void> {
 }
 
 .empty-icon {
-  font-size: 56px;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--accent-soft);
   margin-bottom: var(--space-md);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 .empty-title {
@@ -2047,7 +2072,9 @@ async function handleSaveSettings(): Promise<void> {
 }
 
 .task-status-icon {
-  font-size: var(--font-size-title-2);
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-base);
 }
 
 .task-status-spinner {
@@ -2117,7 +2144,19 @@ async function handleSaveSettings(): Promise<void> {
 }
 
 .step-icon {
-  font-size: var(--icon-size-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-icon-svg.is-success { color: var(--el-color-success); }
+.step-icon-svg.is-failed  { color: var(--el-color-danger); }
+.step-icon-svg.is-running { color: var(--accent-base); animation: step-spin 1.2s linear infinite; }
+.step-icon-svg.is-pending { color: var(--fg-tertiary); }
+
+@keyframes step-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .step-desc {
@@ -2265,7 +2304,9 @@ async function handleSaveSettings(): Promise<void> {
 }
 
 .memory-panel-icon {
-  font-size: var(--font-size-title-2);
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-base);
 }
 
 .memory-panel-actions {
@@ -2301,6 +2342,9 @@ async function handleSaveSettings(): Promise<void> {
   font-weight: var(--font-weight-semibold);
   color: var(--el-text-color-primary);
   margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .memory-section-content {

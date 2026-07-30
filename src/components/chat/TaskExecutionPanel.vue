@@ -2,7 +2,9 @@
   <div class="task-execution-panel" v-if="visible">
     <div class="panel-header">
       <div class="panel-title">
-        <span class="title-icon">{{ getModeIcon() }}</span>
+        <el-icon class="title-icon" :size="18">
+          <component :is="getModeIcon()" />
+        </el-icon>
         <span class="title-text">{{ getTitle() }}</span>
       </div>
       <div class="panel-actions">
@@ -47,7 +49,9 @@
         >
           <div class="step-header">
             <span class="step-order">{{ step.order }}</span>
-            <span class="step-icon">{{ getStepIcon(step.status) }}</span>
+            <el-icon class="step-icon" :size="14" :class="`is-${step.status}`">
+              <component :is="getStepIcon(step.status)" />
+            </el-icon>
             <span class="step-description">{{ step.description }}</span>
           </div>
 
@@ -84,7 +88,7 @@
             </div>
 
             <div v-if="step.status === 'blocked'" class="step-blocked">
-              <span class="blocked-icon">🚫</span>
+              <el-icon class="blocked-icon" :size="14" color="var(--el-color-danger)"><CircleClose /></el-icon>
               <span class="blocked-text">权限不足，此步骤被拦截</span>
             </div>
           </div>
@@ -109,6 +113,7 @@
 </template>
 
 <script setup lang="ts">
+import { CircleCheck, CircleClose, Clock, Refresh, Warning, Lock, Promotion, Lightning, VideoPause, QuestionFilled } from '@element-plus/icons-vue';
 
 interface StepPermissionCheck {
   category: string;
@@ -152,10 +157,10 @@ const emit = defineEmits<{
 
 const getModeIcon = () => {
   switch (props.mode) {
-    case 'safe': return '🔒';
-    case 'plan': return '⚖️';
-    case 'craft': return '🔓';
-    default: return '⚡';
+    case 'safe': return 'Lock';
+    case 'plan': return 'Promotion';
+    case 'craft': return 'Lightning';
+    default: return 'Lightning';
   }
 };
 
@@ -200,13 +205,13 @@ const getModeText = () => {
 
 const getStepIcon = (status: string) => {
   switch (status) {
-    case 'pending': return '⏳';
-    case 'running': return '🔄';
-    case 'success': return '✅';
-    case 'failed': return '❌';
-    case 'skipped': return '⏭️';
-    case 'blocked': return '🚫';
-    default: return '❓';
+    case 'pending': return 'Clock';
+    case 'running': return 'Refresh';
+    case 'success': return 'CircleCheck';
+    case 'failed': return 'CircleClose';
+    case 'skipped': return 'VideoPause';
+    case 'blocked': return 'Warning';
+    default: return 'QuestionFilled';
   }
 };
 
@@ -256,7 +261,9 @@ const handleCancel = () => {
 }
 
 .title-icon {
-  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--el-color-primary);
 }
 
 .panel-actions {
@@ -345,7 +352,20 @@ const handleCancel = () => {
 }
 
 .step-icon {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.step-icon.is-success { color: var(--el-color-success); }
+.step-icon.is-failed  { color: var(--el-color-danger); }
+.step-icon.is-blocked { color: var(--el-color-danger); }
+.step-icon.is-running { color: var(--el-color-warning); animation: task-spin 1.2s linear infinite; }
+.step-icon.is-pending { color: var(--el-text-color-placeholder); }
+.step-icon.is-skipped { color: var(--el-text-color-secondary); }
+
+@keyframes task-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .step-description {
@@ -410,7 +430,8 @@ const handleCancel = () => {
 }
 
 .blocked-icon {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .execution-summary {

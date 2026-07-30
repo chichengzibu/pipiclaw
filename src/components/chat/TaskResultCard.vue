@@ -2,7 +2,9 @@
 <template>
   <div class="task-result-card">
     <div class="task-result-header" @click="toggleExpand">
-      <span class="result-icon">{{ success ? '✅' : '❌' }}</span>
+      <el-icon class="result-icon" :size="16" :class="success ? 'is-success' : 'is-failed'">
+        <component :is="success ? 'CircleCheck' : 'CircleClose'" />
+      </el-icon>
       <span class="result-title">
         {{ success ? '任务执行成功' : '任务执行失败' }}
       </span>
@@ -21,26 +23,26 @@
         <div v-if="steps.length > 0" class="result-steps">
           <div v-for="step in steps" :key="step.order" class="result-step-item" :class="{ failed: step.status === 'failed' }">
             <span class="step-index">{{ step.order }}</span>
-            <span class="step-icon">
-              {{ step.status === 'success' ? '✅' : step.status === 'failed' ? '❌' : step.status === 'running' ? '🔄' : '⏳' }}
-            </span>
+            <el-icon class="step-icon" :size="14" :class="`is-${step.status}`">
+              <component :is="stepStatusIcon(step.status)" />
+            </el-icon>
             <div class="step-content">
               <span class="step-description">{{ step.description || '执行步骤' }}</span>
               <div v-if="step.params" class="step-params">
                 <span v-if="step.params.filePath || step.params.path" class="param-item">
-                  📁 路径：<code>{{ step.params.filePath || step.params.path }}</code>
+                  <el-icon :size="12"><Document /></el-icon> 路径：<code>{{ step.params.filePath || step.params.path }}</code>
                 </span>
                 <span v-if="step.params.content" class="param-item">
-                  📝 内容：<code>{{ getContentPreview(step.params.content) }}</code>
+                  <el-icon :size="12"><EditPen /></el-icon> 内容：<code>{{ getContentPreview(step.params.content) }}</code>
                 </span>
                 <span v-if="step.params.command" class="param-item">
-                  💻 命令：<code>{{ step.params.command }}</code>
+                  <el-icon :size="12"><Lightning /></el-icon> 命令：<code>{{ step.params.command }}</code>
                 </span>
                 <span v-if="step.params.newPath" class="param-item">
-                  🔄 新路径：<code>{{ step.params.newPath }}</code>
+                  <el-icon :size="12"><RefreshRight /></el-icon> 新路径：<code>{{ step.params.newPath }}</code>
                 </span>
                 <span v-if="step.params.url" class="param-item">
-                  🌐 URL：<code>{{ step.params.url }}</code>
+                  <el-icon :size="12"><Connection /></el-icon> URL：<code>{{ step.params.url }}</code>
                 </span>
               </div>
             </div>
@@ -59,6 +61,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { CircleCheck, CircleClose, Document, EditPen, Lightning, RefreshRight, Connection, Clock, Refresh } from '@element-plus/icons-vue';
 import type { TaskStepResult } from '@/stores/chat';
 
 interface Props {
@@ -89,6 +92,16 @@ const getContentPreview = (content: string): string => {
   if (!content) return '';
   return content.length > 100 ? content.substring(0, 100) + '...' : content;
 };
+
+/** 步骤状态 → icon 名 */
+function stepStatusIcon(status: string): string {
+  switch (status) {
+    case 'success': return 'CircleCheck';
+    case 'failed': return 'CircleClose';
+    case 'running': return 'Refresh';
+    default: return 'Clock';
+  }
+}
 
 watch(() => props.defaultExpanded, (newVal) => {
   if (newVal !== undefined) {
@@ -122,8 +135,12 @@ watch(() => props.defaultExpanded, (newVal) => {
 }
 
 .result-icon {
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+.result-icon.is-success { color: var(--el-color-success); }
+.result-icon.is-failed  { color: var(--el-color-danger); }
 
 .result-title {
   color: var(--el-text-color-primary);
@@ -196,9 +213,19 @@ watch(() => props.defaultExpanded, (newVal) => {
 }
 
 .step-icon {
-  font-size: 14px;
   margin-top: 3px;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.step-icon.is-success { color: var(--el-color-success); }
+.step-icon.is-failed  { color: var(--el-color-danger); }
+.step-icon.is-running { color: var(--el-color-primary); animation: step-spin 1.2s linear infinite; }
+.step-icon.is-pending { color: var(--el-text-color-placeholder); }
+
+@keyframes step-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .step-content {

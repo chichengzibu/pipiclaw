@@ -1,0 +1,8 @@
+﻿L22: 🤖 | <div class="welcome-icon">🤖</div>
+L37: 🦙 | <div class="model-icon">🦙</div>
+L43: 🔍 | <div class="model-icon">🔍</div>
+L49: ⚙ | <div class="model-icon">⚙️</div>
+L65: 🔒 | <div class="permission-name">🔒 安全模式</div>
+L72: 🛠 | <div class="permission-name">🛠️ 标准模式</div>
+L79: 🚀 | <div class="permission-name">🚀 全量模式</div>
+L89: 🎉 | <div class="finish-icon">🎉</div>

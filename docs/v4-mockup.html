@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PiPiClaw v4.4 Mockup — 1 改 token 落地效果</title>
+<!-- 删 Google Fonts 远程依赖,改用 system stack (离线安全 + 工程化时直接用 tokens.css 已有 font-family) -->
+<!-- <link rel="preconnect" href="https://fonts.googleapis.com"> -->
+<!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
+<!-- <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"> -->
+<style>
+/* ============================================================
+   DESIGN TOKENS — 1 改 token 路线核心
+   ============================================================ */
+:root {
+  /* 4 档 spacing — 8px 网格 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+
+  /* 4 档 radius */
+  --radius-1: 4px;
+  --radius-2: 6px;
+  --radius-3: 8px;
+  --radius-4: 12px;
+
+  /* 3 档 shadow */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-3: 0 8px 24px -4px rgba(0, 0, 0, 0.08);
+
+  /* motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1.05);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+
+  /* light theme */
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f5f5f5;
+  --line: #e5e5e5;
+  --line-soft: #efefef;
+  --ink: #14171e;
+  --ink-2: #3a4256;
+  --muted: #5a5a55;
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.10);
+  --accent-ink: #1e40af;
+  --good: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+}
+[data-theme="dark"] {
+  --bg: #0f0f17;
+  --surface: #1a1a2e;
+  --surface-2: #232338;
+  --line: #2a2a3e;
+  --line-soft: #20202f;
+  --ink: #e5e7eb;
+  --ink-2: #b4b8c5;
+  --muted: #9ca3af;
+  --accent: #0a84ff;
+  --accent-soft: rgba(10, 132, 255, 0.16);
+  --accent-ink: #409cff;
+  --good: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+}
+
+/* 系统主题跟随 (macOS / Windows 11 行为) */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --bg: #0f0f17;
+    --surface: #1a1a2e;
+    --surface-2: #232338;
+    --line: #2a2a3e;
+    --line-soft: #20202f;
+    --ink: #e5e7eb;
+    --ink-2: #b4b8c5;
+    --muted: #9ca3af;
+    --accent: #0a84ff;
+    --accent-soft: rgba(10, 132, 255, 0.16);
+    --accent-ink: #409cff;
+    --good: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg); color: var(--ink);
+  font-size: 14px; line-height: 1.5;
+  min-height: 100dvh; transition: background var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
+}
+
+.mono, .kbd, code {
+  font-family: 'SF Mono', 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+}
+
+/* 键盘用户跳到主内容 (WCAG 2.4.1) */
+.skip-link {
+  position: absolute; left: -9999px; top: 0;
+  padding: 8px 12px; background: var(--accent); color: white;
+  border-radius: var(--radius-2); z-index: 9999;
+  font-size: 13px; font-weight: 500;
+}
+.skip-link:focus { left: 8px; top: 8px; }
+
+/* focus-visible — 1 改 token 路线核心无障碍修复 */
+*:focus { outline: none; }
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-1);
+}
+
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+a { color: var(--accent); text-decoration: none; }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app {
+  display: grid;
+  grid-template-rows: 32px 1fr;
+  height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+
+/* TitleBar */
+.titlebar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center;
+  height: 32px; padding: 0 var(--space-2) 0 var(--space-4);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+.titlebar-title {
+  font-size: 12px; color: var(--ink-2); font-weight: 500;
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.titlebar-spacer { flex: 1; }
+.window-controls { display: flex; -webkit-app-region: no-drag; }
+.window-btn {
+  width: 32px; height: 32px; border: none; background: transparent;
+  color: var(--ink-2); display: flex; align-items: center;
+  justify-content: center; transition: background var(--dur-fast);
+}
+.window-btn:hover { background: var(--surface-2); }
+.window-btn.close:hover { background: var(--danger); color: white; }
+
+/* Body layout */
+.body { display: grid; grid-template-columns: 56px 1fr; overflow: hidden; }
+
+/* SideNav */
+.sidenav {
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: var(--space-3) 0;
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-1);
+}
+.nav-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); background: transparent; border: none;
+  position: relative;
+  transition: all var(--dur-fast) var(--ease-standard);
+}
+.nav-icon:hover { background: var(--surface-2); color: var(--ink-2); }
+.nav-icon.active { color: var(--accent); background: var(--accent-soft); }
+.nav-icon.active::before {
+  content: ""; position: absolute; left: -8px; top: 8px; bottom: 8px;
+  width: 3px; background: var(--accent); border-radius: 0 2px 2px 0;
+}
+.nav-spacer { flex: 1; }
+
+/* Main */
+.main { display: flex; flex-direction: column; overflow: hidden; }
+.topbar {
+  height: 44px; padding: 0 var(--space-4);
+  display: flex; align-items: center; gap: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.crumbs { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.topbar-actions { margin-left: auto; display: flex; gap: var(--space-2); align-items: center; }
+.search {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-2);
+  font-size: 13px; color: var(--muted);
+  cursor: pointer; transition: all var(--dur-fast);
+  min-width: 200px;
+}
+.search:hover { border-color: var(--line); }
+.kbd {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--muted); background: var(--surface);
+  border: 1px solid var(--line); padding: 1px 5px;
+  border-radius: 4px; margin-left: auto;
+}
+.icon-btn {
+  width: 28px; height: 28px; border-radius: var(--radius-2);
+  background: transparent; border: none; color: var(--ink-2);
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--dur-fast);
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+
+.content { flex: 1; overflow: auto; padding: var(--space-4); }
+
+/* ============================================================
+   PAGE: DASHBOARD
+   ============================================================ */
+.page { display: none; }
+.page.active { display: block; }
+.page-h {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+.page-h h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.page-h .sub { font-size: 13px; color: var(--muted); }
+
+/* Stat cards */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3); margin-bottom: var(--space-4);
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  padding: var(--space-3) var(--space-4);
+  transition: all var(--dur-base) var(--ease-standard);
+}
+.stat-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+.stat-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.stat-value { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.stat-trend { font-size: 12px; color: var(--good); margin-top: 4px; }
+
+/* Card section */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.section-h {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+.section-h h2 { font-size: 14px; font-weight: 600; }
+.section-h .more { font-size: 12px; color: var(--accent); }
+
+/* Quick actions */
+.actions {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+.action {
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  background: var(--surface);
+  display: flex; align-items: center; gap: var(--space-3);
+  cursor: pointer;
+  transition: all var(--dur-base) var(--ease-standard);
+  text-align: left;
+}
+.action:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+.action-icon {
+  width: 32px; height: 32px; border-radius: var(--radius-2);
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.action-text { flex: 1; }
+.action-title { font-size: 13px; font-weight: 500; }
+.action-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ============================================================
+   PAGE: CHAT
+   ============================================================ */
+.chat-layout {
+  display: grid; grid-template-columns: 240px 1fr; gap: 0;
+  height: 100%; margin: calc(var(--space-4) * -1);
+}
+.chat-sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  display: flex; flex-direction: column;
+}
+.chat-side-h {
+  padding: var(--space-3) var(--space-3);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.new-chat {
+  flex: 1; padding: var(--space-2) var(--space-3);
+  background: var(--accent); color: white;
+  border: none; border-radius: var(--radius-2);
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: var(--space-2); justify-content: center;
+  transition: all var(--dur-fast);
+}
+.new-chat:hover { background: var(--accent-ink); }
+
+.conv-list { flex: 1; overflow: auto; padding: 0 var(--space-2); }
+.conv-item {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2);
+  font-size: 13px; color: var(--ink-2);
+  cursor: pointer; margin-bottom: 2px;
+  display: flex; align-items: center; gap: var(--space-2);
+  transition: all var(--dur-fast);
+  position: relative;
+}
+.conv-item:hover { background: var(--surface-2); }
+.conv-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.conv-item.active::before {
+  content: ""; position: absolute; left: 0; top: 6px; bottom: 6px;
+  width: 2px; background: var(--accent); border-radius: 0 2px 2px 0;
+}
+.conv-icon { color: var(--muted); flex-shrink: 0; }
+.conv-item.active .conv-icon { color: var(--accent); }
+.conv-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.chat-main { display: flex; flex-direction: column; background: var(--bg); }
+.chat-header {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  display: flex; align-items: center; gap: var(--space-3);
+}
+.model-pill {
+  padding: 3px var(--space-2);
+  background: var(--surface-2); border-radius: var(--radius-2);
+  font-size: 12px; color: var(--ink-2);
+  display: flex; align-items: center; gap: 4px;
+}
+.model-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--good); }
+
+.chat-msgs {
+  flex: 1; overflow: auto; padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+.msg { display: flex; gap: var(--space-3); max-width: 720px; }
+.msg-user { margin-left: auto; flex-direction: row-reverse; }
+.msg-avatar {
+  width: 28px; height: 28px; border-radius: var(--radius-2);
+  background: var(--surface-2); color: var(--ink-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; flex-shrink: 0;
+}
+.msg-user .msg-avatar { background: var(--accent); color: white; }
+.msg-bubble {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  padding: var(--space-3) var(--space-4);
+  font-size: 13px; line-height: 1.6;
+}
+.msg-user .msg-bubble {
+  background: var(--accent); color: white; border-color: var(--accent);
+}
+
+.thinking {
+  background: var(--surface-2);
+  border-radius: var(--radius-2);
+  padding: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+  font-size: 12px; color: var(--muted);
+  display: flex; align-items: center; gap: var(--space-2);
+  border-left: 2px solid var(--accent);
+}
+.thinking-dots { display: inline-flex; gap: 3px; }
+.thinking-dots span {
+  width: 4px; height: 4px; background: var(--muted); border-radius: 50%;
+  animation: pulse 1.2s infinite var(--ease-standard);
+}
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+
+.chat-input-area {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+.chat-input {
+  max-width: 720px; margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  padding: var(--space-2) var(--space-3);
+  display: flex; flex-direction: column; gap: var(--space-2);
+  transition: all var(--dur-fast);
+}
+.chat-input:focus-within {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent-soft);
+  outline-offset: -2px;
+}
+.chat-input textarea {
+  width: 100%; min-height: 32px; max-height: 200px;
+  background: transparent; border: none; outline: none;
+  color: var(--ink); font-size: 13px; line-height: 1.5; resize: none;
+}
+.chat-input textarea::placeholder { color: var(--muted); }
+.chat-input-bar {
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.chat-input-bar .left { display: flex; gap: 4px; }
+.tool-btn {
+  width: 28px; height: 28px; border-radius: var(--radius-2);
+  background: transparent; border: none; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--dur-fast);
+}
+.tool-btn:hover { background: var(--surface-2); color: var(--ink-2); }
+.send-btn {
+  margin-left: auto;
+  background: var(--accent); color: white; border: none;
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-2);
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 4px;
+  transition: all var(--dur-fast);
+}
+.send-btn:hover { background: var(--accent-ink); }
+.send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ============================================================
+   PAGE: SETTINGS
+   ============================================================ */
+.settings-layout { display: grid; grid-template-columns: 180px 1fr; gap: var(--space-4); }
+.settings-nav { display: flex; flex-direction: column; gap: 2px; }
+.settings-nav-item {
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-2);
+  font-size: 13px; color: var(--ink-2); cursor: pointer;
+  transition: all var(--dur-fast);
+  text-align: left; background: transparent; border: none;
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.settings-nav-item:hover { background: var(--surface-2); }
+.settings-nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+
+.settings-content { max-width: 600px; }
+.settings-h { margin-bottom: var(--space-3); }
+.settings-h h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.settings-h .desc { font-size: 12px; color: var(--muted); }
+
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.setting-row:last-child { border-bottom: 0; }
+.setting-label { font-size: 13px; font-weight: 500; }
+.setting-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* toggle */
+.toggle {
+  width: 36px; height: 20px; background: var(--line);
+  border-radius: 999px; position: relative; cursor: pointer;
+  transition: all var(--dur-base) var(--ease-standard);
+  border: none;
+}
+.toggle::after {
+  content: ""; position: absolute; left: 2px; top: 2px;
+  width: 16px; height: 16px; background: white;
+  border-radius: 50%; transition: all var(--dur-base) var(--ease-emphasized);
+  box-shadow: var(--shadow-1);
+}
+.toggle.on { background: var(--accent); }
+.toggle.on::after { left: 18px; }
+
+/* radio group */
+.radio-group { display: flex; gap: var(--space-2); }
+.radio {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius-2);
+  font-size: 13px; background: var(--surface);
+  color: var(--ink-2); cursor: pointer;
+  transition: all var(--dur-fast);
+}
+.radio:hover { border-color: var(--ink-2); }
+.radio.active {
+  background: var(--accent-soft); color: var(--accent);
+  border-color: var(--accent); font-weight: 500;
+}
+
+/* select */
+.select-input {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius-2);
+  background: var(--surface); color: var(--ink);
+  font-size: 13px; min-width: 200px; cursor: pointer;
+  transition: all var(--dur-fast);
+}
+.select-input:hover { border-color: var(--ink-2); }
+.select-input:focus-visible { border-color: var(--accent); }
+
+/* ============================================================
+   PAGE: MODELS
+   ============================================================ */
+.model-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.model-card {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  transition: all var(--dur-base) var(--ease-standard);
+  cursor: pointer;
+  position: relative;
+}
+.model-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+.model-card.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.model-card.active::before {
+  content: ""; position: absolute; left: -1px; top: 8px; bottom: 8px;
+  width: 3px; background: var(--accent); border-radius: 0 2px 2px 0;
+}
+.model-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-2);
+  background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600; color: var(--ink-2);
+  flex-shrink: 0;
+}
+/* 同系模型分形状 + 弱饱和背景色 (用户一眼区分) */
+.model-icon.shape-rounded { border-radius: var(--radius-2); background: rgba(59, 130, 246, 0.10); color: #1e40af; }
+.model-icon.shape-circle { border-radius: 50%; background: rgba(16, 185, 129, 0.10); color: #065f46; }
+.model-icon.shape-hex { border-radius: 6px; background: rgba(245, 158, 11, 0.10); color: #92400e; transform: rotate(0deg); }
+.model-icon.shape-square { border-radius: 4px; background: rgba(168, 85, 247, 0.10); color: #6b21a8; }
+[data-theme="dark"] .model-icon.shape-rounded { background: rgba(96, 165, 250, 0.18); color: #93c5fd; }
+[data-theme="dark"] .model-icon.shape-circle { background: rgba(52, 211, 153, 0.18); color: #6ee7b7; }
+[data-theme="dark"] .model-icon.shape-hex { background: rgba(251, 191, 36, 0.18); color: #fcd34d; }
+[data-theme="dark"] .model-icon.shape-square { background: rgba(192, 132, 252, 0.18); color: #d8b4fe; }
+.model-card.active .model-icon { background: var(--accent) !important; color: white !important; }
+.model-info { flex: 1; }
+.model-name { font-size: 13px; font-weight: 600; }
+.model-meta { font-size: 12px; color: var(--muted); margin-top: 2px; display: flex; gap: var(--space-3); }
+.model-meta-item { display: flex; align-items: center; gap: 4px; }
+.model-tags { display: flex; gap: var(--space-1); }
+.tag {
+  font-size: 11px; padding: var(--space-1) var(--space-2);
+  background: var(--surface-2); color: var(--ink-2);
+  border-radius: var(--radius-1);
+}
+.tag.tag-good { background: rgba(16, 185, 129, 0.10); color: var(--good); }
+
+/* ============================================================
+   PAGE: SKILLS
+   ============================================================ */
+.skill-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+.skill-group { margin-bottom: var(--space-4); }
+.skill-group-h {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: var(--space-3);
+}
+.skill-group-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+}
+.dot-installed { background: var(--good); }
+.dot-available { background: var(--accent); }
+.skill-group-count {
+  color: var(--ink-2); font-weight: 500;
+  text-transform: none; letter-spacing: 0;
+}
+.skill-group-more {
+  margin-left: auto; font-size: 12px; font-weight: 500;
+  letter-spacing: 0; text-transform: none;
+  color: var(--accent);
+}
+.skill-card {
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  cursor: pointer;
+  transition: all var(--dur-base) var(--ease-standard);
+  position: relative;
+}
+.skill-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+.skill-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-3);
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: var(--space-3);
+}
+.skill-title { font-size: 14px; font-weight: 600; }
+.skill-desc { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.skill-stats {
+  display: flex; gap: var(--space-3);
+  margin-top: var(--space-3); padding-top: var(--space-3);
+  border-top: 1px solid var(--line-soft);
+  font-size: 11px; color: var(--muted);
+}
+.skill-install {
+  position: absolute; top: var(--space-3); right: var(--space-3);
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--radius-1); padding: 2px var(--space-2);
+  font-size: 11px; color: var(--accent); font-weight: 500;
+  cursor: pointer;
+  transition: all var(--dur-fast);
+}
+.skill-install:hover {
+  background: var(--accent); color: white; border-color: var(--accent);
+}
+
+/* ============================================================
+   PAGE TOGGLE & THEME TOGGLE (mockup controls)
+   ============================================================ */
+.mockup-bar {
+  position: fixed; top: 16px; right: 16px;
+  display: flex; gap: var(--space-2);
+  z-index: 100;
+}
+.mockup-bar button {
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  font-size: 12px; color: var(--ink-2);
+  box-shadow: var(--shadow-2);
+  display: flex; align-items: center; gap: 4px;
+  transition: all var(--dur-fast);
+}
+.mockup-bar button:hover { border-color: var(--accent); color: var(--accent); }
+.mockup-bar button.active { background: var(--accent); color: white; border-color: var(--accent); }
+.mockup-bar .mockup-seg {
+  display: inline-flex; gap: 0;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-2); padding: 2px;
+  box-shadow: var(--shadow-2);
+}
+.mockup-bar .mockup-seg button {
+  border: none; box-shadow: none; padding: 4px 8px;
+  background: transparent; color: var(--ink-2);
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; border-radius: 4px;
+}
+.mockup-bar .mockup-seg button:hover { color: var(--ink); }
+.mockup-bar .mockup-seg button.active { background: var(--accent); color: white; }
+.mockup-bar .mockup-divider {
+  width: 1px; height: 18px; background: var(--line); margin: 0 4px;
+  align-self: center;
+}
+
+/* ============================================================
+   prefers-reduced-motion: 关闭所有动效 (WCAG 2.3.3)
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .actions { grid-template-columns: 1fr; }
+  .skill-grid { grid-template-columns: 1fr; }
+  .chat-layout { grid-template-columns: 1fr; }
+  .chat-sidebar { display: none; }
+}
+</style>
+</head>
+<body data-theme="light">
+
+<div class="mockup-bar">
+  <div class="mockup-seg" role="group" aria-label="主题">
+    <button data-theme-set="light" class="active">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      浅
+    </button>
+    <button data-theme-set="dark">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      深
+    </button>
+    <button data-theme-set="system">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      跟随
+    </button>
+  </div>
+  <div class="mockup-divider"></div>
+  <button data-page="dashboard" class="active">Dashboard</button>
+  <button data-page="chat">Chat</button>
+  <button data-page="models">Models</button>
+  <button data-page="skills">Skills</button>
+  <button data-page="settings">Settings</button>
+</div>
+
+<div class="app">
+  <!-- skip-link for keyboard users (WCAG 2.4.1) -->
+  <a href="#main-content" class="skip-link">跳到主内容</a>
+
+  <!-- TitleBar -->
+  <div class="titlebar">
+    <div class="titlebar-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      PiPiClaw <span style="color:var(--muted);font-weight:400">v4.4</span>
+    </div>
+    <div class="titlebar-spacer"></div>
+    <div class="window-controls">
+      <button class="window-btn" aria-label="最小化">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="window-btn" aria-label="最大化">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      </button>
+      <button class="window-btn close" aria-label="关闭">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+    <!-- SideNav -->
+    <nav class="sidenav">
+      <button class="nav-icon active" data-page-link="dashboard" aria-label="首页">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      </button>
+      <button class="nav-icon" data-page-link="chat" aria-label="对话">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="nav-icon" data-page-link="models" aria-label="模型">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </button>
+      <button class="nav-icon" data-page-link="skills" aria-label="技能">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </button>
+      <button class="nav-icon" aria-label="IM">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      </button>
+      <button class="nav-icon" aria-label="市场">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </button>
+      <div class="nav-spacer"></div>
+      <button class="nav-icon" data-page-link="settings" aria-label="设置">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </nav>
+
+    <!-- Main -->
+    <main class="main" id="main-content">
+      <div class="topbar">
+        <div class="crumbs" id="crumbs">首页</div>
+        <div class="topbar-actions">
+          <button class="search" aria-label="搜索">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            搜索命令、页面、技能...
+            <span class="kbd">Ctrl K</span>
+          </button>
+          <button class="icon-btn" aria-label="通知">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <button class="icon-btn" aria-label="更新">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- ========== DASHBOARD ========== -->
+        <div class="page active" data-page="dashboard">
+          <div class="page-h">
+            <div>
+              <h1>欢迎回来 👋</h1>
+              <div class="sub" style="margin-top:4px">PiPiClaw v4.4 · Ollama 4 模型 · 0 任务</div>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">今日对话</div>
+              <div class="stat-value">12</div>
+              <div class="stat-trend">+3 较昨日</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Token 用量</div>
+              <div class="stat-value">42.8K</div>
+              <div class="stat-trend">≈ ¥0.07</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">技能数</div>
+              <div class="stat-value">2</div>
+              <div class="stat-trend">+1 本周</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">IM 渠道</div>
+              <div class="stat-value">0</div>
+              <div class="stat-trend" style="color:var(--muted)">未连接</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-h">
+              <h2>快速开始</h2>
+              <a class="more" href="#">查看全部 →</a>
+            </div>
+            <div class="actions">
+              <button class="action">
+                <div class="action-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="action-text">
+                  <div class="action-title">新建对话</div>
+                  <div class="action-desc">跟 AI 助手聊天 (Ctrl N)</div>
+                </div>
+              </button>
+              <button class="action">
+                <div class="action-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="action-text">
+                  <div class="action-title">切换模型</div>
+                  <div class="action-desc">qwen3.5:9b · 23s/5场景</div>
+                </div>
+              </button>
+              <button class="action">
+                <div class="action-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                </div>
+                <div class="action-text">
+                  <div class="action-title">浏览技能</div>
+                  <div class="action-desc">2 已安装 · 11 可用</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== CHAT ========== -->
+        <div class="page" data-page="chat">
+          <div class="chat-layout">
+            <aside class="chat-sidebar">
+              <div class="chat-side-h">
+                <button class="new-chat">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  新建对话
+                </button>
+              </div>
+              <div class="conv-list">
+                <div class="conv-item active">
+                  <span class="conv-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </span>
+                  <span class="conv-text">Ollama gpt-oss:20b 速度怎么样</span>
+                </div>
+                <div class="conv-item">
+                  <span class="conv-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </span>
+                  <span class="conv-text">qwen3.5:9b 跑 benchmark</span>
+                </div>
+                <div class="conv-item">
+                  <span class="conv-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </span>
+                  <span class="conv-text">写一个 Python 排序函数</span>
+                </div>
+                <div class="conv-item">
+                  <span class="conv-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </span>
+                  <span class="conv-text">翻译这段技术文档</span>
+                </div>
+                <div class="conv-item">
+                  <span class="conv-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </span>
+                  <span class="conv-text">Ansible 部署文档</span>
+                </div>
+              </div>
+            </aside>
+
+            <div class="chat-main">
+              <div class="chat-header">
+                <div class="model-pill">
+                  <span class="dot"></span>
+                  qwen3.5:9b · Ollama
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin-left:auto">5 条消息 · 0.7K tokens</div>
+              </div>
+              <div class="chat-msgs">
+                <div class="msg">
+                  <div class="msg-avatar">AI</div>
+                  <div>
+                    <div class="msg-bubble">你好!我是 PiPiClaw 助手。当前使用 Ollama 的 qwen3.5:9b 模型,本地推理。有什么可以帮你的?</div>
+                  </div>
+                </div>
+                <div class="msg msg-user">
+                  <div class="msg-avatar">U</div>
+                  <div>
+                    <div class="msg-bubble">Ollama gpt-oss:20b 速度怎么样?</div>
+                  </div>
+                </div>
+                <div class="msg">
+                  <div class="msg-avatar">AI</div>
+                  <div>
+                    <div class="msg-bubble">中等偏慢,5 场景约 25s,适合复杂推理任务。日常对话推荐 qwen3.5:9b(23s)速度更快。</div>
+                    <div class="thinking">
+                      <span class="thinking-dots"><span></span><span></span><span></span></span>
+                      思考中 · 已用 12 个 token
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="chat-input-area">
+                <div class="chat-input">
+                  <textarea placeholder="输入消息... (Enter 发送 · Shift+Enter 换行)">写一个 Python 排序函数</textarea>
+                  <div class="chat-input-bar">
+                    <div class="left">
+                      <button class="tool-btn" aria-label="附件">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                      </button>
+                      <button class="tool-btn" aria-label="图片">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                      </button>
+                      <button class="tool-btn" aria-label="技能">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                      </button>
+                    </div>
+                    <button class="send-btn">
+                      发送
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== MODELS ========== -->
+        <div class="page" data-page="models">
+          <div class="page-h">
+            <div>
+              <h1>模型管理</h1>
+              <div class="sub" style="margin-top:4px">4 个模型 · 默认 qwen3.5:9b</div>
+            </div>
+            <button class="new-chat" style="padding:var(--space-2) var(--space-3);flex:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              添加模型
+            </button>
+          </div>
+          <div class="model-list">
+            <div class="model-card active">
+              <div class="model-icon shape-circle">Q</div>
+              <div class="model-info">
+                <div class="model-name">qwen3.5:9b</div>
+                <div class="model-meta">
+                  <span class="model-meta-item">⚡ 23s/5场景</span>
+                  <span class="model-meta-item">9B 参数</span>
+                  <span class="model-meta-item">本地 Ollama</span>
+                </div>
+              </div>
+              <div class="model-tags">
+                <span class="tag tag-good">默认</span>
+                <span class="tag">高速</span>
+              </div>
+            </div>
+            <div class="model-card">
+              <div class="model-icon shape-hex">G</div>
+              <div class="model-info">
+                <div class="model-name">gpt-oss:20b</div>
+                <div class="model-meta">
+                  <span class="model-meta-item">⚡ 25s/5场景</span>
+                  <span class="model-meta-item">20B 参数</span>
+                  <span class="model-meta-item">本地 Ollama</span>
+                </div>
+              </div>
+              <div class="model-tags">
+                <span class="tag">推理</span>
+                <span class="tag">慢速</span>
+              </div>
+            </div>
+            <div class="model-card">
+              <div class="model-icon shape-square">Q</div>
+              <div class="model-info">
+                <div class="model-name">qwen3:14b</div>
+                <div class="model-meta">
+                  <span class="model-meta-item">⚡ 42s/5场景</span>
+                  <span class="model-meta-item">14B 参数</span>
+                  <span class="model-meta-item">本地 Ollama</span>
+                </div>
+              </div>
+              <div class="model-tags">
+                <span class="tag">中文</span>
+                <span class="tag">慢速</span>
+              </div>
+            </div>
+            <div class="model-card">
+              <div class="model-icon shape-rounded">L</div>
+              <div class="model-info">
+                <div class="model-name">llama3.2:3b</div>
+                <div class="model-meta">
+                  <span class="model-meta-item">⚡ 8s/5场景</span>
+                  <span class="model-meta-item">3B 参数</span>
+                  <span class="model-meta-item">本地 Ollama</span>
+                </div>
+              </div>
+              <div class="model-tags">
+                <span class="tag">轻量</span>
+                <span class="tag">最快</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== SKILLS ========== -->
+        <div class="page" data-page="skills">
+          <div class="page-h">
+            <div>
+              <h1>技能市场</h1>
+              <div class="sub" style="margin-top:4px">2 已安装 · 11 可用</div>
+            </div>
+          </div>
+          <div class="skill-group">
+            <div class="skill-group-h">
+              <span class="skill-group-dot dot-installed"></span>
+              已安装 <span class="skill-group-count">2</span>
+            </div>
+            <div class="skill-grid">
+              <div class="skill-card">
+                <div class="skill-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </div>
+                <div class="skill-title">截屏问答</div>
+                <div class="skill-desc">截图后 AI 解析内容,自动回答问题</div>
+                <div class="skill-stats">
+                  <span>⭐ 4.8</span>
+                  <span>1.2K 使用</span>
+                </div>
+              </div>
+              <div class="skill-card">
+                <div class="skill-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                </div>
+                <div class="skill-title">录屏转技能</div>
+                <div class="skill-desc">录制操作流程,自动生成可复用的技能</div>
+                <div class="skill-stats">
+                  <span>⭐ 4.9</span>
+                  <span>892 使用</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="skill-group">
+            <div class="skill-group-h">
+              <span class="skill-group-dot dot-available"></span>
+              可用 <span class="skill-group-count">11</span>
+              <a class="skill-group-more" href="#">查看全部 →</a>
+            </div>
+            <div class="skill-grid">
+              <div class="skill-card skill-card-available">
+                <div class="skill-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                </div>
+                <div class="skill-title">Markdown 转 PDF</div>
+                <div class="skill-desc">一键把 Markdown 文档转成格式良好的 PDF</div>
+                <div class="skill-stats">
+                  <span>⭐ 4.6</span>
+                  <span>2.3K 使用</span>
+                </div>
+                <button class="skill-install">+ 安装</button>
+              </div>
+              <div class="skill-card skill-card-available">
+                <div class="skill-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                <div class="skill-title">代码搜索</div>
+                <div class="skill-desc">跨项目全文搜索代码,支持正则和符号跳转</div>
+                <div class="skill-stats">
+                  <span>⭐ 4.7</span>
+                  <span>3.1K 使用</span>
+                </div>
+                <button class="skill-install">+ 安装</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== SETTINGS ========== -->
+        <div class="page" data-page="settings">
+          <div class="settings-layout">
+            <nav class="settings-nav">
+              <button class="settings-nav-item active">通用</button>
+              <button class="settings-nav-item">模型</button>
+              <button class="settings-nav-item">IM 渠道</button>
+              <button class="settings-nav-item">权限</button>
+              <button class="settings-nav-item">快捷键</button>
+              <button class="settings-nav-item">关于</button>
+            </nav>
+            <div class="settings-content">
+              <div class="settings-h">
+                <h2>通用设置</h2>
+                <div class="desc">PiPiClaw v4.4 · 1 改 token 已应用</div>
+              </div>
+
+              <div class="section" style="padding:var(--space-3) var(--space-4)">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">启动时自动连接 Ollama</div>
+                    <div class="setting-desc">检测到本地 11434 端口时自动加载模型</div>
+                  </div>
+                  <button class="toggle on" aria-label="toggle"></button>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">开机自启</div>
+                    <div class="setting-desc">系统启动时自动在后台运行</div>
+                  </div>
+                  <button class="toggle" aria-label="toggle"></button>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">显示思维链 (Thinking Block)</div>
+                    <div class="setting-desc">显示 AI 思考过程,便于调试和信任</div>
+                  </div>
+                  <button class="toggle on" aria-label="toggle"></button>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">全局快捷键 Ctrl+K</div>
+                    <div class="setting-desc">随时打开命令面板</div>
+                  </div>
+                  <button class="toggle on" aria-label="toggle"></button>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">主题</div>
+                    <div class="setting-desc">浅色 / 深色 / 跟随系统 (macOS Sonoma 行为)</div>
+                  </div>
+                  <div class="radio-group">
+                    <button class="radio active" data-theme-set="light">浅色</button>
+                    <button class="radio" data-theme-set="dark">深色</button>
+                    <button class="radio" data-theme-set="system">跟随</button>
+                  </div>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">默认模型</div>
+                    <div class="setting-desc">新对话使用的模型</div>
+                  </div>
+                  <select class="select-input">
+                    <option>qwen3.5:9b (推荐)</option>
+                    <option>gpt-oss:20b</option>
+                    <option>qwen3:14b</option>
+                    <option>llama3.2:3b</option>
+                  </select>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">语言</div>
+                    <div class="setting-desc">界面语言</div>
+                  </div>
+                  <div class="radio-group">
+                    <button class="radio active">中文</button>
+                    <button class="radio">English</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+// Theme: light / dark / system (跟随 OS prefers-color-scheme)
+const setTheme = (t) => {
+  document.body.dataset.theme = t;
+  document.querySelectorAll('[data-theme-set]').forEach(b => {
+    b.classList.toggle('active', b.dataset.themeSet === t);
+  });
+};
+document.querySelectorAll('[data-theme-set]').forEach(b => {
+  b.addEventListener('click', () => setTheme(b.dataset.themeSet));
+});
+
+// Page navigation
+const crumbsMap = { dashboard: '首页', chat: '对话', models: '模型', skills: '技能市场', settings: '设置' };
+const showPage = (name) => {
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === name));
+  document.querySelectorAll('[data-page]').forEach(b => {
+    if (b.tagName === 'BUTTON' && b.hasAttribute('data-page')) {
+      b.classList.toggle('active', b.dataset.page === name);
+    }
+  });
+  document.querySelectorAll('[data-page-link]').forEach(b => {
+    b.classList.toggle('active', b.dataset.pageLink === name);
+  });
+  document.getElementById('crumbs').textContent = crumbsMap[name] || '';
+};
+document.querySelectorAll('[data-page]').forEach(b => {
+  b.addEventListener('click', () => showPage(b.dataset.page));
+});
+document.querySelectorAll('[data-page-link]').forEach(b => {
+  b.addEventListener('click', () => showPage(b.dataset.pageLink));
+});
+
+// Toggle switches
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', () => t.classList.toggle('on'));
+});
+
+// Radio groups
+document.querySelectorAll('.radio-group').forEach(g => {
+  g.querySelectorAll('.radio').forEach(r => {
+    r.addEventListener('click', () => {
+      g.querySelectorAll('.radio').forEach(x => x.classList.remove('active'));
+      r.classList.add('active');
+    });
+  });
+});
+
+// Conv items
+document.querySelectorAll('.conv-item').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.conv-item').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+  });
+});
+
+// Model cards
+document.querySelectorAll('.model-card').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.model-card').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+  });
+});
+
+// Settings nav
+document.querySelectorAll('.settings-nav-item').forEach(s => {
+  s.addEventListener('click', () => {
+    document.querySelectorAll('.settings-nav-item').forEach(x => x.classList.remove('active'));
+    s.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

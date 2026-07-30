@@ -2,7 +2,7 @@
   <!-- Hermes 记忆管理抽屉 -->
   <el-drawer
     v-model="hermesMemoryStore.showMemoryDrawer"
-    title="🧠 Hermes 记忆管理"
+    title="Hermes 记忆管理"
     :size="480"
     direction="rtl"
   >

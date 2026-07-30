@@ -19,7 +19,7 @@
       <div class="step-content">
         <!-- 步骤1: 欢迎 -->
         <div v-if="currentStep === 0" class="step-welcome">
-          <div class="welcome-icon">🤖</div>
+          <el-icon class="welcome-icon" :size="48" color="var(--accent-base)"><MagicStick /></el-icon>
           <h2>欢迎使用 PiPiClaw</h2>
           <p class="welcome-desc">
             您的桌面AI自动化助手<br />
@@ -34,19 +34,19 @@
           
           <div class="model-options">
             <el-card class="model-option" shadow="hover" @click="handleSelectModel('ollama')">
-              <div class="model-icon">🦙</div>
+              <el-icon class="model-icon" :size="28" color="var(--accent-base)"><Box /></el-icon>
               <div class="model-name">Ollama</div>
               <div class="model-desc">本地运行，完全免费</div>
             </el-card>
-            
+
             <el-card class="model-option" shadow="hover" @click="handleSelectModel('deepseek')">
-              <div class="model-icon">🔍</div>
+              <el-icon class="model-icon" :size="28" color="var(--accent-base)"><Search /></el-icon>
               <div class="model-name">DeepSeek</div>
               <div class="model-desc">国产优秀大模型</div>
             </el-card>
-            
+
             <el-card class="model-option" shadow="hover" @click="handleSelectModel('custom')">
-              <div class="model-icon">⚙️</div>
+              <el-icon class="model-icon" :size="28" color="var(--accent-base)"><Setting /></el-icon>
               <div class="model-name">自定义配置</div>
               <div class="model-desc">手动添加任何模型</div>
             </el-card>
@@ -62,21 +62,21 @@
             <el-radio-group v-model="selectedPermission" direction="vertical">
               <el-radio value="safe">
                 <div class="permission-option">
-                  <div class="permission-name">🔒 安全模式</div>
+                  <div class="permission-name"><el-icon :size="14"><Lock /></el-icon> 安全模式</div>
                   <div class="permission-desc">仅查看，无任何操作权限</div>
                 </div>
               </el-radio>
-              
+
               <el-radio value="standard">
                 <div class="permission-option">
-                  <div class="permission-name">🛠️ 标准模式</div>
+                  <div class="permission-name"><el-icon :size="14"><Tools /></el-icon> 标准模式</div>
                   <div class="permission-desc">文件读取、系统查询等基础权限</div>
                 </div>
               </el-radio>
-              
+
               <el-radio value="permissive">
                 <div class="permission-option">
-                  <div class="permission-name">🚀 全量模式</div>
+                  <div class="permission-name"><el-icon :size="14"><Promotion /></el-icon> 全量模式</div>
                   <div class="permission-desc">完整权限，可执行所有操作</div>
                 </div>
               </el-radio>
@@ -86,7 +86,7 @@
 
         <!-- 步骤4: 完成 -->
         <div v-if="currentStep === 3" class="step-finish">
-          <div class="finish-icon">🎉</div>
+          <el-icon class="finish-icon" :size="48" color="var(--el-color-success)"><SuccessFilled /></el-icon>
           <h2>配置完成！</h2>
           <p class="finish-desc">
             您已完成基础配置<br />
@@ -114,6 +114,7 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { MagicStick, Box, Search, Setting, Lock, Tools, Promotion, SuccessFilled } from '@element-plus/icons-vue';
 import { useAppStore } from '@/stores/app';
 
 const props = defineProps<{
@@ -213,7 +214,13 @@ function trackCompletion(): void {
 }
 
 .welcome-icon {
-  font-size: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  background: var(--accent-soft);
   margin-bottom: 20px;
 }
 
@@ -254,7 +261,13 @@ h3 {
 }
 
 .model-icon {
-  font-size: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--accent-soft);
   margin-bottom: 12px;
 }
 
@@ -296,6 +309,9 @@ h3 {
   font-weight: 600;
   margin-bottom: 4px;
   color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .permission-desc {
@@ -309,7 +325,13 @@ h3 {
 }
 
 .finish-icon {
-  font-size: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  background: rgba(16, 185, 129, 0.10);
   margin-bottom: 20px;
 }
 

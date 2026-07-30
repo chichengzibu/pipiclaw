@@ -155,13 +155,13 @@ export const useOpenClawStore = defineStore('openclaw', () => {
             version: '1.0.0',
             timestamp: Date.now()
           };
-          console.log('[OpenClaw Store] ✅ 健康检查通过 - 网关运行中');
+          console.log('[OpenClaw Store] [OK] 健康检查通过 - 网关运行中');
           return true;
         }
       }
       
       // 如果gateway未运行，尝试启动
-      console.log('[OpenClaw Store] ⚠️ 网关未运行，尝试启动...');
+      console.log('[OpenClaw Store] [WARN] 网关未运行，尝试启动...');
       await gatewayStore.start();
       
       // 再次检查
@@ -175,7 +175,7 @@ export const useOpenClawStore = defineStore('openclaw', () => {
           version: '1.0.0',
           timestamp: Date.now()
         };
-        console.log('[OpenClaw Store] ✅ 网关启动成功');
+        console.log('[OpenClaw Store] [OK] 网关启动成功');
         return true;
       }
       
@@ -185,7 +185,7 @@ export const useOpenClawStore = defineStore('openclaw', () => {
         timestamp: Date.now(),
         error: '网关无法启动'
       };
-      console.log('[OpenClaw Store] ❌ 网关启动失败');
+      console.log('[OpenClaw Store] [FAIL] 网关启动失败');
       return false;
       
     } catch (err: any) {
@@ -320,10 +320,10 @@ export const useOpenClawStore = defineStore('openclaw', () => {
       const result = await (window as any).electronAPI?.openclaw?.execute(request);
       
       if (result?.success) {
-        console.log('[OpenClaw Store] ✅ 操作执行成功');
+        console.log('[OpenClaw Store] [OK] 操作执行成功');
         return result.data;
       } else {
-        console.error('[OpenClaw Store] ❌ 操作执行失败:', result?.error);
+        console.error('[OpenClaw Store] [FAIL] 操作执行失败:', result?.error);
         throw new Error(result?.error || '操作失败');
       }
       

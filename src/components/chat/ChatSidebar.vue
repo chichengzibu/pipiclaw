@@ -62,7 +62,7 @@
               @click.stop
               @change="chatStore.toggleConversationSelection(conv.id)"
             />
-            <span class="conversation-icon">🔍</span>
+            <el-icon class="conversation-icon" :size="14"><Search /></el-icon>
             <span class="conversation-title">{{ conv.title }}</span>
           </div>
         </div>
@@ -83,7 +83,7 @@
             @click.stop
             @change="chatStore.toggleConversationSelection(conv.id)"
           />
-          <span class="conversation-icon">📌</span>
+          <el-icon class="conversation-icon" :size="14"><Star /></el-icon>
           <span class="conversation-title">{{ conv.title }}</span>
           <el-dropdown trigger="click" @command="(cmd: string) => emit('action', cmd, conv)">
             <el-icon class="more-icon"><MoreFilled /></el-icon>
@@ -115,7 +115,7 @@
             @click.stop
             @change="chatStore.toggleConversationSelection(conv.id)"
           />
-          <span class="conversation-icon">💬</span>
+          <el-icon class="conversation-icon" :size="14"><ChatDotRound /></el-icon>
           <span class="conversation-title">{{ conv.title }}</span>
           <el-dropdown trigger="click" @command="(cmd: string) => emit('action', cmd, conv)">
             <el-icon class="more-icon"><MoreFilled /></el-icon>
@@ -144,7 +144,7 @@
           class="conversation-item archived"
           @click="emit('select', conv.id)"
         >
-          <span class="conversation-icon">📦</span>
+          <el-icon class="conversation-icon" :size="14"><Box /></el-icon>
           <span class="conversation-title">{{ conv.title }}</span>
           <el-button size="small" text type="primary" @click.stop="emit('unarchive', conv.id)">
             恢复
@@ -162,7 +162,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Plus, Search, MoreFilled } from '@element-plus/icons-vue';
+import { Plus, Search, MoreFilled, Star, ChatDotRound, Box } from '@element-plus/icons-vue';
 import type { Conversation } from '@/stores/chat';
 import { useChatStore } from '@/stores/chat';
 

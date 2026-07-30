@@ -1,0 +1,5 @@
+﻿L4: 🦅 | <h1>🦅 ClawHub 技能市场</h1>
+L42: 👤 | <span>👤 {{ s.authorName }}</span>
+L43: ⭐ | <span>⭐ {{ s.ratingCount > 0 ? s.ratingSum / s.ratingCount : '—' }} ({{ s.ratingCount }})</span>
+L44: ⬇ | <span>⬇ {{ s.downloadCount }}</span>
+L125: 📌 | <p class="template-usecase">📌 {{ tpl.useCase }}</p>

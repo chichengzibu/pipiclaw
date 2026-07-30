@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PiPiClaw v4 设计预览 — 1 改 token 路线</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --line: #e5e5e5;
+  --line-soft: #f0f0f0;
+  --ink: #14171e;
+  --ink-2: #3a4256;
+  --muted: #7c7a72;
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.08);
+  --good: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  font-family: 'Outfit', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100dvh;
+  padding: 48px 0 96px;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+/* HERO */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+  color: var(--accent); text-transform: uppercase;
+  background: var(--accent-soft); padding: 4px 10px; border-radius: 999px;
+}
+h1 {
+  font-size: 32px; font-weight: 600; line-height: 1.2;
+  letter-spacing: -0.02em; margin: 16px 0 12px;
+  color: var(--ink);
+}
+.lede {
+  font-size: 15px; color: var(--ink-2); max-width: 680px; margin-bottom: 24px;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; color: var(--muted);
+  padding: 16px 0; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 64px;
+}
+.meta b { color: var(--ink); font-weight: 500; }
+
+/* SECTION */
+section { margin-bottom: 64px; }
+.sec-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: var(--muted); margin-bottom: 8px;
+}
+h2 {
+  font-size: 22px; font-weight: 600; letter-spacing: -0.01em;
+  margin-bottom: 6px; color: var(--ink);
+}
+.sec-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; max-width: 720px; }
+
+/* CARDS */
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 20px;
+}
+.card-pad-soft { padding: 16px; }
+
+/* COMPARISON GRID */
+.compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.compare > div h3 {
+  font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-bad { background: var(--danger); }
+.dot-good { background: var(--good); }
+
+/* TOKEN GRID */
+.token-row {
+  display: grid; grid-template-columns: 80px 1fr 60px; gap: 16px;
+  align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-soft);
+}
+.token-row:last-child { border-bottom: 0; }
+.token-name { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink); }
+.token-bar {
+  height: 20px; background: var(--accent); border-radius: 4px;
+}
+.token-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); text-align: right; }
+
+/* THEME SWATCHES */
+.theme-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+  margin-bottom: 24px;
+}
+.theme-grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  max-width: 480px;
+}
+.swatch {
+  aspect-ratio: 4/3; border-radius: 10px; padding: 12px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border: 1px solid var(--line);
+  font-size: 12px;
+}
+.swatch-name { font-weight: 500; }
+.swatch-strip { display: flex; gap: 4px; }
+.swatch-strip span { width: 16px; height: 16px; border-radius: 4px; }
+.swatch-cross { opacity: 0.4; }
+.swatch-light { background: #ffffff; color: #14171e; }
+.swatch-dark { background: #1a1a2e; color: #e5e5e5; border-color: #2a2a3e; }
+.swatch-purple { background: #faf5ff; color: #581c87; }
+.swatch-blue { background: #eff6ff; color: #1e40af; }
+.swatch-green { background: #f0fdf4; color: #14532d; }
+
+/* MOCK UI */
+.mock-frame {
+  background: #f6f6f6; border: 1px solid var(--line); border-radius: 12px;
+  padding: 24px; min-height: 280px; position: relative;
+  display: flex; flex-direction: column;
+}
+.mock-label {
+  position: absolute; top: 12px; right: 12px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--muted); background: white; padding: 2px 6px;
+  border-radius: 4px; border: 1px solid var(--line);
+}
+
+/* BEFORE — current state */
+.mock-old { font-size: 13px; color: var(--ink-2); }
+.mock-old .row {
+  padding: 12px 16px; background: white; border: 1px solid var(--line);
+  border-radius: 8px; margin-bottom: 8px; line-height: 1.8;
+}
+.mock-old .row-1 { color: var(--ink); font-weight: 500; }
+.mock-old .row-input {
+  padding: 12px 16px; background: white; border: 1px solid var(--line);
+  border-radius: 8px; min-height: 80px; color: var(--muted);
+  display: flex; align-items: flex-end; justify-content: space-between;
+  font-size: 12px;
+}
+.mock-old .btn-old {
+  background: var(--accent); color: white; padding: 8px 16px;
+  border-radius: 6px; font-size: 13px; font-weight: 500;
+}
+
+/* AFTER — new design */
+.mock-new { font-size: 13px; }
+.mock-new .row {
+  padding: 8px 12px; background: white; border: 1px solid var(--line);
+  border-radius: 6px; margin-bottom: 6px; line-height: 1.5;
+  transition: all 0.15s ease-out;
+}
+.mock-new .row:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.mock-new .row-1 { color: var(--ink); font-weight: 500; }
+.mock-new .row-input {
+  padding: 8px 12px; background: white; border: 1px solid var(--line);
+  border-radius: 6px; min-height: 60px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  font-size: 13px; color: var(--muted);
+}
+.mock-new .row-input:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
+.mock-new .btn-new {
+  background: var(--accent); color: white; padding: 6px 12px;
+  border-radius: 6px; font-size: 13px; font-weight: 500;
+  border: none; cursor: pointer; transition: all 0.15s ease-out;
+}
+.mock-new .btn-new:hover { background: #2563eb; }
+.mock-new .btn-new:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* FOCUS RING DEMO */
+.focus-demo {
+  display: flex; gap: 16px; align-items: center; padding: 16px;
+  background: var(--bg); border-radius: 8px; margin-top: 16px;
+}
+.focus-btn {
+  background: white; border: 1px solid var(--line);
+  padding: 8px 14px; border-radius: 6px; font-size: 13px;
+  font-family: 'Outfit', sans-serif; color: var(--ink);
+  cursor: pointer;
+}
+.focus-btn:focus { outline: none; }
+.focus-btn:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+/* ROUTE COMPARISON */
+.routes {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+}
+.route {
+  padding: 20px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--surface); position: relative; overflow: hidden;
+}
+.route-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--muted); margin-bottom: 8px;
+}
+.route-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.route-time {
+  font-size: 12px; color: var(--accent); font-weight: 500;
+  background: var(--accent-soft); display: inline-block; padding: 2px 8px;
+  border-radius: 4px; margin-bottom: 12px;
+}
+.route-list { list-style: none; padding: 0; }
+.route-list li {
+  font-size: 13px; padding: 4px 0; color: var(--ink-2);
+  display: flex; gap: 6px; align-items: flex-start;
+}
+.check { color: var(--good); flex-shrink: 0; margin-top: 2px; }
+.route-recommend {
+  position: absolute; top: 12px; right: 12px;
+  background: var(--good); color: white; font-size: 11px;
+  padding: 2px 8px; border-radius: 4px; font-weight: 500;
+}
+
+/* TIMELINE */
+.timeline { list-style: none; padding: 0; position: relative; }
+.timeline::before {
+  content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px;
+  width: 2px; background: var(--accent); opacity: 0.3;
+}
+.timeline li {
+  position: relative; padding: 0 0 24px 32px;
+}
+.timeline li::before {
+  content: ""; position: absolute; left: 1px; top: 6px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: white; border: 2px solid var(--accent);
+}
+.timeline-step {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--muted); margin-bottom: 2px;
+}
+.timeline-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.timeline-desc { font-size: 13px; color: var(--ink-2); }
+
+/* COMMAND PALETTE MOCK */
+.cmd {
+  background: white; border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 10px 40px -8px rgba(0,0,0,0.12);
+  max-width: 480px; margin: 0 auto; overflow: hidden;
+}
+.cmd-input {
+  padding: 12px 16px; border-bottom: 1px solid var(--line-soft);
+  font-size: 14px; color: var(--muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.cmd-input b { color: var(--ink); font-weight: 500; }
+.cmd-list { list-style: none; padding: 6px; }
+.cmd-list li {
+  padding: 8px 12px; border-radius: 6px; display: flex; align-items: center;
+  gap: 10px; font-size: 13px; cursor: pointer;
+}
+.cmd-list li:hover, .cmd-list li.active { background: var(--accent-soft); }
+.cmd-list .icon {
+  width: 20px; height: 20px; border-radius: 4px;
+  background: var(--line-soft); display: flex; align-items: center;
+  justify-content: center; color: var(--ink-2);
+}
+.cmd-list .kbd {
+  margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--muted); background: var(--line-soft); padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* COLOR TOKENS */
+.color-grid {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;
+}
+.color-cell {
+  aspect-ratio: 1; border-radius: 8px; display: flex; align-items: flex-end;
+  padding: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  font-weight: 500;
+}
+.color-cell.dark { color: white; }
+.color-cell.light { color: var(--ink); }
+
+/* STAT BLOCK */
+.stat-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin: 24px 0;
+}
+.stat {
+  padding: 16px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.stat-num {
+  font-size: 28px; font-weight: 600; letter-spacing: -0.02em;
+  color: var(--accent); line-height: 1;
+}
+.stat-lbl { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+footer {
+  text-align: center; margin-top: 80px; padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--muted); font-size: 12px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HERO -->
+<header>
+  <span class="eyebrow">v4.4 路线 1 · 1 改 token</span>
+  <h1>让 PiPiClaw 看起来像 v4.4,而不只是 v4.3.1</h1>
+  <p class="lede">
+    不动路由、不改业务、不重写组件 — 1-2 天,改 spacing / 焦点环 / 主题数量 / 密度,让 v4.3.1 ship-ready 的工程完整性
+    真正反映在 UI 上。这是给你的 1 改 token 路线完整可视化。
+  </p>
+  <div class="meta">
+    <span><b>范围</b> 仅 <code>tokens.scss</code> + <code>global.scss</code> + 主题表 + 密度 padding</span>
+    <span><b>工期</b> 1-2 天</span>
+    <span><b>风险</b> 极低(纯 CSS,无业务逻辑)</span>
+    <span><b>验证</b> vitest + e2e + visual regression</span>
+  </div>
+</header>
+
+<!-- 1. SPACING TOKENS -->
+<section>
+  <div class="sec-num">01 / 06</div>
+  <h2>Spacing: 散乱 → 4 档系统</h2>
+  <p class="sec-sub">
+    现在代码里 padding 散乱到 6/8/10/12/14/16/18/20/24/32。1 改 token 后只留 4 档 — 4 / 8 / 12 / 16,
+    8px 网格对齐,跟 Linear / Vercel / Raycast 同源。
+  </p>
+  <div class="card">
+    <div class="token-row">
+      <div class="token-name">--space-1</div>
+      <div><div class="token-bar" style="width:12.5%"></div></div>
+      <div class="token-val">4px</div>
+    </div>
+    <div class="token-row">
+      <div class="token-name">--space-2</div>
+      <div><div class="token-bar" style="width:25%"></div></div>
+      <div class="token-val">8px</div>
+    </div>
+    <div class="token-row">
+      <div class="token-name">--space-3</div>
+      <div><div class="token-bar" style="width:37.5%"></div></div>
+      <div class="token-val">12px</div>
+    </div>
+    <div class="token-row">
+      <div class="token-name">--space-4</div>
+      <div><div class="token-bar" style="width:50%"></div></div>
+      <div class="token-val">16px</div>
+    </div>
+  </div>
+  <div class="stat-row">
+    <div class="stat">
+      <div class="stat-num">散乱</div>
+      <div class="stat-lbl">改前:10+ 种 padding 值</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">4</div>
+      <div class="stat-lbl">改后:统一 4 档</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">8px</div>
+      <div class="stat-lbl">基础网格</div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. COLOR/THEME -->
+<section>
+  <div class="sec-num">02 / 06</div>
+  <h2>主题: 5 套 → 2 套</h2>
+  <p class="sec-sub">
+    light / dark / purple / blue / green — 5 套主题 1 个人维护成本太高,而且 purple/blue/green 99% 没人用。
+    砍到 2 套(light + dark),用户量不损失,维护量直接 -60%。
+  </p>
+  <div class="theme-grid">
+    <div class="swatch swatch-light">
+      <div class="swatch-name">light</div>
+      <div class="swatch-strip"><span style="background:#ffffff"></span><span style="background:#3b82f6"></span><span style="background:#10b981"></span></div>
+    </div>
+    <div class="swatch swatch-dark">
+      <div class="swatch-name">dark</div>
+      <div class="swatch-strip"><span style="background:#1a1a2e"></span><span style="background:#3b82f6"></span><span style="background:#10b981"></span></div>
+    </div>
+    <div class="swatch swatch-purple swatch-cross">
+      <div class="swatch-name">purple</div>
+      <div class="swatch-strip"><span style="background:#faf5ff"></span><span style="background:#a855f7"></span><span style="background:#10b981"></span></div>
+    </div>
+    <div class="swatch swatch-blue swatch-cross">
+      <div class="swatch-name">blue</div>
+      <div class="swatch-strip"><span style="background:#eff6ff"></span><span style="background:#3b82f6"></span><span style="background:#10b981"></span></div>
+    </div>
+    <div class="swatch swatch-green swatch-cross">
+      <div class="swatch-name">green</div>
+      <div class="swatch-strip"><span style="background:#f0fdf4"></span><span style="background:#22c55e"></span><span style="background:#10b981"></span></div>
+    </div>
+  </div>
+  <p class="sec-sub" style="margin-top:8px">改后只剩这 2 套:</p>
+  <div class="theme-grid-2">
+    <div class="swatch swatch-light">
+      <div class="swatch-name">light</div>
+      <div class="swatch-strip"><span style="background:#ffffff"></span><span style="background:#3b82f6"></span><span style="background:#10b981"></span></div>
+    </div>
+    <div class="swatch swatch-dark">
+      <div class="swatch-name">dark</div>
+      <div class="swatch-strip"><span style="background:#1a1a2e"></span><span style="background:#3b82f6"></span><span style="background:#10b981"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. BEFORE/AFTER — Chat Input -->
+<section>
+  <div class="sec-num">03 / 06</div>
+  <h2>Before / After: Chat Input</h2>
+  <p class="sec-sub">
+    同样一个聊天输入框,左边是 v4.3.1 实际状态,右边是 1 改 token 后的状态。看 padding 缩窄、line-height 收紧、focus 环出现。
+  </p>
+  <div class="compare">
+    <div class="card">
+      <h3><span class="dot dot-bad"></span>改前 v4.3.1</h3>
+      <div class="mock-frame mock-old">
+        <div class="mock-label">v4.3.1</div>
+        <div class="row row-1">Q: Ollama gpt-oss:20b 速度怎么样?</div>
+        <div class="row">A: 中等偏慢,5 场景约 25s,适合复杂推理。</div>
+        <div class="row-input">
+          <span>输入消息...</span>
+          <button class="btn-old">发送</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="dot dot-good"></span>改后 1 改 token</h3>
+      <div class="mock-frame mock-new">
+        <div class="mock-label">v4.4</div>
+        <div class="row row-1">Q: Ollama gpt-oss:20b 速度怎么样?</div>
+        <div class="row">A: 中等偏慢,5 场景约 25s,适合复杂推理。</div>
+        <div class="row-input">
+          <span>输入消息...</span>
+          <button class="btn-new">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. FOCUS RING -->
+<section>
+  <div class="sec-num">04 / 06</div>
+  <h2>焦点环: 缺失 → 完整无障碍</h2>
+  <p class="sec-sub">
+    v4.3.1 的 focus 环是 Element Plus 默认,深色主题下基本看不见。1 改 token 后用
+    <code>:focus-visible</code> + 2px outline + 2px offset,键盘用户和鼠标用户都能看清。
+  </p>
+  <div class="card">
+    <div class="focus-demo">
+      <button class="focus-btn">普通按钮</button>
+      <button class="focus-btn" autofocus>← 这个有焦点 (按 Tab 也会有)</button>
+      <input class="focus-btn" placeholder="输入框..." style="font-family:inherit" />
+    </div>
+    <p class="sec-sub" style="margin: 16px 0 0; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+      <code>*:focus { outline: none }</code> &nbsp;+&nbsp;
+      <code>*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }</code>
+    </p>
+  </div>
+</section>
+
+<!-- 5. COMMAND PALETTE -->
+<section>
+  <div class="sec-num">05 / 06</div>
+  <h2>Command Palette: 已经 60% 到位</h2>
+  <p class="sec-sub">
+    Cmd+K / Ctrl+K 全局命令面板已经接上 — 这是 Linear / Raycast / Cursor 的标志性体验。1 改 token 后会进一步
+    加上 fuzzy search + recent items,现在先看现有的:
+  </p>
+  <div class="cmd">
+    <div class="cmd-input">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span>搜索命令、页面、技能…</span>
+      <span class="kbd" style="margin-left:auto">Ctrl+K</span>
+    </div>
+    <ul class="cmd-list">
+      <li class="active">
+        <span class="icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </span>
+        <span>新建对话</span>
+        <span class="kbd">⌘N</span>
+      </li>
+      <li>
+        <span class="icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </span>
+        <span>切换模型</span>
+        <span class="kbd">⌘M</span>
+      </li>
+      <li>
+        <span class="icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </span>
+        <span>查看技能市场</span>
+        <span class="kbd">⌘⇧S</span>
+      </li>
+      <li>
+        <span class="icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </span>
+        <span>打开设置</span>
+        <span class="kbd">⌘,</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- 6. ROUTES COMPARISON -->
+<section>
+  <div class="sec-num">06 / 06</div>
+  <h2>3 档路线总览</h2>
+  <p class="sec-sub">
+    1 改 token 是性价比最高的入口,如果你后续想升级,可以走路线 2 (加系统) 或路线 3 (落 v2 AI-Native Workspace)。
+  </p>
+  <div class="routes">
+    <div class="route">
+      <div class="route-recommend">推荐</div>
+      <div class="route-num">ROUTE 01</div>
+      <div class="route-name">1 改 token</div>
+      <div class="route-time">1-2 天</div>
+      <ul class="route-list">
+        <li><span class="check">✓</span> spacing 4 档统一</li>
+        <li><span class="check">✓</span> focus-visible 焦点环</li>
+        <li><span class="check">✓</span> 5 主题 → 2 主题</li>
+        <li><span class="check">✓</span> 密度收紧 20%</li>
+        <li><span class="check">✓</span> 风险极低,纯 CSS</li>
+        <li><span style="color:var(--muted)">— 无新组件 / 无新交互</span></li>
+      </ul>
+    </div>
+    <div class="route">
+      <div class="route-num">ROUTE 02</div>
+      <div class="route-name">2 加系统</div>
+      <div class="route-time">1 周</div>
+      <ul class="route-list">
+        <li><span class="check">✓</span> 含路线 1 全部</li>
+        <li><span class="check">✓</span> 完整 token 系统文档</li>
+        <li><span class="check">✓</span> Storybook 组件库</li>
+        <li><span class="check">✓</span> 微交互 11 项</li>
+        <li><span class="check">✓</span> 5 套核心组件重写</li>
+        <li><span style="color:var(--muted)">— 不动 IA 不动导航</span></li>
+      </ul>
+    </div>
+    <div class="route">
+      <div class="route-num">ROUTE 03</div>
+      <div class="route-name">3 落 v2</div>
+      <div class="route-time">6 周</div>
+      <ul class="route-list">
+        <li><span class="check">✓</span> 含路线 2 全部</li>
+        <li><span class="check">✓</span> AI-Native Workspace</li>
+        <li><span class="check">✓</span> 主区 + 3 面板重构</li>
+        <li><span class="check">✓</span> 静态光标 + View Transitions</li>
+        <li><span class="check">✓</span> 全 IA 重新设计</li>
+        <li><span style="color:var(--warn)">⚠ 大型重写,需要冻结功能 6 周</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- COMMIT TIMELINE -->
+<section>
+  <div class="sec-num">COMMIT</div>
+  <h2>1 改 token 路线 — 6 步执行</h2>
+  <p class="sec-sub">
+    单 commit 落地,不允许动业务代码、路由、组件、文档。整套变更只在样式层。
+  </p>
+  <ol class="timeline">
+    <li>
+      <div class="timeline-step">STEP A</div>
+      <div class="timeline-title">新建 <code>src/styles/tokens.scss</code></div>
+      <div class="timeline-desc">4 档 spacing / 4 档 radius / 3 档 shadow / 4 duration × 3 easing — 跟 Linear 路线对齐</div>
+    </li>
+    <li>
+      <div class="timeline-step">STEP B</div>
+      <div class="timeline-title">焦点环 <code>global.scss</code></div>
+      <div class="timeline-desc"><code>*:focus-visible</code> 加 2px outline + 2px offset,深色主题下可见</div>
+    </li>
+    <li>
+      <div class="timeline-step">STEP C</div>
+      <div class="timeline-title">砍 2 套主题 <code>theme-v4.3-to-v4.4.ts</code></div>
+      <div class="timeline-desc">写 migration 把已有用户的 purple→dark, blue→light,不影响 light/dark 用户</div>
+    </li>
+    <li>
+      <div class="timeline-step">STEP D</div>
+      <div class="timeline-title">密度调整</div>
+      <div class="timeline-desc">行高 32→28, padding 12 16 → 8 12 (4 档 token 替换 + sed 批量)</div>
+    </li>
+    <li>
+      <div class="timeline-step">STEP E</div>
+      <div class="timeline-title">验证</div>
+      <div class="timeline-desc">vitest 905 pass / e2e 102 pass / visual regression 11 张截图对比</div>
+    </li>
+    <li>
+      <div class="timeline-step">STEP F</div>
+      <div class="timeline-title">单 commit</div>
+      <div class="timeline-desc"><code>feat(ui): 1 改 token - 统一 spacing + 焦点环 + 砍 2 套主题</code></div>
+    </li>
+  </ol>
+</section>
+
+<footer>
+  PiPiClaw v4.4 路线预览 · 由 Mavis 制作 · 基于 v4.3.1 ship-ready 实际状态
+</footer>
+
+</div>
+</body>
+</html>

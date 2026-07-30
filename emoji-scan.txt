@@ -1,0 +1,153 @@
+﻿
+=== components\chat\ChatSidebar.vue (4 个 emoji) ===
+  L65: 🔍  | <span class="conversation-icon">🔍</span>
+  L86: 📌  | <span class="conversation-icon">📌</span>
+  L118: 💬  | <span class="conversation-icon">💬</span>
+  L147: 📦  | <span class="conversation-icon">📦</span>
+
+=== components\chat\HermesMemoryDrawer.vue (1 个 emoji) ===
+  L5: 🧠  | title="🧠 Hermes 记忆管理"
+
+=== components\chat\QuickPrompts.vue (6 个 emoji) ===
+  L33: 📝  | { id: 'p1', emoji: '📝', title: '帮我写一份日报', desc: '从今天的 IM / 任务 / 文件汇总', prompt: '请帮我生成今天的工作日报,要包含:\n1
+  L34: 🔍  | { id: 'p2', emoji: '🔍', title: '代码审查', desc: '粘贴 PR diff,自动 review', prompt: '请审查下面的代码改动,按 文件 → 改动 →
+  L35: 🌐  | { id: 'p3', emoji: '🌐', title: '翻译一段文字', desc: '中英日韩法德西俄 8 语种', prompt: '请把下面这段文字翻译成英文(同时给我 2 个备选版本)
+  L36: 🐛  | { id: 'p4', emoji: '🐛', title: '帮我分析一个 bug', desc: '贴日志 / 报错 / 现象', prompt: '我遇到一个 bug,需要你帮我定位:\n\n【
+  L37: 💡  | { id: 'p5', emoji: '💡', title: '头脑风暴', desc: '给个主题,列 10 个角度', prompt: '我想就「__主题__」做一次头脑风暴。请从 10 个不同角
+  ... 1 more
+
+=== components\chat\TaskExecutionPanel.vue (6 个 emoji) ===
+  L155: 🔒  | case 'safe': return '🔒';
+  L158: ⚡  | default: return '⚡';
+  L203: ⏳  | case 'pending': return '⏳';
+  L204: 🔄  | case 'running': return '🔄';
+  L205: ✅  | case 'success': return '✅';
+  ... 1 more
+
+=== components\chat\TaskResultCard.vue (10 个 emoji) ===
+  L5: ✅  | <span class="result-icon">{{ success ? '✅' : '❌' }}</span>
+  L5: ❌  | <span class="result-icon">{{ success ? '✅' : '❌' }}</span>
+  L25: 🔄  | {{ step.status === 'success' ? '✅' : step.status === 'failed' ? '❌' : step.status === 'running' ? '🔄
+  L25: ✅  | {{ step.status === 'success' ? '✅' : step.status === 'failed' ? '❌' : step.status === 'running' ? '🔄
+  L25: ❌  | {{ step.status === 'success' ? '✅' : step.status === 'failed' ? '❌' : step.status === 'running' ? '🔄
+  ... 5 more
+
+=== components\common\CommandPalette.vue (27 个 emoji) ===
+  L146: 💬  | emoji: '💬',
+  L157: 🏠  | id: 'nav-dashboard', kind: 'nav', title: '工作台', subtitle: '回到首页', emoji: '🏠',
+  L162: 💬  | id: 'nav-chat', kind: 'nav', title: 'AI 对话', subtitle: '开启新对话或继续历史', emoji: '💬',
+  L167: ✨  | id: 'nav-chat-new', kind: 'nav', title: '新建对话', subtitle: '开一个新会话', emoji: '✨',
+  L172: 🧩  | id: 'nav-skills', kind: 'nav', title: '技能管理', subtitle: '已安装的技能', emoji: '🧩',
+  ... 22 more
+
+=== components\guide\FirstLaunchGuide.vue (10 个 emoji) ===
+  L22: 🤖  | <div class="welcome-icon">🤖</div>
+  L37: 🦙  | <div class="model-icon">🦙</div>
+  L43: 🔍  | <div class="model-icon">🔍</div>
+  L49: ⚙️  | <div class="model-icon">⚙️</div>
+  L49: ⚙  | <div class="model-icon">⚙️</div>
+  ... 5 more
+
+=== components\settings\McpServerCard.vue (1 个 emoji) ===
+  L6: 🔌  | <span class="icon-emoji">🔌</span>
+
+=== components\skills\SkillCard.vue (1 个 emoji) ===
+  L4: 📦  | <span class="icon-emoji">📦</span>
+
+=== locales\en-US.ts (1 个 emoji) ===
+  L145: 🧠  | hermesMemoryTitle: '🧠 Hermes Memory',
+
+=== locales\zh-CN.ts (1 个 emoji) ===
+  L159: 🧠  | hermesMemoryTitle: '🧠 Hermes 记忆管理',
+
+=== stores\chat.ts (3 个 emoji) ===
+  L696: 🚀  | console.log('[ChatStore] ========== 🚀 sendMessage 被调用 ==========');
+  L697: 📝  | console.log('[ChatStore] 📝 消息内容:', content);
+  L698: 🤖  | console.log('[ChatStore] 🤖 Provider:', providerId, 'Model:', modelId);
+
+=== stores\executionMode.ts (1 个 emoji) ===
+  L29: 🔒  | icon: '🔒',
+
+=== stores\guide.ts (7 个 emoji) ===
+  L34: 📁  | icon: '📁',
+  L42: 📊  | icon: '📊',
+  L50: 📝  | icon: '📝',
+  L74: 🔍  | icon: '🔍',
+  L82: 📅  | icon: '📅',
+  ... 2 more
+
+=== stores\openclaw.ts (5 个 emoji) ===
+  L158: ✅  | console.log('[OpenClaw Store] ✅ 健康检查通过 - 网关运行中');
+  L178: ✅  | console.log('[OpenClaw Store] ✅ 网关启动成功');
+  L188: ❌  | console.log('[OpenClaw Store] ❌ 网关启动失败');
+  L323: ✅  | console.log('[OpenClaw Store] ✅ 操作执行成功');
+  L326: ❌  | console.error('[OpenClaw Store] ❌ 操作执行失败:', result?.error);
+
+=== stores\permissions.ts (6 个 emoji) ===
+  L45: 📁  | filesystem: { name: '文件系统', description: '读写文件和目录', icon: '📁' },
+  L46: 🌐  | network: { name: '网络', description: '发起网络请求和连接', icon: '🌐' },
+  L47: ⚙️  | process: { name: '进程', description: '启动和管理进程', icon: '⚙️' },
+  L47: ⚙  | process: { name: '进程', description: '启动和管理进程', icon: '⚙️' },
+  L48: 🖥️  | system: { name: '系统', description: '系统级别操作', icon: '🖥️' },
+  ... 1 more
+
+=== utils\toast.ts (1 个 emoji) ===
+  L10: 🚧  | export function showTodoToast(text: string = '功能开发中 🚧') {
+
+=== views\Chat.vue (14 个 emoji) ===
+  L36: 🧠  | <span class="memory-panel-icon">🧠</span>
+  L60: 📝  | <div class="memory-section-title">📝 核心记忆</div>
+  L64: 💡  | <div class="memory-section-title">💡 经验记忆</div>
+  L68: 💬  | <div class="memory-section-title">💬 对话记忆 ({{ hermesMemoryStore.memories.length }})</div>
+  L87: ⚡  | <span class="task-status-icon">⚡</span>
+  ... 9 more
+
+=== views\ClawHub.vue (3 个 emoji) ===
+  L4: 🦅  | <h1>🦅 ClawHub 技能市场</h1>
+  L42: 👤  | <span>👤 {{ s.authorName }}</span>
+  L125: 📌  | <p class="template-usecase">📌 {{ tpl.useCase }}</p>
+
+=== views\ImManagement.vue (8 个 emoji) ===
+  L78: ✅  | {{ scope.row.testError ? '❌' : scope.row.enabled ? '✅' : '—' }}
+  L78: ❌  | {{ scope.row.testError ? '❌' : scope.row.enabled ? '✅' : '—' }}
+  L127: 💬  | <h3>💬 快速回复</h3>
+  L356: 💬  | { value: 'im-feishu', label: '飞书 / Lark', icon: '💬' },
+  L357: 📌  | { value: 'im-dingtalk', label: '钉钉', icon: '📌' },
+  ... 3 more
+
+=== views\Models.vue (12 个 emoji) ===
+  L382: 💡  | '智谱 AI': '💡',
+  L383: 🌙  | '月之暗面': '🌙',
+  L385: ✨  | '零一万物': '✨',
+  L391: ⚙️  | return customIcons[name] || '⚙️';
+  L391: ⚙  | return customIcons[name] || '⚙️';
+  ... 7 more
+
+=== views\Permissions.vue (7 个 emoji) ===
+  L300: 📁  | filesystem: '📁',
+  L301: 🌐  | network: '🌐',
+  L302: ⚙️  | process: '⚙️',
+  L302: ⚙  | process: '⚙️',
+  L303: 🖥️  | system: '🖥️',
+  ... 2 more
+
+=== views\Settings.vue (7 个 emoji) ===
+  L796: 🤖  | openai: '🤖',
+  L797: 🧠  | anthropic: '🧠',
+  L800: 🦙  | ollama: '🦙',
+  L801: 🌐  | openrouter: '🌐',
+  L803: ⚙️  | custom: '⚙️'
+  ... 2 more
+
+=== views\SkillsView.vue (3 个 emoji) ===
+  L32: ✨  | <div class="banner-icon">✨</div>
+  L69: 📦  | <div class="empty-icon">📦</div>
+  L192: ✅  | <div class="no-candidates-icon">✅</div>
+
+=== views\Tasks.vue (9 个 emoji) ===
+  L344: ✅  | case 'success': return '✅';
+  L345: ❌  | case 'failed': return '❌';
+  L346: 🔄  | case 'running': return '🔄';
+  L354: 🔒  | case 'safe': return '🔒';
+  L357: ⚡  | default: return '⚡';
+  ... 4 more

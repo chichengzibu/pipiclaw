@@ -7,7 +7,7 @@ import { ElMessage } from 'element-plus'
 /**
  * 显示待开发提示
  */
-export function showTodoToast(text: string = '功能开发中 🚧') {
+export function showTodoToast(text: string = '功能开发中…') {
   ElMessage.info(text)
 }
 

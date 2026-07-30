@@ -142,7 +142,7 @@ export default {
     archived: 'Archived',
     searchResult: 'Search Results',
     noConversations: 'No conversations',
-    hermesMemoryTitle: '🧠 Hermes Memory',
+    hermesMemoryTitle: 'Hermes Memory',
     hermesMemoryPanel: 'Hermes Memory Injection',
     memoryEnabled: 'On',
     memoryDisabled: 'Off',

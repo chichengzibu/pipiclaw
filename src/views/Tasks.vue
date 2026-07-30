@@ -66,8 +66,12 @@
             @click="handleSelectTask(task)"
           >
             <div class="task-item-header">
-              <span class="task-status-icon">{{ getStatusIcon(task.status) }}</span>
-              <span class="task-mode-icon">{{ getModeIcon(task.mode) }}</span>
+              <el-icon class="task-status-icon" :size="14" :class="`is-${task.status}`">
+                <component :is="getStatusIcon(task.status)" />
+              </el-icon>
+              <el-icon class="task-mode-icon" :size="12" :class="`mode-${task.mode}`">
+                <component :is="getModeIcon(task.mode)" />
+              </el-icon>
               <span class="task-time">{{ formatTime(task.createdAt) }}</span>
             </div>
             <div class="task-item-content">
@@ -92,7 +96,9 @@
         <template v-if="selectedTask">
           <div class="detail-header">
             <div class="detail-title">
-              <span class="title-icon">{{ getStatusIcon(selectedTask.status) }}</span>
+              <el-icon class="title-icon" :size="18" :class="`is-${selectedTask.status}`">
+                <component :is="getStatusIcon(selectedTask.status)" />
+              </el-icon>
               <span class="title-text">{{ t('tasks.title') }}</span>
             </div>
             <div class="detail-actions">
@@ -162,7 +168,9 @@
               >
                 <div class="step-header">
                   <span class="step-order">{{ step.order }}</span>
-                  <span class="step-icon">{{ getStepIcon(step.status) }}</span>
+                  <el-icon class="step-icon" :size="14" :class="`is-${step.status}`">
+                    <component :is="getStepIcon(step.status)" />
+                  </el-icon>
                   <span class="step-description">{{ step.description }}</span>
                 </div>
                 <div class="step-details">
@@ -341,20 +349,20 @@ function handleSelectTask(task: TaskLogEntry): void {
 
 function getStatusIcon(status: string): string {
   switch (status) {
-    case 'success': return '✅';
-    case 'failed': return '❌';
-    case 'running': return '🔄';
-    case 'cancelled': return '⏹️';
-    default: return '❓';
+    case 'success': return 'CircleCheck';
+    case 'failed': return 'CircleClose';
+    case 'running': return 'Refresh';
+    case 'cancelled': return 'VideoPause';
+    default: return 'QuestionFilled';
   }
 }
 
 function getModeIcon(mode: string): string {
   switch (mode) {
-    case 'safe': return '🔒';
-    case 'plan': return '⚖️';
-    case 'craft': return '🔓';
-    default: return '⚡';
+    case 'safe': return 'Lock';
+    case 'plan': return 'Promotion';
+    case 'craft': return 'Lightning';
+    default: return 'Lightning';
   }
 }
 
@@ -389,13 +397,13 @@ function getModeText(mode: string): string {
 
 function getStepIcon(status: string): string {
   switch (status) {
-    case 'pending': return '⏳';
-    case 'running': return '🔄';
-    case 'success': return '✅';
-    case 'failed': return '❌';
-    case 'skipped': return '⏭️';
-    case 'blocked': return '🚫';
-    default: return '❓';
+    case 'pending': return 'Clock';
+    case 'running': return 'Refresh';
+    case 'success': return 'CircleCheck';
+    case 'failed': return 'CircleClose';
+    case 'skipped': return 'VideoPause';
+    case 'blocked': return 'Warning';
+    default: return 'QuestionFilled';
   }
 }
 
@@ -648,7 +656,22 @@ async function handleBatchDelete(): Promise<void> {
 
 .task-status-icon,
 .task-mode-icon {
-  font-size: var(--font-size-caption-1);
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.task-status-icon.is-success { color: var(--el-color-success); }
+.task-status-icon.is-failed  { color: var(--el-color-danger); }
+.task-status-icon.is-running { color: var(--el-color-warning); animation: tasks-spin 1.2s linear infinite; }
+.task-status-icon.is-cancelled { color: var(--el-text-color-secondary); }
+.task-mode-icon.mode-safe { color: var(--el-color-success); }
+.task-mode-icon.mode-plan { color: var(--el-color-primary); }
+.task-mode-icon.mode-craft { color: var(--el-color-warning); }
+.task-mode-icon.mode-unknown { color: var(--el-text-color-secondary); }
+
+@keyframes tasks-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .task-time {
@@ -703,8 +726,12 @@ async function handleBatchDelete(): Promise<void> {
 }
 
 .title-icon {
-  font-size: var(--font-size-title-2);
+  display: inline-flex;
+  align-items: center;
 }
+.title-icon.is-success { color: var(--el-color-success); }
+.title-icon.is-failed  { color: var(--el-color-danger); }
+.title-icon.is-running { color: var(--el-color-warning); }
 
 .title-text {
   font-size: var(--font-size-title-2);
@@ -803,8 +830,16 @@ async function handleBatchDelete(): Promise<void> {
 }
 
 .step-icon {
-  font-size: var(--font-size-body);
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
+.step-icon.is-success { color: var(--el-color-success); }
+.step-icon.is-failed  { color: var(--el-color-danger); }
+.step-icon.is-running { color: var(--el-color-warning); animation: tasks-spin 1.2s linear infinite; }
+.step-icon.is-blocked { color: var(--el-color-danger); }
+.step-icon.is-pending { color: var(--el-text-color-placeholder); }
+.step-icon.is-skipped { color: var(--el-text-color-secondary); }
 
 .step-description {
   color: var(--text-color);

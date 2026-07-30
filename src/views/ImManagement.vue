@@ -1,7 +1,7 @@
 <template>
   <div class="im-management">
     <header class="page-header">
-      <h1>📡 IM 管理</h1>
+      <h1>IM 管理</h1>
       <p class="subtitle">配置 / 监控 / 消息 / 规则 — 一站式管理所有 IM 通道</p>
     </header>
 
@@ -33,7 +33,9 @@
             <div class="card-status" :class="ch.enabled ? 'on' : 'off'">
               {{ ch.enabled ? '● 在线' : '○ 离线' }}
             </div>
-            <div class="card-icon">{{ channelIcon(ch.kind) }}</div>
+            <div class="card-icon">
+              <el-icon :size="22"><component :is="channelIcon(ch.kind)" /></el-icon>
+            </div>
             <div class="card-name">{{ ch.displayName }}</div>
             <div class="card-kind">{{ ch.kind }}</div>
             <div class="card-summary">
@@ -42,7 +44,9 @@
               <span v-else-if="ch.config?.corpId">Corp: {{ ch.config.corpId }}</span>
               <span v-else class="muted">未配置</span>
             </div>
-            <div v-if="ch.testError" class="card-error">⚠ {{ ch.testError }}</div>
+            <div v-if="ch.testError" class="card-error">
+              <el-icon :size="14"><Warning /></el-icon> {{ ch.testError }}
+            </div>
             <div class="card-actions">
               <el-button size="small" @click="openEditDialog(ch)">编辑</el-button>
               <el-button size="small" type="success" @click="handleTestChannel(ch)" :loading="testing === ch.kind">
@@ -75,7 +79,9 @@
             </el-table-column>
             <el-table-column label="健康" width="100">
               <template #default="scope">
-                {{ scope.row.testError ? '❌' : scope.row.enabled ? '✅' : '—' }}
+                <el-icon v-if="scope.row.testError" :size="14" color="var(--el-color-danger)"><CircleClose /></el-icon>
+                <el-icon v-else-if="scope.row.enabled" :size="14" color="var(--el-color-success)"><CircleCheck /></el-icon>
+                <span v-else>—</span>
               </template>
             </el-table-column>
             <el-table-column label="最后测试" prop="lastTested" />
@@ -124,7 +130,7 @@
 
         <!-- 快速回复面板 (P2-01) -->
         <div class="quick-reply-panel" v-if="selectedMessage">
-          <h3>💬 快速回复</h3>
+          <h3>快速回复</h3>
           <div class="reply-target">
             <el-tag size="small" type="info">{{ selectedMessage.channel }}</el-tag>
             <span class="reply-from">来自: <strong>{{ selectedMessage.sender }}</strong></span>
@@ -335,7 +341,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Warning, CircleCheck, CircleClose, ChatDotRound, Connection, Promotion, OfficeBuilding } from '@element-plus/icons-vue'
 import Skeleton from '@/components/common/Skeleton.vue'
 
 interface ChannelInfo {
@@ -353,17 +359,17 @@ const initialLoading = ref(true) // P5-UX: 初次加载时显示 Skeleton
 
 // 11 个支持的平台 + 元信息
 const ALL_KINDS: Array<{ value: string; label: string; icon: string }> = [
-  { value: 'im-feishu', label: '飞书 / Lark', icon: '💬' },
-  { value: 'im-dingtalk', label: '钉钉', icon: '📌' },
-  { value: 'im-wechat-work', label: '企业微信', icon: '🏢' },
-  { value: 'im-wechat', label: '微信个人号', icon: '💚' },
-  { value: 'im-qq', label: 'QQ 机器人', icon: '🐧' },
-  { value: 'im-telegram', label: 'Telegram', icon: '✈️' },
-  { value: 'im-slack', label: 'Slack', icon: '💼' },
-  { value: 'im-discord', label: 'Discord', icon: '🎮' },
-  { value: 'im-whatsapp', label: 'WhatsApp', icon: '📱' },
-  { value: 'im-lark', label: 'Lark(海外飞书)', icon: '🌐' },
-  { value: 'im-rocket', label: 'Rocket.Chat', icon: '🚀' },
+  { value: 'im-feishu', label: '飞书 / Lark', icon: 'ChatDotRound' },
+  { value: 'im-dingtalk', label: '钉钉', icon: 'Promotion' },
+  { value: 'im-wechat-work', label: '企业微信', icon: 'OfficeBuilding' },
+  { value: 'im-wechat', label: '微信个人号', icon: 'ChatDotRound' },
+  { value: 'im-qq', label: 'QQ 机器人', icon: 'ChatDotRound' },
+  { value: 'im-telegram', label: 'Telegram', icon: 'Promotion' },
+  { value: 'im-slack', label: 'Slack', icon: 'ChatDotRound' },
+  { value: 'im-discord', label: 'Discord', icon: 'ChatDotRound' },
+  { value: 'im-whatsapp', label: 'WhatsApp', icon: 'ChatDotRound' },
+  { value: 'im-lark', label: 'Lark(海外飞书)', icon: 'Connection' },
+  { value: 'im-rocket', label: 'Rocket.Chat', icon: 'Promotion' },
 ]
 
 const availableKinds = computed(() => {
@@ -404,7 +410,7 @@ const permissionForm = reactive({ subject: '', level: 'member', scope: [] })
 // P2-01 快速回复
 const QUICK_REPLY_TEMPLATES = [
   '好的,稍等',
-  '已完成 ✅',
+  '已完成',
   '需要更多信息,请补充',
   '已收到,谢谢',
   '已转交相关同事处理',
@@ -495,7 +501,7 @@ const filteredMessages = computed(() => {
 })
 
 function channelIcon(kind: string): string {
-  return ALL_KINDS.find((k) => k.value === kind)?.icon ?? '📡'
+  return ALL_KINDS.find((k) => k.value === kind)?.icon ?? 'Connection'
 }
 
 async function loadChannels(): Promise<void> {
@@ -750,7 +756,14 @@ onMounted(async () => {
     &.off { color: #909399; }
   }
   .card-icon {
-    font-size: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent-base);
     margin-bottom: 8px;
   }
   .card-name {
@@ -771,6 +784,9 @@ onMounted(async () => {
   .card-error {
     font-size: 11px;
     color: #f56c6c;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     margin-bottom: 8px;
   }
   .card-actions {

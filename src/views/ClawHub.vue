@@ -1,7 +1,7 @@
 <template>
   <div class="clawhub">
     <header class="page-header">
-      <h1>🦅 ClawHub 技能市场</h1>
+      <h1>ClawHub 技能市场</h1>
       <p class="subtitle">发布 / 审核 / 搜索 / 评分 — 社区驱动的技能生态</p>
     </header>
 
@@ -39,9 +39,9 @@
               <el-tag v-for="t in s.tags" :key="t" size="small" type="info">{{ t }}</el-tag>
             </div>
             <div class="card-meta">
-              <span>👤 {{ s.authorName }}</span>
-              <span>⭐ {{ s.ratingCount > 0 ? s.ratingSum / s.ratingCount : '—' }} ({{ s.ratingCount }})</span>
-              <span>⬇ {{ s.downloadCount }}</span>
+              <span><el-icon :size="12"><User /></el-icon> {{ s.authorName }}</span>
+              <span><el-icon :size="12"><Star /></el-icon> {{ s.ratingCount > 0 ? s.ratingSum / s.ratingCount : '—' }} ({{ s.ratingCount }})</span>
+              <span><el-icon :size="12"><Download /></el-icon> {{ s.downloadCount }}</span>
             </div>
             <div class="card-actions">
               <el-button size="small" @click="openRateDialog(s)">评分</el-button>
@@ -122,7 +122,7 @@
                 <el-tag size="small" type="info">{{ tpl.category }}</el-tag>
               </div>
               <p class="template-desc">{{ tpl.description }}</p>
-              <p class="template-usecase">📌 {{ tpl.useCase }}</p>
+              <p class="template-usecase"><el-icon :size="13"><Connection /></el-icon> {{ tpl.useCase }}</p>
               <div class="template-tags">
                 <el-tag v-for="tag in tpl.tags" :key="tag" size="small" effect="plain">{{ tag }}</el-tag>
               </div>
@@ -450,6 +450,11 @@ onMounted(() => {
     color: var(--text-secondary, #999);
     margin-bottom: 8px;
   }
+  .card-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
   .card-actions {
     display: flex;
     gap: 4px;
@@ -519,6 +524,16 @@ onMounted(() => {
   color: var(--text-secondary, #999);
   margin: 0 0 8px;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.card-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-secondary, #999);
+  margin: 8px 0 12px;
 }
 .template-tags {
   display: flex;

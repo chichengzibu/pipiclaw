@@ -26,7 +26,7 @@ export const EXECUTION_MODE_LIST: ExecutionModeConfig[] = [
     mode: 'safe',
     name: '安全模式',
     description: '纯对话模式，拦截所有执行类指令',
-    icon: '🔒',
+    icon: 'Lock',
     allowExecution: false,
     requireConfirmation: false
   },

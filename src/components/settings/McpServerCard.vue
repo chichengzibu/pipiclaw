@@ -3,7 +3,7 @@
     <div class="card-header">
       <div class="server-info">
         <div class="server-icon">
-          <span class="icon-emoji">🔌</span>
+          <el-icon class="icon-emoji" :size="24"><Connection /></el-icon>
         </div>
         <div class="server-details">
           <h4 class="server-name">{{ server.name }}</h4>
@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Connection } from '@element-plus/icons-vue';
 
 interface McpServer {
   name: string;
@@ -118,7 +119,7 @@ function handleTest(): void {
 }
 
 .icon-emoji {
-  font-size: 24px;
+  color: var(--el-color-primary);
 }
 
 .server-details {
