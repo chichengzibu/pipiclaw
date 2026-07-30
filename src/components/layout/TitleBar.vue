@@ -9,16 +9,6 @@
 
     <div class="window-controls">
       <button
-        class="control-btn theme-toggle"
-        @click="handleToggleTheme"
-        :title="isDark ? '切换到浅色' : '切换到深色'"
-        :aria-label="isDark ? '切换到浅色' : '切换到深色'"
-      >
-        <el-icon v-if="isDark"><Sunny /></el-icon>
-        <el-icon v-else><Moon /></el-icon>
-      </button>
-
-      <button
         class="control-btn minimize"
         @click="handleMinimize"
         title="最小化"
@@ -61,18 +51,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Minus, FullScreen, Close, Setting, Sunny, Moon } from '@element-plus/icons-vue';
-import { useAppStore } from '@/stores/app';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { Minus, FullScreen, Close, Setting } from '@element-plus/icons-vue';
 
-const appStore = useAppStore();
 const isMaximized = ref(false);
-
-const isDark = computed(() => appStore.currentTheme === 'dark');
-
-const handleToggleTheme = (): void => {
-  appStore.toggleTheme();
-};
 
 const handleMinimize = async (): Promise<void> => {
   try {
@@ -216,16 +198,6 @@ onUnmounted(() => {
   &:hover {
     background: var(--danger);
     color: var(--fg-on-accent);
-  }
-}
-
-.control-btn.theme-toggle {
-  width: 40px;
-  border-right: 1px solid var(--border-base);
-  margin-right: 4px;
-
-  .el-icon {
-    font-size: 16px;
   }
 }
 </style>
