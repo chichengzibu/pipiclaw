@@ -4,7 +4,7 @@
       <h1 class="page-title">{{ t('settings.title') }}</h1>
     </div>
 
-    <div class="settings-content">
+    <div class="settings-layout">
       <nav class="settings-nav" role="tablist" :aria-label="t('settings.title')">
         <button
           v-for="tab in navTabs"
@@ -17,8 +17,8 @@
           :tabindex="activeTab === tab.key ? 0 : -1"
           :class="['settings-nav__btn', { 'is-active': activeTab === tab.key }]"
           @click="activeTab = tab.key"
-          @keydown.left.prevent="focusSiblingTab(-1)"
-          @keydown.right.prevent="focusSiblingTab(1)"
+          @keydown.up.prevent="focusSiblingTab(-1)"
+          @keydown.down.prevent="focusSiblingTab(1)"
         >
           <span class="settings-nav__icon" aria-hidden="true">{{ tab.icon }}</span>
           <span class="settings-nav__label">{{ tab.label }}</span>
@@ -35,45 +35,133 @@
           aria-labelledby="settings-tab-basic"
         >
           <div class="tab-content">
-            <el-card class="settings-card">
-              <el-form label-width="140px">
-                <el-form-item :label="t('settings.selectTheme')">
-                  <el-radio-group v-model="selectedTheme" @change="handleThemeChange">
-                    <el-radio-button value="light">☀️ 浅色</el-radio-button>
-                    <el-radio-button value="dark">🌙 深色</el-radio-button>
-                    <el-radio-button value="system">🖥️ 跟随系统</el-radio-button>
-                  </el-radio-group>
-                </el-form-item>
-                <el-form-item :label="t('settings.guide')">
-                  <el-button type="primary" size="small" @click="appStore.openGuide">
-                    {{ t('settings.openGuide') }}
-                  </el-button>
-                </el-form-item>
-                <!-- P4-T5.4: 反馈按钮 → 自动附加崩溃报告 -->
-                <el-form-item :label="t('settings.feedback')">
-                  <el-button type="warning" size="small" @click="showFeedbackModal = true">
-                    {{ t('settings.openFeedback') }}
-                  </el-button>
-                </el-form-item>
-              </el-form>
-            </el-card>
+            <div class="settings-h">
+              <h2>{{ t('settings.basicTitle') }}</h2>
+              <div class="settings-h__desc">PiPiClaw v4.4 · 1 改 token 已应用</div>
+            </div>
 
-            <el-card class="settings-card">
-              <template #header><span>{{ t('settings.shortcut') }}</span></template>
-              <el-form label-width="140px">
-                <el-form-item :label="t('settings.globalShortcut')">
-                  <ShortcutRecorder
-                    v-model="shortcutConfig.toggle"
-                    default-accelerator="Ctrl+Alt+P"
-                  />
-                  <div class="form-tip">{{ t('settings.shortcutTip') }}</div>
-                </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="saveShortcutConfig">{{ t('settings.saveShortcut') }}</el-button>
-                  <el-button @click="resetShortcutConfig">{{ t('settings.resetShortcut') }}</el-button>
-                </el-form-item>
-              </el-form>
-            </el-card>
+            <section class="settings-section">
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">{{ t('settings.autostartLabel') }}</div>
+                  <div class="setting-desc">{{ t('settings.autostartDesc') }}</div>
+                </div>
+                <button
+                  class="toggle"
+                  :class="{ on: autostartEnabled }"
+                  :aria-pressed="autostartEnabled"
+                  :aria-label="t('settings.autostartLabel')"
+                  @click="autostartEnabled = !autostartEnabled"
+                />
+              </div>
+
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">{{ t('settings.showThinkingLabel') }}</div>
+                  <div class="setting-desc">{{ t('settings.showThinkingDesc') }}</div>
+                </div>
+                <button
+                  class="toggle"
+                  :class="{ on: showThinkingBlock }"
+                  :aria-pressed="showThinkingBlock"
+                  :aria-label="t('settings.showThinkingLabel')"
+                  @click="showThinkingBlock = !showThinkingBlock"
+                />
+              </div>
+
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">{{ t('settings.themeLabel') }}</div>
+                  <div class="setting-desc">{{ t('settings.themeDesc') }}</div>
+                </div>
+                <div class="radio-group">
+                  <button
+                    v-for="opt in themeOptions"
+                    :key="opt.value"
+                    :class="['radio', { active: selectedTheme === opt.value }]"
+                    :aria-pressed="selectedTheme === opt.value"
+                    @click="handleThemeChange(opt.value)"
+                  >{{ opt.label }}</button>
+                </div>
+              </div>
+
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">{{ t('settings.defaultModelLabel') }}</div>
+                  <div class="setting-desc">{{ t('settings.defaultModelDesc') }}</div>
+                </div>
+                <select
+                  class="select-input"
+                  :value="defaultModelId"
+                  @change="(e: Event) => defaultModelId = (e.target as HTMLSelectElement).value"
+                >
+                  <option v-if="modelsStore.providers.length === 0" value="">{{ t('settings.noModel') }}</option>
+                  <optgroup
+                    v-for="provider in modelsStore.providers"
+                    :key="provider.id"
+                    :label="provider.name"
+                  >
+                    <option
+                      v-for="model in provider.models"
+                      :key="model.id"
+                      :value="`${provider.id}::${model.id}`"
+                    >{{ model.name }}</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">{{ t('settings.languageLabel') }}</div>
+                  <div class="setting-desc">{{ t('settings.languageDesc') }}</div>
+                </div>
+                <div class="radio-group">
+                  <button
+                    v-for="opt in languageOptions"
+                    :key="opt.value"
+                    :class="['radio', { active: currentLocale === opt.value }]"
+                    :aria-pressed="currentLocale === opt.value"
+                    @click="handleLanguageChange(opt.value)"
+                  >{{ opt.label }}</button>
+                </div>
+              </div>
+            </section>
+
+            <div class="settings-h" style="margin-top: var(--space-4)">
+              <h2>{{ t('settings.shortcut') }}</h2>
+              <div class="settings-h__desc">{{ t('settings.shortcutTip') }}</div>
+            </div>
+
+            <section class="settings-section">
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">{{ t('settings.globalShortcut') }}</div>
+                  <div class="setting-desc">Ctrl+Alt+P</div>
+                </div>
+                <ShortcutRecorder
+                  v-model="shortcutConfig.toggle"
+                  default-accelerator="Ctrl+Alt+P"
+                />
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">{{ t('settings.guide') }}</div>
+                  <div class="setting-desc">{{ t('settings.openGuide') }}</div>
+                </div>
+                <button class="btn-secondary" @click="appStore.openGuide">
+                  {{ t('settings.openGuide') }}
+                </button>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-label">{{ t('settings.feedback') }}</div>
+                  <div class="setting-desc">{{ t('settings.openFeedback') }}</div>
+                </div>
+                <button class="btn-secondary" @click="showFeedbackModal = true">
+                  {{ t('settings.openFeedback') }}
+                </button>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -467,7 +555,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, nextTick } from 'vue';
+import { ref, reactive, onMounted, computed, nextTick, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import ShortcutRecorder from '@/components/settings/ShortcutRecorder.vue';
@@ -478,6 +566,7 @@ import { useAppStore } from '@/stores/app';
 import { useHermesMemoryStore } from '@/stores/hermesMemory';
 import { useModelsStore, PROVIDER_DEFAULTS, type ProviderConfig, type ProviderFormData } from '@/stores/models';
 import { Plus } from '@element-plus/icons-vue';
+import { setLocale, type SupportedLocale } from '@/locales';
 
 const { t } = useI18n();
 
@@ -486,8 +575,32 @@ const hermesMemoryStore = useHermesMemoryStore();
 const modelsStore = useModelsStore();
 
 const activeTab = ref('basic');
-const selectedTheme = ref(appStore.themeMode);
+const selectedTheme = ref<'light' | 'dark' | 'system'>(appStore.themeMode);
 const showFeedbackModal = ref(false);
+
+// v4.4: setting-row 列表用
+const autostartEnabled = ref<boolean>(false);
+const showThinkingBlock = ref<boolean>(true);
+const defaultModelId = ref<string>('');
+const currentLocale = ref<SupportedLocale>(
+  (typeof localStorage !== 'undefined' && (localStorage.getItem('pipiclaw:locale') as SupportedLocale)) || 'zh-CN'
+);
+
+const themeOptions = [
+  { value: 'light' as const, label: t('settings.themeLight') },
+  { value: 'dark' as const, label: t('settings.themeDark') },
+  { value: 'system' as const, label: t('settings.themeSystem') }
+];
+
+const languageOptions = [
+  { value: 'zh-CN' as const, label: '中文' },
+  { value: 'en-US' as const, label: 'English' }
+];
+
+function handleLanguageChange(locale: SupportedLocale): void {
+  currentLocale.value = locale;
+  setLocale(locale);
+}
 
 const navTabs = computed(() => [
   { key: 'basic', label: t('settings.basicTab'), icon: '⚙️' },
@@ -609,6 +722,20 @@ async function loadShortcutConfig(): Promise<void> {
     console.error('加载快捷键配置失败:', error);
   }
 }
+
+// v4.4: ShortcutRecorder 改用 inline save,自动 watch
+watch(
+  () => shortcutConfig.value.toggle,
+  async (newVal, oldVal) => {
+    if (newVal && newVal !== oldVal) {
+      try {
+        await (window as any).electronAPI?.shortcut?.set('toggle', newVal);
+      } catch (e) {
+        console.error('快捷键自动保存失败:', e);
+      }
+    }
+  }
+);
 
 async function saveShortcutConfig(): Promise<void> {
   try {
@@ -1119,82 +1246,92 @@ onMounted(async () => {
   letter-spacing: -0.01em;
 }
 
-.settings-content {
+/* v4.4 重做: 2 列 grid layout (180px 左侧 nav + 1fr 内容), Linear 风格 */
+.settings-layout {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: var(--space-4);
+  overflow: hidden;
 }
 
 .settings-nav {
   display: flex;
+  flex-direction: column;
   gap: 2px;
-  margin: 0 0 var(--space-3);
   padding: 0;
-  border-bottom: 1px solid var(--border-base);
+  align-self: start;
+  position: sticky;
+  top: 0;
 
   &__btn {
     appearance: none;
     background: transparent;
     border: 0;
-    border-bottom: 2px solid transparent;
-    padding: 0 var(--space-3);
-    height: 36px;
-    line-height: 34px;
-    display: inline-flex;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    display: flex;
     align-items: center;
     gap: var(--space-2);
     font-size: var(--font-size-callout);
-    color: var(--fg-tertiary);
+    color: var(--fg-secondary);
     cursor: pointer;
-    transition: color var(--duration-fast) var(--ease-standard),
-                border-color var(--duration-fast) var(--ease-standard),
-                background var(--duration-fast) var(--ease-standard);
-    margin-bottom: -1px;
+    text-align: left;
     font-family: inherit;
+    transition: background var(--duration-fast) var(--ease-standard),
+                color var(--duration-fast) var(--ease-standard);
+    width: 100%;
 
-    &:hover { color: var(--fg-primary); }
+    &:hover {
+      background: var(--bg-elevated);
+      color: var(--fg-primary);
+    }
 
     &:focus-visible {
       outline: 2px solid var(--accent-base);
       outline-offset: 2px;
-      border-radius: var(--radius-sm);
     }
 
     &.is-active {
+      background: var(--accent-soft);
       color: var(--accent-base);
       font-weight: var(--font-weight-medium);
-      border-bottom-color: var(--accent-base);
     }
   }
 
   &__icon {
     font-size: 14px;
     line-height: 1;
+    width: 16px;
+    text-align: center;
   }
+
+  &__label { flex: 1; }
 
   &__count {
     font-size: var(--font-size-caption-1);
     background: var(--bg-elevated);
     border: 1px solid var(--border-base);
     color: var(--fg-tertiary);
-    padding: 0 var(--space-2);
+    padding: 0 6px;
     border-radius: var(--radius-pill);
-    line-height: 18px;
+    line-height: 16px;
     min-width: 18px;
     text-align: center;
   }
 
   &__btn.is-active &__count {
-    background: var(--accent-soft);
-    color: var(--accent-base);
+    background: var(--accent-base);
+    color: white;
     border-color: transparent;
   }
 }
 
 .settings-panels {
-  height: calc(100% - 48px);
+  min-height: 0;
   overflow-y: auto;
-  padding: 0;
+  padding: 0 var(--space-2) var(--space-3) 0;
 }
 
 .settings-panel {
@@ -1205,7 +1342,174 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  max-width: 720px;
+  max-width: 640px;
+}
+
+/* v4.4 重做: 头部 h2 + desc 描述区 */
+.settings-h {
+  margin-bottom: var(--space-3);
+
+  h2 {
+    font-size: 16px;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.01em;
+    color: var(--fg-primary);
+    margin: 0 0 4px;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: var(--fg-tertiary);
+  }
+}
+
+/* v4.4 重做: setting-row 列表 (label/desc 左, control 右) */
+.settings-section {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
+
+  &:last-child { border-bottom: 0; }
+
+  .setting-label {
+    font-size: var(--font-size-callout);
+    font-weight: var(--font-weight-medium);
+    color: var(--fg-primary);
+  }
+
+  .setting-desc {
+    font-size: var(--font-size-caption-1);
+    color: var(--fg-tertiary);
+    margin-top: 2px;
+  }
+}
+
+/* v4.4 重做: 自定义 toggle 36×20 */
+.toggle {
+  width: 36px;
+  height: 20px;
+  background: var(--border-strong, var(--border-base));
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  transition: background var(--duration-base) var(--ease-standard);
+  border: 0;
+  padding: 0;
+  flex-shrink: 0;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: left var(--duration-base) var(--ease-emphasized);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  }
+
+  &.on { background: var(--accent-base); }
+
+  &.on::after { left: 18px; }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-base);
+    outline-offset: 2px;
+  }
+}
+
+/* v4.4 重做: 自定义 radio 按钮组 */
+.radio-group {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.radio {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-callout);
+  background: var(--bg-elevated);
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+  font-family: inherit;
+
+  &:hover {
+    border-color: var(--fg-secondary);
+    color: var(--fg-primary);
+  }
+
+  &.active {
+    background: var(--accent-soft);
+    color: var(--accent-base);
+    border-color: var(--accent-base);
+    font-weight: var(--font-weight-medium);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-base);
+    outline-offset: 2px;
+  }
+}
+
+/* v4.4 重做: 自定义 select-input */
+.select-input {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--fg-primary);
+  font-size: var(--font-size-callout);
+  min-width: 200px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--duration-fast) var(--ease-standard);
+
+  &:hover { border-color: var(--fg-secondary); }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-base);
+    outline-offset: 0;
+    border-color: var(--accent-base);
+  }
+}
+
+/* v4.4 重做: 通用 secondary 按钮 */
+.btn-secondary {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--fg-primary);
+  font-size: var(--font-size-callout);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--duration-fast) var(--ease-standard);
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: var(--accent-base);
+    color: var(--accent-base);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-base);
+    outline-offset: 2px;
+  }
 }
 
 .settings-card {

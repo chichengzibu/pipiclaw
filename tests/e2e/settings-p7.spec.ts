@@ -46,17 +46,18 @@ test.describe('Settings P7', () => {
     const activeTab = window.locator('.settings-nav__btn.is-active').first()
     await expect(activeTab).toBeVisible({ timeout: 10_000 })
 
-    // 主题选择:页面内出现 "选择主题" / "Select theme" 文本(用 i18n key t('settings.selectTheme'))
-    const themeLabel = window.locator(':text("选择主题"), :text("Select theme")').first()
+    // v4.4: 主题 row 用 setting-label "主题" + 自定义 .radio-group
+    const themeLabel = window.locator(':text("主题"), :text("Theme")').first()
     await expect(themeLabel).toBeVisible({ timeout: 10_000 })
-    // 主题切换改用 el-radio-group (light/dark/system),而不是 el-select
-    await expect(window.locator('.el-radio-group').first()).toBeVisible()
+    // 自定义 radio-group (浅色/深色/跟随)
+    await expect(window.locator('.radio-group').first()).toBeVisible()
+    // 3 个 radio 选项
+    const radios = await window.locator('.radio-group .radio').count()
+    expect(radios).toBeGreaterThanOrEqual(2)
 
-    // 快捷键设置区:保存按钮 + 恢复默认按钮(i18n key: saveShortcut / resetShortcut)
-    const saveBtn = window.locator('button:has-text("保存设置"), button:has-text("Save Settings")')
-    const resetBtn = window.locator('button:has-text("恢复默认"), button:has-text("Reset to Default")')
-    await expect(saveBtn.first()).toBeVisible()
-    await expect(resetBtn.first()).toBeVisible()
+    // 快捷键 row 仍然存在(ShortcutRecorder 改 inline save,无 save 按钮)
+    const globalShortcutLabel = window.locator(':text("全局唤起快捷键"), :text("Global Shortcut")').first()
+    await expect(globalShortcutLabel).toBeVisible()
   })
 
   test('can switch to models tab and see provider count', async ({ window }) => {
