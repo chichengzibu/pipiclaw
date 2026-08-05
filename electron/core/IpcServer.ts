@@ -10,6 +10,8 @@ import { LlmConfigStore } from '../llm/LlmConfigStore';
 
 import { ModelManager } from '../models/ModelManager';
 import { PermissionManager } from '../permissions/PermissionManager';
+// M1 P0-1: 静态 import 替换 require — 避免 esbuild bundle 后 require fail
+import { PermissionConfig } from '../permissions/PermissionConfig';
 import { ChatManager } from '../chat/ChatManager';
 import { TaskExecutor } from '../task/TaskExecutor';
 import { TaskLog } from '../task/TaskLog';
@@ -18,6 +20,13 @@ import { FileParser } from '../utils/FileParser';
 import { ConversationExporter } from '../utils/ConversationExporter';
 import { OpenClawGateway } from '../openclaw/OpenClawGateway';
 import { OpenClawExecutor } from '../openclaw/OpenClawExecutor';
+import { McpManager } from '../mcp/McpManager';
+import type {
+  McpServerConfig,
+  McpServerStatus,
+  McpTool,
+  McpInvokeResult,
+} from '../mcp/types';
 import { HermesMemory } from '../hermes/HermesMemory';
 import { SkillLoader } from '../skill/SkillLoader';
 import { SelfLearner } from '../learning/SelfLearner';
@@ -1406,11 +1415,131 @@ export class IpcServer {
       }
     });
 
+    // ========== M1: MCP 运行时 (stdio + filesystem server PoC) ==========
+    // 启动一个 server (按 config)
+    ipcMain.handle('mcp:start-server', async (_, config: McpServerConfig) => {
+      try {
+        const mgr = McpManager.getInstance();
+        const status = await mgr.startServer(config);
+        return { success: status.state === 'ready', data: status, error: status.lastError ?? undefined };
+      } catch (error) {
+        this.log.error('mcp:start-server 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // 停止一个 server
+    ipcMain.handle('mcp:stop-server', async (_, name: string) => {
+      try {
+        const mgr = McpManager.getInstance();
+        await mgr.stopServer(name);
+        return { success: true };
+      } catch (error) {
+        this.log.error('mcp:stop-server 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // 列出所有 server 状态
+    ipcMain.handle('mcp:list-servers', async () => {
+      try {
+        const mgr = McpManager.getInstance();
+        return { success: true, data: mgr.listServers() satisfies McpServerStatus[] };
+      } catch (error) {
+        this.log.error('mcp:list-servers 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // 列出所有 server 的所有 tools (聚合, 带 server 字段)
+    ipcMain.handle('mcp:list-tools', async () => {
+      try {
+        const mgr = McpManager.getInstance();
+        const tools = await mgr.listAllTools();
+        return { success: true, data: tools satisfies Array<McpTool & { server: string }> };
+      } catch (error) {
+        this.log.error('mcp:list-tools 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // 列出所有 server 的 tools (按 server 分组)
+    ipcMain.handle('mcp:list-tools-by-server', async () => {
+      try {
+        const mgr = McpManager.getInstance();
+        return { success: true, data: mgr.listServerTools() satisfies Record<string, McpTool[]> };
+      } catch (error) {
+        this.log.error('mcp:list-tools-by-server 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // 调用一个 tool
+    // payload: { server: string, toolName: string, args: Record<string, unknown> }
+    //        或 { qualifiedName: '<server>:<tool>', args: Record<string, unknown> }
+    ipcMain.handle('mcp:invoke', async (_, payload: {
+      server?: string;
+      toolName?: string;
+      qualifiedName?: string;
+      args?: Record<string, unknown>;
+    }) => {
+      try {
+        const mgr = McpManager.getInstance();
+        let result: McpInvokeResult;
+        if (payload.qualifiedName) {
+          result = await mgr.invokeByName(payload.qualifiedName, payload.args ?? {});
+        } else if (payload.server && payload.toolName) {
+          result = await mgr.invoke({
+            server: payload.server,
+            toolName: payload.toolName,
+            args: payload.args ?? {},
+          });
+        } else {
+          return { success: false, error: 'mcp:invoke 需要 server+toolName 或 qualifiedName' };
+        }
+        return { success: result.success, data: result, error: result.error };
+      } catch (error) {
+        this.log.error('mcp:invoke 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // 启动所有 enabled 的 server (config-driven, 给 main.ts boot 时用)
+    ipcMain.handle('mcp:start-all-enabled', async () => {
+      try {
+        const configStore = ConfigStore.getInstance();
+        const servers = (configStore.get('mcp.servers') ?? []) as McpServerConfig[];
+        const mgr = McpManager.getInstance();
+        const results: McpServerStatus[] = [];
+        for (const cfg of servers) {
+          if (!cfg.enabled) continue;
+          const status = await mgr.startServer(cfg);
+          results.push(status);
+        }
+        return { success: true, data: results };
+      } catch (error) {
+        this.log.error('mcp:start-all-enabled 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
+    // 停止所有 server (app 退出时用)
+    ipcMain.handle('mcp:stop-all', async () => {
+      try {
+        const mgr = McpManager.getInstance();
+        await mgr.stopAll();
+        return { success: true };
+      } catch (error) {
+        this.log.error('mcp:stop-all 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
     // ========== 权限重置 ==========
     ipcMain.handle('permissions:reset', async () => {
       try {
-        this.log.info('[IpcServer] permissions:reset 被调用，强制重置为开放模式');
-        const { PermissionConfig } = require('../permissions/PermissionConfig');
+        this.log.info('[IpcServer] permissions:reset 被调用，强制重置为无限制模式 ⚠️ (M1 P0-1)');
+        // M1 P0-1: 静态 import 替换 require (见 P0-4 d5:run 修复同源)
         const permissionConfig = PermissionConfig.getInstance();
         // force: true 因为这是用户主动从 UI 点 "重置" 按钮,必须执行
         const success = permissionConfig.forceResetToPermissive({ force: true });
