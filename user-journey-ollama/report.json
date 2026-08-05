@@ -1,0 +1,173 @@
+{
+  "startTime": "2026-08-05T04:00:23.841Z",
+  "tests": [
+    {
+      "name": "route: /dashboard",
+      "status": "PASS",
+      "durationMs": 363
+    },
+    {
+      "name": "route: /chat",
+      "status": "PASS",
+      "durationMs": 935
+    },
+    {
+      "name": "route: /skills",
+      "status": "PASS",
+      "durationMs": 380
+    },
+    {
+      "name": "route: /models",
+      "status": "PASS",
+      "durationMs": 372
+    },
+    {
+      "name": "route: /tasks",
+      "status": "PASS",
+      "durationMs": 360
+    },
+    {
+      "name": "route: /im-management",
+      "status": "PASS",
+      "durationMs": 359
+    },
+    {
+      "name": "route: /schedule",
+      "status": "PASS",
+      "durationMs": 358
+    },
+    {
+      "name": "route: /permissions",
+      "status": "PASS",
+      "durationMs": 359
+    },
+    {
+      "name": "route: /settings",
+      "status": "PASS",
+      "durationMs": 356
+    },
+    {
+      "name": "route: /help",
+      "status": "PASS",
+      "durationMs": 359
+    },
+    {
+      "name": "route: /clawhub",
+      "status": "PASS",
+      "durationMs": 357
+    },
+    {
+      "name": "route: /model-compare",
+      "status": "PASS",
+      "durationMs": 360
+    },
+    {
+      "name": "route: /plugin-market",
+      "status": "PASS",
+      "durationMs": 359
+    },
+    {
+      "name": "route: /remote-control",
+      "status": "PASS",
+      "durationMs": 358
+    },
+    {
+      "name": "Models 页有 provider 列表",
+      "status": "PASS",
+      "durationMs": 2,
+      "note": "74 provider 相关元素"
+    },
+    {
+      "name": "Models 点 \"测试连接\" 按钮",
+      "status": "PASS",
+      "durationMs": 3114,
+      "note": "点击完成"
+    },
+    {
+      "name": "Chat: 新建对话 + 输入 + 发送 + 等待 LLM 响应",
+      "status": "PASS",
+      "durationMs": 128454,
+      "note": "首 chunk nullms, 总 nullms, 0 字符, 0 chunks"
+    },
+    {
+      "name": "Skills 列表加载",
+      "status": "PASS",
+      "durationMs": 2,
+      "note": "603 skill 相关元素"
+    },
+    {
+      "name": "Settings 切换深色主题",
+      "status": "PASS",
+      "durationMs": 494,
+      "note": "data-theme=dark"
+    },
+    {
+      "name": "Settings 切回浅色",
+      "status": "PASS",
+      "durationMs": 547,
+      "note": "data-theme=light"
+    },
+    {
+      "name": "CommandPalette 打开 + 关闭",
+      "status": "PASS",
+      "durationMs": 1240,
+      "note": "Ctrl+K 打开成功"
+    },
+    {
+      "name": "SideNav → /chat",
+      "status": "PASS",
+      "durationMs": 1718
+    },
+    {
+      "name": "SideNav → /skills",
+      "status": "PASS",
+      "durationMs": 830
+    },
+    {
+      "name": "SideNav → /models",
+      "status": "PASS",
+      "durationMs": 776
+    },
+    {
+      "name": "SideNav → /dashboard",
+      "status": "PASS",
+      "durationMs": 735
+    },
+    {
+      "name": "其他 route: /tasks",
+      "status": "PASS",
+      "durationMs": 310
+    },
+    {
+      "name": "其他 route: /im-management",
+      "status": "PASS",
+      "durationMs": 311
+    },
+    {
+      "name": "其他 route: /schedule",
+      "status": "PASS",
+      "durationMs": 309
+    },
+    {
+      "name": "其他 route: /permissions",
+      "status": "PASS",
+      "durationMs": 309
+    },
+    {
+      "name": "其他 route: /clawhub",
+      "status": "PASS",
+      "durationMs": 312
+    },
+    {
+      "name": "其他 route: /help",
+      "status": "PASS",
+      "durationMs": 311
+    }
+  ],
+  "endTime": "2026-08-05T04:03:06.653Z",
+  "summary": {
+    "total": 31,
+    "pass": 31,
+    "fail": 0
+  }
+}
