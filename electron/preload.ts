@@ -69,6 +69,7 @@ const IpcChannels = {
   PERMISSIONS_DELETE: 'permissions:delete',
   PERMISSIONS_DUPLICATE: 'permissions:duplicate',
   PERMISSIONS_CHECK: 'permissions:check',
+  PERMISSIONS_RESET: 'permissions:reset',
 
   // 聊天管理
   CHAT_CONVERSATIONS: 'chat:conversations',
@@ -171,6 +172,16 @@ const IpcChannels = {
   MCP_REMOVE: 'mcp:remove',
   MCP_TOGGLE: 'mcp:toggle',
   MCP_TEST: 'mcp:test',
+
+  // ========== M1: MCP 运行时 (stdio + filesystem server PoC) ==========
+  MCP_START_SERVER: 'mcp:start-server',
+  MCP_STOP_SERVER: 'mcp:stop-server',
+  MCP_START_ALL_ENABLED: 'mcp:start-all-enabled',
+  MCP_STOP_ALL: 'mcp:stop-all',
+  MCP_LIST_SERVERS: 'mcp:list-servers',
+  MCP_LIST_TOOLS: 'mcp:list-tools',
+  MCP_LIST_TOOLS_BY_SERVER: 'mcp:list-tools-by-server',
+  MCP_INVOKE: 'mcp:invoke',
 
   // ========== Hermes 学习统计 ==========
   LEARNING_GET_STATS: 'learning:get-stats',
@@ -719,7 +730,11 @@ const electronAPI = {
       ipcRenderer.invoke(IpcChannels.PERMISSIONS_DUPLICATE, id, newName),
 
     check: (request: PermissionCheckRequest): Promise<IpcResponse<PermissionCheckResult>> =>
-      ipcRenderer.invoke(IpcChannels.PERMISSIONS_CHECK, request)
+      ipcRenderer.invoke(IpcChannels.PERMISSIONS_CHECK, request),
+
+    /** M1 P0-1: 显式 force reset 到 unrestricted (UI 重置按钮 / 用户主动) */
+    reset: (): Promise<IpcResponse<boolean>> =>
+      ipcRenderer.invoke(IpcChannels.PERMISSIONS_RESET),
   },
 
   // ========== 聊天管理 ==========
@@ -988,7 +1003,42 @@ const electronAPI = {
       ipcRenderer.invoke(IpcChannels.MCP_TOGGLE, name, enabled),
 
     test: (name: string): Promise<IpcResponse<void>> =>
-      ipcRenderer.invoke(IpcChannels.MCP_TEST, name)
+      ipcRenderer.invoke(IpcChannels.MCP_TEST, name),
+
+    // M1: 运行时
+    startServer: (config: any): Promise<IpcResponse<any>> =>
+      ipcRenderer.invoke(IpcChannels.MCP_START_SERVER, config),
+
+    stopServer: (name: string): Promise<IpcResponse<void>> =>
+      ipcRenderer.invoke(IpcChannels.MCP_STOP_SERVER, name),
+
+    startAllEnabled: (): Promise<IpcResponse<any[]>> =>
+      ipcRenderer.invoke(IpcChannels.MCP_START_ALL_ENABLED),
+
+    stopAll: (): Promise<IpcResponse<void>> =>
+      ipcRenderer.invoke(IpcChannels.MCP_STOP_ALL),
+
+    listServers: (): Promise<IpcResponse<any[]>> =>
+      ipcRenderer.invoke(IpcChannels.MCP_LIST_SERVERS),
+
+    listTools: (): Promise<IpcResponse<Array<{ name: string; description: string; inputSchema: any; server: string }>>> =>
+      ipcRenderer.invoke(IpcChannels.MCP_LIST_TOOLS),
+
+    listToolsByServer: (): Promise<IpcResponse<Record<string, Array<{ name: string; description: string; inputSchema: any }>>>> =>
+      ipcRenderer.invoke(IpcChannels.MCP_LIST_TOOLS_BY_SERVER),
+
+    invoke: (payload: {
+      server?: string;
+      toolName?: string;
+      qualifiedName?: string;
+      args?: Record<string, unknown>;
+    }): Promise<IpcResponse<{
+      success: boolean;
+      result?: any;
+      error?: string;
+      errorCode?: number;
+      durationMs: number;
+    }>> => ipcRenderer.invoke(IpcChannels.MCP_INVOKE, payload)
   },
 
   // ========== Hermes 学习统计 ==========

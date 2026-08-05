@@ -1,19 +1,27 @@
 /**
  * PiPiClaw - 权限配置管理器
- * 
+ *
  * 职责：
  * 1. 权限配置的持久化存储
  * 2. 权限模板管理
+ *
+ * M1 P0-1 安全重构 (2026-08-05):
+ * - 启动时**不调用** forceResetToPermissive() (避免覆盖用户选择)
+ * - 首次安装默认 safe 模式 (least privilege),不是 permissive
+ * - permissive 模板重命名为 "unrestricted" / "无限制模式 ⚠️",description 标红字警告
+ * - 模式切换进 EventBus 'permission:mode-changed' + Insight 审计
+ * - forceResetToPermissive 保留,仅 IPC `force:true` 或 PIPICLAW_RESET_PERMISSIONS=1 触发
  */
 
 import { app } from 'electron';
 import { join } from 'path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { LogManager } from '../core/LogManager';
-import { 
-  PermissionSet, 
-  PermissionRule, 
-  PermissionTemplate, 
+import { EventBus } from '../runtime/bridge/EventBus';
+import {
+  PermissionSet,
+  PermissionRule,
+  PermissionTemplate,
   TEMPLATE_DEFAULTS,
   PERMISSION_CATEGORIES
 } from './PermissionTypes';
@@ -21,9 +29,33 @@ import {
 export class PermissionConfig {
   private static instance: PermissionConfig;
   private log = LogManager.getInstance();
+  private bus = EventBus.getInstance();
   private configPath: string;
   private permissionSets: Map<string, PermissionSet> = new Map();
   private activeSetId: string | null = null;
+
+  /**
+   * 内部审计 helper: 模式切换进 EventBus + Insight。
+   * 触发点: setActivePermissionSet / forceResetToPermissive。
+   * UI 可订阅 'permission:mode-changed' 实时更新 banner;Insight 落库做合规审计。
+   */
+  private emitModeChange(opts: {
+    from: string | null;
+    to: string;
+    reason: 'user-setActive' | 'init-default' | 'reset' | 'ipc-reset' | 'env-reset';
+    via?: string;
+  }): void {
+    const payload = {
+      from: opts.from,
+      to: opts.to,
+      reason: opts.reason,
+      via: opts.via,
+      ts: Date.now(),
+      version: app.getVersion(),
+    };
+    void this.bus.publish('permission:mode-changed', payload);
+    this.log.info('[PermissionConfig] permission:mode-changed', payload);
+  }
 
   private constructor() {
     const userDataPath = app.getPath('userData');
@@ -80,6 +112,7 @@ export class PermissionConfig {
   }
 
   private initDefaultPermissionSets(): void {
+    const prevActiveId = this.activeSetId;
     this.permissionSets.clear();
 
     const safeSet = this.createPermissionSetFromTemplate('safe');
@@ -90,9 +123,13 @@ export class PermissionConfig {
     this.permissionSets.set(standardSet.id, standardSet);
     this.permissionSets.set(permissiveSet.id, permissiveSet);
 
-    // 默认使用开放模式（permissive），最大化功能可用性
-    this.activeSetId = permissiveSet.id;
-    this.log.info('[PermissionConfig] 初始化默认权限，激活开放模式');
+    // M1 P0-1: 默认 safe 模式 (least privilege) — 旧行为是 permissive。
+    // 用户可主动从 UI 切到 standard/unrestricted。
+    this.activeSetId = safeSet.id;
+    this.log.info('[PermissionConfig] 初始化默认权限，激活安全模式 (least privilege)');
+    if (prevActiveId !== safeSet.id) {
+      this.emitModeChange({ from: prevActiveId, to: safeSet.id, reason: 'init-default', via: 'initDefaultPermissionSets' });
+    }
   }
 
   private createPermissionSetFromTemplate(template: PermissionTemplate): PermissionSet {
@@ -112,15 +149,22 @@ export class PermissionConfig {
     const templateNames: Record<PermissionTemplate, string> = {
       safe: '安全模式',
       standard: '标准模式',
-      permissive: '开放模式',
+      // M1 P0-1: "开放模式" → "无限制模式 ⚠️" — UI 配套要红字警告 + 二次确认弹窗
+      // id 仍是 'preset_permissive' (兼容老 config),只改展示名 + 描述
+      permissive: '无限制模式 ⚠️ (不推荐)',
       custom: '自定义'
+    };
+
+    // M1 P0-1: unrestricted 模板的描述明确标红字警告 + 解释风险
+    const descriptionOverride: Partial<Record<PermissionTemplate, string>> = {
+      permissive: '⚠️ 警告: 此模式允许所有操作,无任何安全防护。仅在你完全信任当前环境(单机独享 / 临时测试)时使用。生产 / 公共网络 / 共用电脑请勿启用。',
     };
 
     return {
       id: `preset_${template}`,
       name: templateNames[template],
       template,
-      description: templateConfig.description,
+      description: descriptionOverride[template] ?? templateConfig.description,
       rules,
       createdAt: Date.now(),
       updatedAt: Date.now()
@@ -148,9 +192,13 @@ export class PermissionConfig {
     if (!this.permissionSets.has(id)) {
       return false;
     }
+    const prev = this.activeSetId;
     this.activeSetId = id;
     this.saveConfig();
     this.log.info(`激活权限集: ${id}`);
+    if (prev !== id) {
+      this.emitModeChange({ from: prev, to: id, reason: 'user-setActive', via: 'setActivePermissionSet' });
+    }
     return true;
   }
 
@@ -284,20 +332,25 @@ export class PermissionConfig {
   }
 
   /**
-   * 强制重置权限为开放模式。
+   * 强制重置权限为 unrestricted (无限制 ⚠️) 模式。
    *
-   * 安全考虑: 之前每次启动都无条件调用本方法,导致用户在 UI 选的
+   * 历史: v4.4.0 之前每次启动都无条件调用本方法,导致用户在 UI 选的
    * "安全模式"/"标准模式" 都被覆盖,RBAC 形同虚设。
    *
-   * 现在必须满足以下任一条件才会真正重置:
-   * 1. `options.force === true` (用户主动从 UI 点 "重置" 按钮)
-   * 2. 环境变量 PIPICLAW_DEV=true (开发/调试模式)
-   * 3. 环境变量 PIPICLAW_RESET_PERMISSIONS=true (显式一次性重置)
-   * 4. 配置文件中 activeSetId 为空 (首次启动,从未选过)
+   * M1 P0-1 安全重构 (2026-08-05):
+   * - 启动时**不再调用**本方法 (main.ts 已删除调用)。
+   * - 仅以下场景会真正重置:
+   *   1. `options.force === true` — IPC `permissions:reset` 用户主动操作
+   *   2. 环境变量 PIPICLAW_DEV=1 — 开发/调试模式
+   *   3. 环境变量 PIPICLAW_RESET_PERMISSIONS=1 — 显式一次性重置
+   *   4. activeSetId 为空 — 旧 config 格式不匹配 (migration 工具,带 version check)
    *
-   * 生产环境 + 已设置过权限 + 非 force → **尊重用户选择**,不重置。
+   * 行为: 把 active 切到 `preset_permissive` (id 仍兼容老 config;展示名 "无限制模式 ⚠️"),
+   *       并发 EventBus 'permission:mode-changed' 审计事件。
    *
-   * @param options.force 强制重置(用于 IPC `permissions:reset` 用户主动操作)
+   * 重要: 旧 `activeSetId` 已有值 + 未触发以上 4 条件 → **尊重用户选择,不做任何事**。
+   *
+   * @param options.force 强制重置 (用于 IPC `permissions:reset` 用户主动操作)
    * @returns true = 真的重置了; false = 跳过 (尊重用户选择)
    */
   public forceResetToPermissive(options?: { force?: boolean }): boolean {
@@ -314,24 +367,30 @@ export class PermissionConfig {
       return false;
     }
 
-    this.log.info('[PermissionConfig] ========== 强制重置权限为开放模式 ==========', {
-      reason: force ? '用户主动操作 (IPC forceReset)' : isDevMode ? 'PIPICLAW_DEV=1' : isExplicitReset ? 'PIPICLAW_RESET_PERMISSIONS=1' : '首次启动'
+    const reason: 'ipc-reset' | 'env-reset' = force ? 'ipc-reset' : 'env-reset';
+    this.log.info('[PermissionConfig] ========== 强制重置权限为无限制模式 ⚠️ ==========', {
+      reason: force ? '用户主动操作 (IPC forceReset)' : isDevMode ? 'PIPICLAW_DEV=1' : isExplicitReset ? 'PIPICLAW_RESET_PERMISSIONS=1' : '首次启动 / migration',
+      via: reason
     });
 
-    // 1. 重新初始化默认权限集（确保 permissive 存在）
+    // 1. 重新初始化默认权限集 (确保 preset_permissive 存在)
     this.initDefaultPermissionSets();
 
-    // 2. 确保激活 permissive 模板
+    // 2. 确保激活 permissive 模板 (id 仍为 'preset_permissive',显示名 "无限制模式 ⚠️")
     const permissiveSet = this.permissionSets.get('preset_permissive');
-    if (permissiveSet) {
-      this.activeSetId = permissiveSet.id;
-      this.saveConfig();
-      this.log.info('[PermissionConfig] ✅ 已重置权限为开放模式', { activeSetId: this.activeSetId });
-      return true;
+    if (!permissiveSet) {
+      this.log.error('[PermissionConfig] ❌ 重置权限失败：找不到 permissive 权限集');
+      return false;
     }
 
-    this.log.error('[PermissionConfig] ❌ 重置权限失败：找不到 permissive 权限集');
-    return false;
+    const prev = this.activeSetId;
+    this.activeSetId = permissiveSet.id;
+    this.saveConfig();
+    this.log.info('[PermissionConfig] ✅ 已重置权限为无限制模式 ⚠️', { activeSetId: this.activeSetId });
+    if (prev !== permissiveSet.id) {
+      this.emitModeChange({ from: prev, to: permissiveSet.id, reason, via: 'forceResetToPermissive' });
+    }
+    return true;
   }
 
   public destroy(): void {
