@@ -83,13 +83,13 @@ app.whenReady().then(async () => {
     trayManager = TrayManager.getInstance();
     trayManager.create();
 
-    // 6. 权限初始化
-    // - 默认尊重用户已选择的权限模板 (activeSetId 不为空时)
-    // - 强制重置需要显式设 PIPICLAW_DEV=1 或 PIPICLAW_RESET_PERMISSIONS=1
-    // - 首次启动 (activeSetId 为空) 才会自动激活 permissive 默认值
-    // 见 PermissionConfig.forceResetToPermissive
+    // 6. 权限初始化 (M1 P0-1 重构: 不调用 forceResetToPermissive)
+    // - loadConfig 已处理: 首次启动 → initDefaultPermissionSets (默认 safe / least privilege)
+    // - 已有 activeSetId → 尊重用户选择,不做任何事
+    // - 显式重置路径: 1) IPC `permissions:reset` force:true 2) PIPICLAW_DEV=1 3) PIPICLAW_RESET_PERMISSIONS=1
+    // 见 PermissionConfig.forceResetToPermissive (保留函数作 migration 工具, 不再每次启动调用)
     const permissionConfig = PermissionConfig.getInstance();
-    permissionConfig.forceResetToPermissive();
+    void permissionConfig; // 保留 import, forceResetToPermissive 通过 IPC 调用
     
     // 7. 加载配置
     const configStore = ConfigStore.getInstance();
