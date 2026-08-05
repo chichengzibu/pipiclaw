@@ -27,6 +27,8 @@ import type {
   McpTool,
   McpInvokeResult,
 } from '../mcp/types';
+// M1 P0-4: 静态 import runD5 (修复 d5:run 内部 require 在 bundled main.js 路径错位, qa report line 184)
+import { runD5 } from '../skill/builtin/D5RecordingToSkill';
 import { HermesMemory } from '../hermes/HermesMemory';
 import { SkillLoader } from '../skill/SkillLoader';
 import { SelfLearner } from '../learning/SelfLearner';
@@ -2228,9 +2230,9 @@ export class IpcServer {
     });
 
     // ============ W7.0.2: D5 录屏转技能 IPC ============
+    // M1 P0-4: runD5 改顶部静态 import (避免 esbuild bundle 后 require 路径失效)
     ipcMain.handle('d5:run', async (_: any, input: { triggerPhrase: string; description?: string }) => {
       try {
-        const { runD5 } = require('../skill/builtin/D5RecordingToSkill')
         const result = await runD5(input)
         return { success: true, data: result }
       } catch (error) {
@@ -2323,7 +2325,7 @@ export class IpcServer {
 
     ipcMain.handle('d5-demo:run', async (_: any, args: { triggerPhrase: string; description?: string }) => {
       try {
-        const { runD5 } = require('../skill/builtin/D5RecordingToSkill')
+        // M1 P0-4: 同上, 顶部静态 import 替换 require
         const result = await runD5(args)
         return { success: true, data: result }
       } catch (error) {
