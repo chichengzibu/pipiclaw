@@ -1,20 +1,20 @@
 /**
- * PiPiClaw - OpenAI adapter (含流式 + tool call)
+ * PiPiClaw - OpenAI-compatible adapter (M1 v0.1)
  *
- * M1 v0.1 改进: 增加 streamChat() (SSE) 供 LlmClient.streamChat 调用.
- * tool_calls 解析保持原逻辑.
+ * 复用 OpenAI 协议但 baseUrl + model 来自 LlmConfig.
+ * 覆盖: deepseek / ollama (via /v1/chat/completions) / volc_ark / openrouter / custom.
  */
 import { LogManager } from '../../core/LogManager'
 import type { LlmConfig, LlmRequest, LlmResponse, LlmToolCall, LlmStreamChunk } from '../types'
 import { DEFAULT_API_BASE, DEFAULT_MODELS } from '../types'
 
-export class OpenAiAdapter {
+export class OpenAiCompatibleAdapter {
   private log = LogManager.getInstance()
 
   async chat(config: LlmConfig, req: LlmRequest): Promise<LlmResponse> {
     const startMs = Date.now()
-    const baseUrl = (config.apiBaseUrl || DEFAULT_API_BASE.openai).replace(/\/+$/, '')
-    const model = req.model || config.defaultModel || DEFAULT_MODELS.openai
+    const baseUrl = (config.apiBaseUrl || DEFAULT_API_BASE['openai-compatible']).replace(/\/+$/, '')
+    const model = req.model || config.defaultModel || DEFAULT_MODELS['openai-compatible']
     try {
       const body: Record<string, unknown> = {
         model,
@@ -29,19 +29,22 @@ export class OpenAiAdapter {
       if (req.think !== undefined) {
         body.think = req.think
       }
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (config.apiKey) {
+        headers['Authorization'] = `Bearer ${config.apiKey}`
+      }
       const res = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${config.apiKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(body),
       })
       if (!res.ok) {
         const errText = await res.text()
         return {
           ok: false,
-          provider: 'openai',
+          provider: 'openai-compatible',
           content: '',
           model,
           durationMs: Date.now() - startMs,
@@ -68,15 +71,15 @@ export class OpenAiAdapter {
 
       if (!content && reasoning) {
         content = reasoning
-        this.log.debug(`OpenAI adapter: content 空,fallback 到 reasoning (model=${model})`)
+        this.log.debug(`openai-compatible: content 空,fallback 到 reasoning (model=${model})`)
       }
       if (!content && !toolCalls?.length) {
-        this.log.warn(`OpenAI adapter: 完全空响应 (model=${model}, finish=${finishReason})`)
+        this.log.warn(`openai-compatible: 完全空响应 (model=${model}, finish=${finishReason})`)
       }
 
       return {
         ok: true,
-        provider: 'openai',
+        provider: 'openai-compatible',
         content,
         model,
         durationMs: Date.now() - startMs,
@@ -94,7 +97,7 @@ export class OpenAiAdapter {
     } catch (e) {
       return {
         ok: false,
-        provider: 'openai',
+        provider: 'openai-compatible',
         content: '',
         model,
         durationMs: Date.now() - startMs,
@@ -104,12 +107,12 @@ export class OpenAiAdapter {
   }
 
   /**
-   * 流式 chat (SSE), 逐 chunk yield LlmStreamChunk.
-   * @param signal AbortSignal, 调 .abort() 取消流
+   * 流式 (OpenAI-compatible SSE). 协议同 OpenAI.
+   * 适用于: ollama (via /v1/chat/completions, 0.5.0+ 支持 stream), deepseek, volc_ark, openrouter, custom.
    */
   async *streamChat(config: LlmConfig, req: LlmRequest, signal?: AbortSignal): AsyncGenerator<LlmStreamChunk> {
-    const baseUrl = (config.apiBaseUrl || DEFAULT_API_BASE.openai).replace(/\/+$/, '')
-    const model = req.model || config.defaultModel || DEFAULT_MODELS.openai
+    const baseUrl = (config.apiBaseUrl || DEFAULT_API_BASE['openai-compatible']).replace(/\/+$/, '')
+    const model = req.model || config.defaultModel || DEFAULT_MODELS['openai-compatible']
     const body: Record<string, unknown> = {
       model,
       messages: req.messages,
@@ -122,24 +125,23 @@ export class OpenAiAdapter {
       body.tools = req.tools
       if (req.toolChoice) body.tool_choice = req.toolChoice
     }
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (config.apiKey) headers['Authorization'] = `Bearer ${config.apiKey}`
     let res: Response
     try {
       res = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${config.apiKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(body),
         signal,
       } as RequestInit)
     } catch (e) {
-      yield { type: 'error', error: String(e), provider: 'openai', model }
+      yield { type: 'error', error: String(e), provider: 'openai-compatible', model }
       return
     }
     if (!res.ok || !res.body) {
       const errText = res.body ? await res.text() : res.statusText
-      yield { type: 'error', error: `HTTP ${res.status}: ${errText.slice(0, 200)}`, provider: 'openai', model }
+      yield { type: 'error', error: `HTTP ${res.status}: ${errText.slice(0, 200)}`, provider: 'openai-compatible', model }
       return
     }
     const reader = (res.body as ReadableStream<Uint8Array>).getReader()
@@ -147,7 +149,6 @@ export class OpenAiAdapter {
     let buffer = ''
     let accContent = ''
     let accReasoning = ''
-    // tool_calls 聚合: id -> {name, argsJson}
     const toolAcc: Map<number, { id: string; name: string; args: string }> = new Map()
     let finalUsage: { promptTokens: number; completionTokens: number; totalTokens: number } | undefined
     let finalFinish: string | undefined
@@ -169,12 +170,12 @@ export class OpenAiAdapter {
           const delta = choice?.delta ?? {}
           if (delta.content) {
             accContent += delta.content
-            yield { type: 'content', delta: delta.content, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai', model }
+            yield { type: 'content', delta: delta.content, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai-compatible', model }
           }
           const reasoningChunk = delta.reasoning ?? delta.reasoning_content
           if (reasoningChunk) {
             accReasoning += reasoningChunk
-            yield { type: 'thinking', delta: reasoningChunk, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai', model }
+            yield { type: 'thinking', delta: reasoningChunk, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai-compatible', model }
           }
           if (Array.isArray(delta.tool_calls)) {
             for (const tc of delta.tool_calls) {
@@ -199,22 +200,21 @@ export class OpenAiAdapter {
     } catch (e) {
       const err = e as Error
       if (err.name === 'AbortError') {
-        yield { type: 'error', error: 'aborted', provider: 'openai', model }
+        yield { type: 'error', error: 'aborted', provider: 'openai-compatible', model }
       } else {
-        yield { type: 'error', error: String(e), provider: 'openai', model }
+        yield { type: 'error', error: String(e), provider: 'openai-compatible', model }
       }
       return
     }
-    // 收尾: 一次性 yield 聚合的 tool_calls
     for (const [, t] of toolAcc) {
       if (t.id && t.name) {
         const toolCall: LlmToolCall = { id: t.id, type: 'function', function: { name: t.name, arguments: t.args } }
-        yield { type: 'tool_call', toolCall, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai', model }
+        yield { type: 'tool_call', toolCall, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai-compatible', model }
       }
     }
     if (finalUsage) {
-      yield { type: 'usage', usage: finalUsage, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai', model }
+      yield { type: 'usage', usage: finalUsage, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai-compatible', model }
     }
-    yield { type: 'done', finishReason: finalFinish, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai', model }
+    yield { type: 'done', finishReason: finalFinish, accumulated: { content: accContent, reasoning: accReasoning }, provider: 'openai-compatible', model }
   }
 }

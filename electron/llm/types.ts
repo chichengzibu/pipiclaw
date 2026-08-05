@@ -1,4 +1,4 @@
-export type LlmProvider = 'openai' | 'anthropic' | 'zhipu'
+export type LlmProvider = 'openai' | 'anthropic' | 'zhipu' | 'openai-compatible'
 
 export interface LlmMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -7,6 +7,8 @@ export interface LlmMessage {
   toolCallId?: string
   /** assistant 消息:由模型产生的 tool_calls 记录(用于上下文) */
   toolCalls?: LlmToolCall[]
+  /** OpenAI 兼容: reasoning_content (deepseek) */
+  reasoningContent?: string
 }
 
 /** OpenAI 风格 tool 定义 */
@@ -78,10 +80,31 @@ export const DEFAULT_MODELS: Record<LlmProvider, string> = {
   openai: 'gpt-4o-mini',
   anthropic: 'claude-3-5-sonnet-20241022',
   zhipu: 'glm-4-flash',
+  'openai-compatible': 'gpt-3.5-turbo',
 }
 
 export const DEFAULT_API_BASE: Record<LlmProvider, string> = {
   openai: 'https://api.openai.com/v1',
   anthropic: 'https://api.anthropic.com/v1',
   zhipu: 'https://open.bigmodel.cn/api/paas/v4',
+  'openai-compatible': 'http://127.0.0.1:11434/v1', // Ollama 默认
+}
+
+/** OpenAI 风格流式 chunk (用于 LlmClient.streamChat) */
+export interface LlmStreamChunk {
+  type: 'content' | 'thinking' | 'tool_call' | 'usage' | 'done' | 'error'
+  /** content / thinking 时是当前 chunk 的文本 */
+  delta?: string
+  /** 累积的内容 (snapshot, 用于客户端拼接) */
+  accumulated?: { content: string; reasoning: string }
+  /** tool_call 时的整条 call (聚合后) */
+  toolCall?: LlmToolCall
+  /** usage chunk */
+  usage?: { promptTokens: number; completionTokens: number; totalTokens: number }
+  /** done 时填 finishReason */
+  finishReason?: string
+  /** error 时填 */
+  error?: string
+  provider: LlmProvider
+  model: string
 }
