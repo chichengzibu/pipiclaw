@@ -18,6 +18,8 @@ import { ConfigStore } from './core/ConfigStore';
 import { OpenClawGateway } from './openclaw/OpenClawGateway';
 import { PermissionConfig } from './permissions/PermissionConfig';
 import { AutoUpdater } from './core/AutoUpdater';
+import { McpManager } from './mcp/McpManager';
+import type { McpServerConfig } from './mcp/types';
 
 // ============ W7.0.1 boot wiring: 串接 W3+ 子系统 ============
 import { CapabilityRegistry } from './contracts/CapabilityRegistry';
@@ -174,6 +176,23 @@ app.whenReady().then(async () => {
     }
 
     log.info('========== PiPiClaw应用启动完成 ==========');
+
+    // ============ M1: MCP 运行时启动 (auto-start enabled servers) ============
+    // 不阻塞启动: 启动失败只 log, 不影响 app
+    try {
+      const mgr = McpManager.getInstance();
+      const servers = (configStore.get('mcp.servers') ?? []) as McpServerConfig[];
+      for (const cfg of servers) {
+        if (!cfg.enabled) continue;
+        // 不 await, 让它们在后台启动; UI 可以通过 mcp:list-servers 看状态
+        mgr.startServer(cfg).then(
+          (status) => log.info('[main] MCP server started', { name: cfg.name, state: status.state, tools: status.toolCount }),
+          (err) => log.warn('[main] MCP server start failed', { name: cfg.name, err: err?.message ?? String(err) })
+        );
+      }
+    } catch (e) {
+      log.warn('[main] MCP auto-start 失败(非致命)', e);
+    }
   } catch (error) {
     log.error('应用启动失败', error);
     app.quit();
@@ -207,6 +226,15 @@ app.on('before-quit', async () => {
     } catch (error) {
       log.error('停止网关时出错', error);
     }
+  }
+
+  // M1: 停止所有 MCP server 子进程
+  try {
+    log.info('正在停止所有 MCP server...');
+    await McpManager.getInstance().stopAll();
+    log.info('MCP servers 已停止');
+  } catch (error) {
+    log.error('停止 MCP servers 出错', error);
   }
 
   globalShortcut?.destroy();
