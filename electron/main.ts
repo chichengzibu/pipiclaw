@@ -81,7 +81,11 @@ app.whenReady().then(async () => {
     trayManager = TrayManager.getInstance();
     trayManager.create();
 
-    // 6. 强制重置权限为完全开放（预防旧配置覆盖）
+    // 6. 权限初始化
+    // - 默认尊重用户已选择的权限模板 (activeSetId 不为空时)
+    // - 强制重置需要显式设 PIPICLAW_DEV=1 或 PIPICLAW_RESET_PERMISSIONS=1
+    // - 首次启动 (activeSetId 为空) 才会自动激活 permissive 默认值
+    // 见 PermissionConfig.forceResetToPermissive
     const permissionConfig = PermissionConfig.getInstance();
     permissionConfig.forceResetToPermissive();
     

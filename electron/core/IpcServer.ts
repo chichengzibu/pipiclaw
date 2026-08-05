@@ -1412,7 +1412,8 @@ export class IpcServer {
         this.log.info('[IpcServer] permissions:reset 被调用，强制重置为开放模式');
         const { PermissionConfig } = require('../permissions/PermissionConfig');
         const permissionConfig = PermissionConfig.getInstance();
-        const success = permissionConfig.forceResetToPermissive();
+        // force: true 因为这是用户主动从 UI 点 "重置" 按钮,必须执行
+        const success = permissionConfig.forceResetToPermissive({ force: true });
         
         if (success) {
           this.log.info('[IpcServer] 权限重置成功');

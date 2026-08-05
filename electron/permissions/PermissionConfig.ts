@@ -284,15 +284,43 @@ export class PermissionConfig {
   }
 
   /**
-   * 强制重置权限为开放模式（预防旧配置覆盖）
-   * 检查并确保当前激活的权限模板为 permissive
+   * 强制重置权限为开放模式。
+   *
+   * 安全考虑: 之前每次启动都无条件调用本方法,导致用户在 UI 选的
+   * "安全模式"/"标准模式" 都被覆盖,RBAC 形同虚设。
+   *
+   * 现在必须满足以下任一条件才会真正重置:
+   * 1. `options.force === true` (用户主动从 UI 点 "重置" 按钮)
+   * 2. 环境变量 PIPICLAW_DEV=true (开发/调试模式)
+   * 3. 环境变量 PIPICLAW_RESET_PERMISSIONS=true (显式一次性重置)
+   * 4. 配置文件中 activeSetId 为空 (首次启动,从未选过)
+   *
+   * 生产环境 + 已设置过权限 + 非 force → **尊重用户选择**,不重置。
+   *
+   * @param options.force 强制重置(用于 IPC `permissions:reset` 用户主动操作)
+   * @returns true = 真的重置了; false = 跳过 (尊重用户选择)
    */
-  public forceResetToPermissive(): boolean {
-    this.log.info('[PermissionConfig] ========== 强制重置权限为开放模式 ==========');
-    
+  public forceResetToPermissive(options?: { force?: boolean }): boolean {
+    const force = options?.force === true;
+    const isDevMode = process.env.PIPICLAW_DEV === '1' || process.env.PIPICLAW_DEV === 'true';
+    const isExplicitReset = process.env.PIPICLAW_RESET_PERMISSIONS === '1' || process.env.PIPICLAW_RESET_PERMISSIONS === 'true';
+    const isFirstBoot = !this.activeSetId;
+
+    if (!force && !isDevMode && !isExplicitReset && !isFirstBoot) {
+      this.log.info('[PermissionConfig] ⏭️ 跳过强制重置 (生产模式 + 已设过权限,尊重用户选择)', {
+        activeSetId: this.activeSetId,
+        hint: '要强制重置请设 PIPICLAW_DEV=1 或 PIPICLAW_RESET_PERMISSIONS=1,或在 UI 点"重置"按钮'
+      });
+      return false;
+    }
+
+    this.log.info('[PermissionConfig] ========== 强制重置权限为开放模式 ==========', {
+      reason: force ? '用户主动操作 (IPC forceReset)' : isDevMode ? 'PIPICLAW_DEV=1' : isExplicitReset ? 'PIPICLAW_RESET_PERMISSIONS=1' : '首次启动'
+    });
+
     // 1. 重新初始化默认权限集（确保 permissive 存在）
     this.initDefaultPermissionSets();
-    
+
     // 2. 确保激活 permissive 模板
     const permissiveSet = this.permissionSets.get('preset_permissive');
     if (permissiveSet) {
@@ -301,7 +329,7 @@ export class PermissionConfig {
       this.log.info('[PermissionConfig] ✅ 已重置权限为开放模式', { activeSetId: this.activeSetId });
       return true;
     }
-    
+
     this.log.error('[PermissionConfig] ❌ 重置权限失败：找不到 permissive 权限集');
     return false;
   }
