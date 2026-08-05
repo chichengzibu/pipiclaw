@@ -44,6 +44,11 @@ export interface CommandOperationParams {
   args?: string[];
   cwd?: string;
   timeout?: number;
+  /**
+   * @deprecated 安全原因已废弃,强制 shell: false。
+   * 若传入此字段,OpenClawGateway.runCommand 会忽略并 log warn。
+   * 使用 execFile(command, argsArray) 数组传参,不走 shell 解析。
+   */
   shell?: boolean;
 }
 

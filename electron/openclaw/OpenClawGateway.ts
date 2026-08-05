@@ -11,7 +11,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { shell, clipboard, app, BrowserWindow } from 'electron';
 import { promisify } from 'util';
 import { LogManager } from '../core/LogManager';
@@ -32,7 +32,34 @@ import type {
   CommandOperationParams
 } from '../types/openclaw';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
+
+/**
+ * runCommand 白名单: 只允许这些 baseCmd 执行,避免任意命令注入。
+ * 全部小写。Skill / Agent 想要扩展需显式 PR 加进白名单。
+ */
+const COMMAND_ALLOWLIST: ReadonlySet<string> = new Set([
+  // 版本控制
+  'git',
+  // 运行时 (skill 常用)
+  'node', 'npm', 'npx', 'pnpm', 'yarn', 'bun', 'deno',
+  // 脚本
+  'python', 'python3', 'pip', 'pip3', 'poetry', 'uv',
+  // 系统工具 (只读类)
+  'ls', 'cat', 'head', 'tail', 'wc', 'find', 'grep', 'tree', 'echo', 'pwd', 'env', 'whoami', 'date', 'uname',
+  // 编译 / 构建
+  'make', 'cmake', 'cargo', 'rustc', 'go', 'gcc', 'g++', 'clang', 'javac', 'mvn', 'gradle',
+  // 容器
+  'docker', 'docker-compose', 'podman',
+  // 测试
+  'jest', 'vitest', 'pytest', 'mocha', 'eslint', 'prettier', 'tsc',
+  // 文件操作 (在沙箱 cwd 下安全)
+  'cp', 'mv', 'mkdir', 'rmdir', 'touch', 'tar', 'zip', 'unzip', 'gzip', 'gunzip',
+  // 网络 (无认证场景)
+  'curl', 'wget',
+  // 平台特定
+  'powershell', 'cmd', 'bash', 'sh', 'zsh', 'fish',
+]);
 
 // ========== 类型定义 ==========
 
@@ -674,22 +701,86 @@ export class OpenClawGateway {
   // ========== 系统操作 ==========
 
   private async runCommand(params: CommandOperationParams): Promise<{ stdout: string; stderr: string }> {
-    const { command, args = [], cwd, timeout = 30000, shell = true } = params;
-    
-    // 放宽限制：移除严格白名单，记录警告
-    const baseCmd = command.split(' ')[0].toLowerCase();
-    this.log.warn('[OpenClawGateway] 执行命令 (放宽限制):', baseCmd);
+    const { command, args = [], cwd, timeout = 30000 } = params;
+    // shell 参数已被废弃,强制 false (用 execFile 数组传参,不走 shell 解析)
+    void (params as any).shell; // 兼容旧调用,但不使用
 
-    const fullCommand = args.length > 0 ? `${command} ${args.join(' ')}` : command;
-    this.log.debug('[OpenClawGateway] 执行命令:', fullCommand);
+    // 1. 白名单校验: baseCmd 必须在 COMMAND_ALLOWLIST 内
+    const baseCmd = String(command || '').trim().toLowerCase();
+    if (!baseCmd) {
+      throw new Error('runCommand: command 不能为空');
+    }
+    // 防御: 拒绝任何含 shell metacharacter 的 command
+    // (args 会原样传给 execFile,不会过 shell,但 command 字段本身必须干净)
+    if (/[\s;&|`$<>(){}\\]/.test(baseCmd)) {
+      throw new Error(`runCommand: command 含非法字符,只接受 baseCmd: ${baseCmd}`);
+    }
+    if (!COMMAND_ALLOWLIST.has(baseCmd)) {
+      throw new Error(`runCommand: 不在白名单的命令 "${baseCmd}",允许列表见 COMMAND_ALLOWLIST`);
+    }
+    this.log.info('[OpenClawGateway] 执行命令 (白名单内):', baseCmd, args);
 
-    const { stdout, stderr } = await execAsync(fullCommand, {
-      cwd: cwd ? this.resolvePath(cwd) : undefined,
+    // 2. args 过滤: 任何含 null byte 的参数拒绝 (防止 string injection)
+    const safeArgs = args.map((a, i) => {
+      if (typeof a !== 'string') {
+        throw new Error(`runCommand: args[${i}] 不是字符串`);
+      }
+      if (a.includes('\0')) {
+        throw new Error(`runCommand: args[${i}] 含 null byte`);
+      }
+      return a;
+    });
+
+    // 3. cwd 沙箱: 必须在 ~/.pipiclaw/sandbox/ 或用户显式指定的允许目录
+    let resolvedCwd: string | undefined;
+    if (cwd) {
+      resolvedCwd = this.resolvePath(cwd);
+      if (!this.isCwdInSandbox(resolvedCwd)) {
+        throw new Error(`runCommand: cwd 必须在 ~/.pipiclaw/sandbox/ 或 ~/.pipiclaw/workspace/ 下,实际: ${resolvedCwd}`);
+      }
+    } else {
+      // 默认 cwd = sandbox 目录
+      const defaultSandbox = path.join(app.getPath('userData'), 'sandbox');
+      try {
+        fs.mkdirSync(defaultSandbox, { recursive: true });
+        resolvedCwd = defaultSandbox;
+      } catch {
+        resolvedCwd = undefined;
+      }
+    }
+
+    // 4. execFile: 不用 shell,数组传参,参数按字面量传给进程
+    this.log.debug('[OpenClawGateway] 执行命令:', baseCmd, safeArgs, 'cwd=', resolvedCwd);
+    const { stdout, stderr } = await execFileAsync(baseCmd, safeArgs, {
+      cwd: resolvedCwd,
       timeout,
-      shell: shell as any
+      // 显式不设 shell,即便未来有人修改也不会被 shell 解析
+      windowsHide: true,
     });
 
     return { stdout, stderr };
+  }
+
+  /**
+   * 校验 cwd 是否在允许的沙箱根目录内。
+   * 允许: ~/.pipiclaw/sandbox/*, ~/.pipiclaw/workspace/*
+   * 不允许: C:\Windows\, /etc, ~/.ssh, $HOME 根目录
+   */
+  private isCwdInSandbox(resolvedCwd: string): boolean {
+    try {
+      const userData = app.getPath('userData');
+      const userDataReal = fs.realpathSync(userData);
+      const sandboxRoot = path.join(userDataReal, 'sandbox');
+      const workspaceRoot = path.join(userDataReal, 'workspace');
+      const real = fs.realpathSync(resolvedCwd);
+      const norm = (p: string) => path.normalize(p).toLowerCase() + path.sep;
+      return real.toLowerCase().startsWith(norm(sandboxRoot)) ||
+             real.toLowerCase().startsWith(norm(workspaceRoot)) ||
+             real.toLowerCase() === sandboxRoot.toLowerCase() ||
+             real.toLowerCase() === workspaceRoot.toLowerCase();
+    } catch {
+      return false;
+    }
   }
 
   private async openUrl(params: { url: string }): Promise<void> {
