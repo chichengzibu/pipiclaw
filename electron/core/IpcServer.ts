@@ -236,6 +236,18 @@ export class IpcServer {
       }
     });
 
+    // 返回 OpenClaw HTTP 鉴权 token (供外部 partner 集成使用)
+    ipcMain.handle('gateway:auth-token', async () => {
+      try {
+        const { OpenClawServer } = await import('../openclaw/OpenClawServer');
+        const server = OpenClawServer.getInstance();
+        return { success: true, data: { token: server.getAuthToken() } };
+      } catch (error) {
+        this.log.error('gateway:auth-token 失败', error);
+        return { success: false, error: String(error) };
+      }
+    });
+
     ipcMain.handle('gateway:repair', async () => {
       try {
         const gateway = OpenClawGateway.getInstance();

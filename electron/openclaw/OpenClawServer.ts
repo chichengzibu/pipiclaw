@@ -1,6 +1,6 @@
 /**
  * PiPiClaw - OpenClaw 网关服务入口
- * 
+ *
  * 核心能力：
  * 1. 基于Node.js http模块创建HTTP服务，监听18789端口
  * 2. 对接已有的OpenClawExecutor执行器
@@ -8,10 +8,16 @@
  * 4. 健康检查接口
  * 5. 完整的启动/停止/重启方法
  * 6. 全链路日志记录
+ * 7. Token 鉴权中间件(防止同机恶意进程/恶意网页触发 /execute)
+ * 8. CORS 白名单(默认拒绝跨域,只允许 127.0.0.1 同源)
  */
 
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { URL } from 'url';
+import { app, safeStorage } from 'electron';
+import { randomBytes } from 'crypto';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import { OpenClawGateway } from './OpenClawGateway';
 import { PermissionManager } from '../permissions/PermissionManager';
 import { LogManager } from '../core/LogManager';
@@ -27,6 +33,12 @@ export interface ServerConfig {
    * 生产环境如需第三方接入,白名单需显式配置。
    */
   corsAllowedOrigins?: string[];
+  /**
+   * 鉴权 token 文件路径(默认 userData/openclaw-token.json)。
+   * 启动时若文件不存在则生成 256-bit 随机 token 写入。
+   * 设为 false 可禁用鉴权(不推荐,仅 dev/test 用)。
+   */
+  tokenFile?: string | false;
 }
 
 export interface ApiRequest {
@@ -44,6 +56,60 @@ export interface ApiResponse {
   timestamp: number;
 }
 
+// ========== Token 存储 ==========
+
+interface TokenRecord {
+  token: string;
+  generatedAt: number;
+}
+
+function loadOrCreateToken(filePath: string, log: ReturnType<typeof LogManager.getInstance>): string {
+  try {
+    if (existsSync(filePath)) {
+      const data = readFileSync(filePath, 'utf-8');
+      let plain: string;
+      try {
+        // 优先尝试 safeStorage 解密
+        if (safeStorage.isEncryptionAvailable()) {
+          plain = safeStorage.decryptString(Buffer.from(data, 'base64'));
+        } else {
+          plain = data;
+        }
+      } catch {
+        // 解密失败:可能是旧版明文
+        plain = data;
+      }
+      const parsed = JSON.parse(plain) as TokenRecord;
+      if (parsed?.token && /^[a-f0-9]{64}$/.test(parsed.token)) {
+        return parsed.token;
+      }
+      // 旧格式(裸字符串)也兼容
+      if (typeof parsed === 'string' && /^[a-f0-9]{64}$/.test(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    log.warn('[OpenClawServer] 读取 token 文件失败,重新生成', e);
+  }
+
+  // 生成 256-bit (32 byte) 随机 token → hex
+  const token = randomBytes(32).toString('hex');
+  const record: TokenRecord = { token, generatedAt: Date.now() };
+  try {
+    const dir = filePath.replace(/[\\/][^\\/]+$/, '');
+    if (dir && !existsSync(dir)) mkdirSync(dir, { recursive: true });
+    const plain = JSON.stringify(record);
+    const buf = safeStorage.isEncryptionAvailable()
+      ? safeStorage.encryptString(plain)
+      : Buffer.from(plain, 'utf-8');
+    writeFileSync(filePath, buf.toString('base64'));
+    log.info('[OpenClawServer] 生成新 token 并持久化', { filePath, encrypted: safeStorage.isEncryptionAvailable() });
+  } catch (e) {
+    log.warn('[OpenClawServer] token 持久化失败 (内存中仍可用)', e);
+  }
+  return token;
+}
+
 // ========== OpenClawServer 类 ==========
 
 export class OpenClawServer {
@@ -54,6 +120,7 @@ export class OpenClawServer {
   private permissionManager: PermissionManager;
   private config: ServerConfig;
   private running = false;
+  private authToken: string | null = null;
 
   private constructor(config?: Partial<ServerConfig>) {
     this.permissionManager = PermissionManager.getInstance();
@@ -72,6 +139,15 @@ export class OpenClawServer {
       ],
       ...config
     };
+
+    // 鉴权 token: 启动时从 userData/openclaw-token.json 加载或新生成
+    if (this.config.tokenFile !== false) {
+      const tokenPath = this.config.tokenFile || join(app.getPath('userData'), 'openclaw-token.json');
+      this.authToken = loadOrCreateToken(tokenPath, this.log);
+    } else {
+      this.log.warn('[OpenClawServer] ⚠️ token 鉴权已禁用 (PIPICLAW_OPENCLAW_NO_AUTH=1)');
+    }
+
     this.log.info('[OpenClawServer] 初始化网关服务');
   }
 
@@ -190,6 +266,14 @@ export class OpenClawServer {
     return this.config.port;
   }
 
+  /**
+   * 获取当前鉴权 token(供 renderer / IPC 内部调用使用)。
+   * 仅返回 token,调用方需妥善保管不要泄露到外网。
+   */
+  public getAuthToken(): string | null {
+    return this.authToken;
+  }
+
   // ========== 私有方法 ==========
 
   /**
@@ -205,6 +289,30 @@ export class OpenClawServer {
       if (allowed.endsWith('://') && origin.startsWith(allowed)) return true;
     }
     return false;
+  }
+
+  /**
+   * 校验请求鉴权 token。
+   * 接受 `Authorization: Bearer <token>` 或 `X-OpenClaw-Token: <token>`。
+   * 返回 null = 通过;返回 Error = 拒绝。
+   */
+  private checkAuth(req: IncomingMessage): Error | null {
+    if (!this.authToken) return null; // 鉴权已禁用
+    const auth = (req.headers['authorization'] as string | undefined) ?? '';
+    const custom = (req.headers['x-openclaw-token'] as string | undefined) ?? '';
+    let presented = '';
+    if (auth.toLowerCase().startsWith('bearer ')) {
+      presented = auth.slice(7).trim();
+    } else if (custom) {
+      presented = custom.trim();
+    }
+    if (!presented) {
+      return new Error('缺少鉴权 token (Authorization: Bearer <token> 或 X-OpenClaw-Token)');
+    }
+    if (presented.length !== this.authToken.length || !timingSafeEqual(presented, this.authToken)) {
+      return new Error('鉴权 token 不正确');
+    }
+    return null;
   }
 
   /**
@@ -245,6 +353,23 @@ export class OpenClawServer {
     // 解析URL
     const parsedUrl = new URL(req.url || '', `http://${req.headers.host}`);
     const path = parsedUrl.pathname;
+
+    // Token 鉴权: /health 放行(用于健康检查/监控),其他端点要求鉴权
+    if (this.authToken && path !== '/health') {
+      const authErr = this.checkAuth(req);
+      if (authErr) {
+        this.log.warn('[OpenClawServer] 鉴权失败', { path, method: req.method, error: authErr.message });
+        res.setHeader('WWW-Authenticate', 'Bearer realm="openclaw"');
+        this.sendResponse(res, 401, {
+          success: false,
+          error: authErr.message,
+          errorCode: 'UNAUTHORIZED',
+          guidance: '请在请求头加 Authorization: Bearer <token>(token 在 userData/openclaw-token.json)',
+          timestamp: Date.now()
+        });
+        return;
+      }
+    }
 
     this.log.debug('[OpenClawServer] 收到请求', { method: req.method, path });
 
@@ -495,4 +620,17 @@ export class OpenClawServer {
     await this.stop();
     OpenClawServer.instance = null as any;
   }
+}
+
+/**
+ * 常时时间字符串比较(防 timing attack)。
+ * 长度先比(只暴露长度差),然后异或所有字符。
+ */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
