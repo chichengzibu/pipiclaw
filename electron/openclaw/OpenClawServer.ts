@@ -21,6 +21,12 @@ import { LogManager } from '../core/LogManager';
 export interface ServerConfig {
   port: number;
   host: string;
+  /**
+   * CORS 允许的 origin 列表。
+   * 默认拒绝跨域,只允许 127.0.0.1/localhost 同源。
+   * 生产环境如需第三方接入,白名单需显式配置。
+   */
+  corsAllowedOrigins?: string[];
 }
 
 export interface ApiRequest {
@@ -54,6 +60,16 @@ export class OpenClawServer {
     this.config = {
       port: 18789,
       host: '127.0.0.1',
+      // 默认只允许 127.0.0.1 + localhost 同源(无协议端口变体),
+      // 避免浏览器/同机进程对 18789 端口发起跨域请求
+      corsAllowedOrigins: [
+        'http://127.0.0.1',
+        'http://127.0.0.1:5173',
+        'http://localhost',
+        'http://localhost:5173',
+        'app://pipiclaw',           // Electron 自定义协议
+        'file://',                   // 本地文件 (renderer 走 file:// 的兜底)
+      ],
       ...config
     };
     this.log.info('[OpenClawServer] 初始化网关服务');
@@ -177,17 +193,51 @@ export class OpenClawServer {
   // ========== 私有方法 ==========
 
   /**
+   * 检查 origin 是否在白名单内。
+   * 支持精确匹配 + 前缀匹配(file://, app://)。
+   */
+  private isOriginAllowed(origin: string, allowList: string[]): boolean {
+    if (!origin) return false;
+    if (allowList.length === 0) return false;
+    for (const allowed of allowList) {
+      if (allowed === origin) return true;
+      // 前缀匹配 (file://*, app://*)
+      if (allowed.endsWith('://') && origin.startsWith(allowed)) return true;
+    }
+    return false;
+  }
+
+  /**
    * 处理HTTP请求
    */
   private handleRequest(req: IncomingMessage, res: ServerResponse): void {
-    // 设置CORS头部
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
-    // 处理OPTIONS预检请求
+    // CORS: 默认拒绝跨域,只允许白名单内的 origin。
+    // 显式 echo 请求 origin(浏览器才会接受),非白名单 origin 不设该头 → 浏览器拦截。
+    const requestOrigin = (req.headers['origin'] as string | undefined) ?? '';
+    const allowList = this.config.corsAllowedOrigins ?? [];
+    const isOriginAllowed = this.isOriginAllowed(requestOrigin, allowList);
+
+    if (isOriginAllowed && requestOrigin) {
+      res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-OpenClaw-Token');
+      res.setHeader('Access-Control-Max-Age', '600');
+    } else if (requestOrigin) {
+      // 跨域请求带 Origin 但不在白名单:明确拒绝
+      this.log.warn('[OpenClawServer] CORS 拒绝未知 origin', { origin: requestOrigin, path: req.url });
+      this.sendResponse(res, 403, {
+        success: false,
+        error: `CORS: origin '${requestOrigin}' 不在白名单`,
+        errorCode: 'CORS_DENIED',
+        timestamp: Date.now()
+      });
+      return;
+    }
+
+    // 处理OPTIONS预检请求(只对白名单 origin 放行)
     if (req.method === 'OPTIONS') {
-      res.writeHead(200);
+      res.writeHead(isOriginAllowed ? 200 : 403);
       res.end();
       return;
     }
