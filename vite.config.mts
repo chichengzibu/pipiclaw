@@ -5,6 +5,45 @@ import renderer from 'vite-plugin-electron-renderer';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import { resolve } from 'path';
+import { copyFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'node:fs';
+
+/**
+ * M1: MCP filesystem server 复制插件
+ * 作用: 把 electron/mcp/bin/*.mjs 复制到 dist-electron/mcp/bin/
+ * 触发: build 完 electron main 之后 (closeBundle hook)
+ * 不复制: 已经被 vite 处理过的 .ts (本插件只复制 .mjs/.js, 不动 .ts)
+ */
+function copyMcpBinPlugin() {
+  return {
+    name: 'pipiclaw-copy-mcp-bin',
+    apply: 'build' as const,
+    closeBundle() {
+      const srcDir = resolve(__dirname, 'electron/mcp/bin');
+      const outDir = resolve(__dirname, 'dist-electron/mcp/bin');
+      if (!existsSync(srcDir)) return;
+      try {
+        mkdirSync(outDir, { recursive: true });
+      } catch {
+        // ignore
+        return;
+      }
+      for (const f of readdirSync(srcDir)) {
+        const src = resolve(srcDir, f);
+        const st = statSync(src);
+        if (!st.isFile()) continue;
+        const dst = resolve(outDir, f);
+        try {
+          copyFileSync(src, dst);
+          // eslint-disable-next-line no-console
+          console.log(`[copyMcpBin] ${src} → ${dst}`);
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn(`[copyMcpBin] failed: ${(e as Error).message}`);
+        }
+      }
+    },
+  };
+}
 
 export default defineConfig({
   // E2E-Bugfix: 让浏览器 fetch /ollama/* 代理到 localhost:11434, 绕过 CORS
@@ -19,6 +58,7 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    copyMcpBinPlugin(),
     // P1-6: Element Plus 组件按需自动导入 — 替代全量 app.use(ElementPlus)
     // 期望效果: vendor-element-plus chunk 915KB → < 300KB
     Components({
