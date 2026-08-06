@@ -98,3 +98,24 @@
 - scripts/agent-tool-call-poc.mjs 半成品, 真链路 (Electron stub + Ollama) 跑留 M1.1
 - 不带 cost tracking + 不带 zod schema 校验 (留 M1.1 / M2)
 - 内部 dogfooding only, 公开 GitHub 等 M2 修完 P0-2/3/4
+
+## 🐛 PATCH 3 (commit b5ff363) — P0-1 老 config migration
+
+**真根因 (3 层)**:
+1. 之前 P0-1 修复 (309375d 删 main.ts 启动调用 forceResetToPermissive) 只对**新用户**有效
+2. 老用户 (v4.3.0 activeSetId="preset_permissive") 升级到 v4.5.0-alpha, loadConfig 读老 config, **没 migration** → 仍 permissive
+3. dev mode 下 `app.getVersion()` 返 electron version (30.5.1), 让老 config 的 `version: "30.5.1"` 跟 currentVersion 相等 → migration 比较 bypass
+
+**修法 (1 文件, 3 段)**:
+1. `loadConfig` 加老 config migration: `configVersion !== currentVersion && activeSetId === 'preset_permissive'` → 切 safe + emit 'upgrade-default' + saveConfig
+2. `saveConfig` 用 `getAppVersion()` (dev mode fallback 到 root package.json)
+3. `getAppVersion()` helper: prod 走 app.getVersion() (4.5.0-alpha), dev 检测 30.5.1 后 fallback 读 require('../../package.json').version
+
+**真实用户 dogfooding 验证**:
+- ✅ UI 顶部: "当前: 安全模式"
+- ✅ 左侧: "安全模式 使用中" (高亮)
+- ✅ 警告 UI: "无限制模式 ⚠️ (不推荐)" + 红字 "此模式允许所有操作,无任何安全防护"
+- ✅ 权限规则: 文件系统只读 / 网络禁止 / 进程禁止 / 系统禁止 / Shell 禁止
+- ✅ IPC `permissions.active` 返 id: "preset_safe" name: "安全模式"
+- ✅ config.json: version: "4.5.0-alpha" activeSetId: "preset_safe"
+

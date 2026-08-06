@@ -65,3 +65,20 @@ vitest-step*.txt
 .smoke-tmp/
 
 .electron-cache/
+
+# debug screenshots (mavis 视觉验证 dogfooding 产物,不入仓)
+ui-screenshots-*/
+
+# debug userdata (playwright dogfooding 残留)
+e2e-userdata-*/
+
+# 一次性 audit / baseline 输出
+npm-audit-*.json
+baseline-*.md
+config-orig.json
+e2e-report.json
+
+# script output dirs (e2e/llm journey 跑完即弃)
+e2e-screenshots/
+test-results/
+user-journey-ollama/
