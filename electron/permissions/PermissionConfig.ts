@@ -39,6 +39,23 @@ export class PermissionConfig {
    * 触发点: setActivePermissionSet / forceResetToPermissive。
    * UI 可订阅 'permission:mode-changed' 实时更新 banner;Insight 落库做合规审计。
    */
+  /**
+   * 拿 app version (dev 模式 fallback 到 root package.json)
+   * - prod (Setup.exe): app.getVersion() 返 4.5.0-alpha ✅
+   * - dev (vite-plugin-electron): app.getVersion() 返 30.5.1 (electron version), 需 fallback
+   */
+  private getAppVersion(): string {
+    try {
+      const v = app.getVersion();
+      // dev mode 标识: 30.5.1 是 electron version, 不是 app version
+      if (v && v !== '30.5.1') return v;
+      // fallback: 读 root package.json
+      try {
+        return require('../../package.json').version;
+      } catch { return v || 'unknown'; }
+    } catch { return 'unknown'; }
+  }
+
   private emitModeChange(opts: {
     from: string | null;
     to: string;
@@ -86,6 +103,41 @@ export class PermissionConfig {
         }
         this.activeSetId = parsed.activeSetId || null;
         this.log.info('权限配置加载成功', { count: this.permissionSets.size });
+
+        // M1 P0-1 补充: 老 config migration
+        // 老版本 (v < 4.5.0-alpha) 默认 activeSetId 是 'preset_permissive' (P0-1 修复前 forceReset 强制)
+        // 升级时, 如果用户没主动切过 (activeSetId 仍是 preset_permissive) → 切到 safe (尊重 P0-1 立场)
+        // 如果用户在老版本里主动切到 standard/safe/permissive → 保留用户选择
+        // dev 模式下 app.getVersion() 返 electron version (30.5.1) 不是 app version — 用 fallback
+        let currentVersion: string;
+        try { currentVersion = app.getVersion(); } catch { currentVersion = 'unknown'; }
+        if (!currentVersion || currentVersion === '30.5.1' || /^\d+\.\d+\.\d+$/.test(currentVersion) && !currentVersion.includes('-')) {
+          // dev mode: 读 root package.json
+          try {
+            const pkg = require('../../package.json');
+            currentVersion = pkg.version;
+          } catch { /* keep currentVersion */ }
+        }
+        const configVersion = parsed.version || '0.0.0';
+        this.log.info(`[PermissionConfig] 升级检查: current=${currentVersion} config=${configVersion} activeSetId=${this.activeSetId}`);
+        if (configVersion !== currentVersion && this.activeSetId === 'preset_permissive') {
+          // 确保 safe set 存在
+          if (!Array.from(this.permissionSets.values()).some(s => s.id.startsWith('preset_safe'))) {
+            this.initDefaultPermissionSets();
+          } else {
+            const safeSet = Array.from(this.permissionSets.values()).find(s => s.id.startsWith('preset_safe'));
+            if (safeSet) {
+              const prev = this.activeSetId;
+              this.activeSetId = safeSet.id;
+              this.log.info(
+                `[PermissionConfig] 升级 ${configVersion} -> ${currentVersion}: 老 permissive 默认被替换为 safe (least privilege)`,
+                { from: prev, to: safeSet.id }
+              );
+              this.emitModeChange({ from: prev, to: safeSet.id, reason: 'upgrade-default', via: 'loadConfig' });
+              this.saveConfig();
+            }
+          }
+        }
       } else {
         this.initDefaultPermissionSets();
         this.saveConfig();
@@ -100,7 +152,8 @@ export class PermissionConfig {
   private saveConfig(): void {
     try {
       const data = JSON.stringify({
-        version: app.getVersion(),
+        // dev 模式下 app.getVersion() 返 electron version (30.5.1) — 用 fallback 写正确 app version
+        version: this.getAppVersion(),
         permissionSets: Array.from(this.permissionSets.values()),
         activeSetId: this.activeSetId
       }, null, 2);
