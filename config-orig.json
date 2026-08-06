@@ -1,0 +1,41 @@
+﻿{
+  "app": {
+    "theme": "light",
+    "language": "zh-CN",
+    "startMinimized": false,
+    "autoLaunch": false
+  },
+  "window": {
+    "width": 1280,
+    "height": 800,
+    "isMaximized": false
+  },
+  "gateway": {
+    "port": 18789,
+    "autoStart": true,
+    "logLevel": "info"
+  },
+  "models": [],
+  "permissions": {
+    "enabled": true,
+    "template": "safe"
+  },
+  "firstRun": false,
+  "version": "1.0.0",
+  "theme": "sakura-pink",
+  "agent:config": {
+    "maxThinkingSteps": 20,
+    "maxSubAgentDepth": 3,
+    "defaultModel": "gpt-4o-mini",
+    "enableCheckpoint": true,
+    "checkpointInterval": 5,
+    "enableMemoryInjection": true,
+    "memoryTopK": 5,
+    "thinkingDimensions": [
+      "analysis",
+      "decision",
+      "critique",
+      "synthesis"
+    ]
+  }
+}

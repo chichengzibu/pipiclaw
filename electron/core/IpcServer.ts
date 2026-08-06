@@ -1423,10 +1423,18 @@ export class IpcServer {
       try {
         const mgr = McpManager.getInstance();
         const status = await mgr.startServer(config);
-        return { success: status.state === 'ready', data: status, error: status.lastError ?? undefined };
+        if (status.state !== 'ready') {
+          // 启动失败 (crashed) — throw 让渲染端 catch 拿到 lastError (而不是返 success:false 假装没崩)
+          const err = new Error(
+            `MCP server "${config.name}" failed to start: ${status.lastError ?? 'unknown error'}`
+          );
+          this.log.error('mcp:start-server server not ready', err);
+          throw err;
+        }
+        return { success: true, data: status };
       } catch (error) {
         this.log.error('mcp:start-server 失败', error);
-        return { success: false, error: String(error) };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
       }
     });
 

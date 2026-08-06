@@ -150,7 +150,7 @@ export class StdioTransport {
         else reject(err ?? new Error('initialize failed'));
       };
 
-      this.request('initialize', {
+      this._sendRawRequest('initialize', {
         protocolVersion: '2025-06-18',
         clientInfo: { name: 'pipiclaw', version: '4.5.0' },
         capabilities: {},
@@ -206,6 +206,7 @@ export class StdioTransport {
   /**
    * 发 JSON-RPC request, 等待 response
    * 内部: 分配 id, 写一行, 等 pending map resolve
+   * state 必须 ready (initialize 期间 state=spawning, 走 _sendRawRequest 绕开)
    */
   async request<T = unknown>(method: string, params?: unknown): Promise<JsonRpcResponse> {
     if (this.state !== 'ready') {
@@ -213,6 +214,16 @@ export class StdioTransport {
         `[stdio:${this.opts.serverName}] request called when state=${this.state} (method=${method})`
       );
     }
+    return this._sendRawRequest<T>(method, params);
+  }
+
+  /**
+   * 内部: 发 request 不检查 state (给 waitInitialize 用, 期间 state=spawning 是预期的)
+   */
+  private async _sendRawRequest<T = unknown>(
+    method: string,
+    params?: unknown
+  ): Promise<JsonRpcResponse> {
     const id = this.nextId++;
     const req: JsonRpcRequest = {
       jsonrpc: '2.0',

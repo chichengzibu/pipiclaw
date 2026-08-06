@@ -36,6 +36,8 @@ interface ServerInstance {
   tools: McpTool[];
   startedAt: number;
   lastError: string | null;
+  /** ready=能 list tools, crashed=启动失败但保留在 map (让 listAllTools/listServerTools 跳过, list-servers 返详情), stopped=用户主动 stop */
+  state: 'starting' | 'ready' | 'crashed' | 'stopped';
 }
 
 /**
@@ -186,6 +188,7 @@ export class McpManager {
       tools: [],
       startedAt: Date.now(),
       lastError: null,
+      state: 'starting',
     };
     this.servers.set(config.name, instance);
 
@@ -197,6 +200,7 @@ export class McpManager {
         throw new Error(`tools/list error: ${(listResp.error as { message: string }).message}`);
       }
       instance.tools = listResp.result?.tools ?? [];
+      instance.state = 'ready';
       log.info(
         `[McpManager] server "${config.name}" ready, ${instance.tools.length} tools: ${instance.tools.map((t) => t.name).join(', ')}`
       );
@@ -204,22 +208,15 @@ export class McpManager {
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e));
       instance.lastError = err.message;
+      instance.state = 'crashed';
       log.error(`[McpManager] server "${config.name}" start failed: ${err.message}`);
-      // 清理 transport
+      // 清理 transport 但保留 instance 在 map (让 listAllTools 跳过 + list-servers 返错误详情)
       try {
         await transport.stop();
       } catch {
         /* ignore */
       }
-      this.servers.delete(config.name);
-      return {
-        name: config.name,
-        state: 'crashed',
-        pid: null,
-        startedAt: null,
-        lastError: err.message,
-        toolCount: 0,
-      };
+      return this.toStatus(config.name, instance);
     }
   }
 
@@ -232,6 +229,7 @@ export class McpManager {
     } catch (e) {
       log.warn(`[McpManager] stop "${name}" error: ${(e as Error).message}`);
     }
+    inst.state = 'stopped';
     this.servers.delete(name);
   }
 
@@ -250,6 +248,8 @@ export class McpManager {
   async listAllTools(): Promise<Array<McpTool & { server: string }>> {
     const all: Array<McpTool & { server: string }> = [];
     for (const [serverName, inst] of this.servers.entries()) {
+      // 跳过非 ready 的 server (crashed/starting/stopped), 避免返空数据掩盖错误
+      if (inst.state !== 'ready') continue;
       for (const tool of inst.tools) {
         all.push({ ...tool, server: serverName });
       }
@@ -259,10 +259,12 @@ export class McpManager {
 
   /**
    * 列出所有 server 的 tools (按 server 分组, 不加前缀)
+   * 同样跳过非 ready 的 server
    */
   listServerTools(): Record<string, McpTool[]> {
     const out: Record<string, McpTool[]> = {};
     for (const [serverName, inst] of this.servers.entries()) {
+      if (inst.state !== 'ready') continue;
       out[serverName] = [...inst.tools];
     }
     return out;
@@ -401,10 +403,17 @@ export class McpManager {
   // ========== 内部 ==========
 
   private toStatus(name: string, inst: ServerInstance): McpServerStatus {
-    const state = inst.transport.getState();
+    // 优先用 instance.state (我们跟踪的 'starting'/'ready'/'crashed'/'stopped')
+    // transport 状态只用于显示, 但 instance.state 是真相
+    const stateMap: Record<ServerInstance['state'], McpServerStatus['state']> = {
+      starting: 'starting',
+      ready: 'ready',
+      crashed: 'crashed',
+      stopped: 'stopped',
+    };
     return {
       name,
-      state: state === 'ready' ? 'ready' : state === 'spawning' ? 'starting' : state === 'stopped' ? 'stopped' : 'crashed',
+      state: stateMap[inst.state],
       pid: null, // 我们没有暴露 child.pid, 简化
       startedAt: inst.startedAt,
       lastError: inst.lastError,

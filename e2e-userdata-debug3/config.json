@@ -1,0 +1,25 @@
+{
+  "app": {
+    "theme": "dark",
+    "language": "zh-CN",
+    "startMinimized": false,
+    "autoLaunch": false
+  },
+  "window": {
+    "width": 1280,
+    "height": 800,
+    "isMaximized": false
+  },
+  "gateway": {
+    "port": 18789,
+    "autoStart": true,
+    "logLevel": "info"
+  },
+  "models": [],
+  "permissions": {
+    "enabled": true,
+    "template": "safe"
+  },
+  "firstRun": true,
+  "version": "30.5.1"
+}

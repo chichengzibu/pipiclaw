@@ -1,0 +1,2814 @@
+{
+  "startTime": "2026-08-06T00:58:47.579Z",
+  "deadline": "2026-08-06T04:58:47.579Z",
+  "rounds": [
+    {
+      "round": 1,
+      "start": "2026-08-06T00:58:47.582Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 7005
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30907,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2478
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2982
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2065,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 53330
+    },
+    {
+      "round": 2,
+      "start": "2026-08-06T00:59:40.917Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6974
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30965,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2472
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3196
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2074,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 53200
+    },
+    {
+      "round": 3,
+      "start": "2026-08-06T01:00:34.122Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6971
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30883,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2486
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2954
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2055,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52873
+    },
+    {
+      "round": 4,
+      "start": "2026-08-06T01:01:27.000Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6991
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30881,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2472
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2983
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2057,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52855
+    },
+    {
+      "round": 5,
+      "start": "2026-08-06T01:02:19.857Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6956
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30879,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2480
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2950
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2057,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52902
+    },
+    {
+      "round": 6,
+      "start": "2026-08-06T01:03:12.764Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6971
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30913,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2451
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2937
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2053,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52859
+    },
+    {
+      "round": 7,
+      "start": "2026-08-06T01:04:05.628Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6975
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30855,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2475
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3041
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2070,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52981
+    },
+    {
+      "round": 8,
+      "start": "2026-08-06T01:04:58.615Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6959
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30858,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2473
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2944
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2063,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52864
+    },
+    {
+      "round": 9,
+      "start": "2026-08-06T01:05:51.481Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6974
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30844,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2471
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3004
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2056,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 53055
+    },
+    {
+      "round": 10,
+      "start": "2026-08-06T01:06:44.538Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6962
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30942,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2461
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2946
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2059,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52893
+    },
+    {
+      "round": 11,
+      "start": "2026-08-06T01:07:37.432Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 7001
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30844,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2478
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2985
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2075,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52870
+    },
+    {
+      "round": 12,
+      "start": "2026-08-06T01:08:30.307Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6957
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30839,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2468
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2981
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2050,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52866
+    },
+    {
+      "round": 13,
+      "start": "2026-08-06T01:09:23.178Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6960
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30895,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2486
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2972
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2052,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52961
+    },
+    {
+      "round": 14,
+      "start": "2026-08-06T01:10:16.144Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6959
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30904,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2456
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2990
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2057,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52861
+    },
+    {
+      "round": 15,
+      "start": "2026-08-06T01:11:09.006Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6975
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30889,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2477
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3022
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2060,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52977
+    },
+    {
+      "round": 16,
+      "start": "2026-08-06T01:12:01.989Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6979
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30852,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2467
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2950
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52889
+    },
+    {
+      "round": 17,
+      "start": "2026-08-06T01:12:54.881Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6955
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30836,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2470
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2938
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2057,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52792
+    },
+    {
+      "round": 18,
+      "start": "2026-08-06T01:13:47.678Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6986
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30901,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2455
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2952
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2049,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52857
+    },
+    {
+      "round": 19,
+      "start": "2026-08-06T01:14:40.540Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6979
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30894,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2470
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3007
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52956
+    },
+    {
+      "round": 20,
+      "start": "2026-08-06T01:15:33.498Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6988
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30855,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2469
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2948
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2062,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52861
+    },
+    {
+      "round": 21,
+      "start": "2026-08-06T01:16:26.360Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6956
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30877,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2478
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2991
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52873
+    },
+    {
+      "round": 22,
+      "start": "2026-08-06T01:17:19.239Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6959
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30883,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2463
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2955
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2059,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52906
+    },
+    {
+      "round": 23,
+      "start": "2026-08-06T01:18:12.147Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6986
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30914,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2474
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2962
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52946
+    },
+    {
+      "round": 24,
+      "start": "2026-08-06T01:19:05.098Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6975
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30831,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2471
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2985
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2050,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52825
+    },
+    {
+      "round": 25,
+      "start": "2026-08-06T01:19:57.925Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6949
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30875,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2468
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2953
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2054,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52873
+    },
+    {
+      "round": 26,
+      "start": "2026-08-06T01:20:50.799Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6979
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30899,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2464
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2973
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2063,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52936
+    },
+    {
+      "round": 27,
+      "start": "2026-08-06T01:21:43.740Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 7025
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30883,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2472
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2951
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2067,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52914
+    },
+    {
+      "round": 28,
+      "start": "2026-08-06T01:22:36.659Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6973
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30883,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2461
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2991
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2072,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52871
+    },
+    {
+      "round": 29,
+      "start": "2026-08-06T01:23:29.532Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6982
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30863,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2482
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2961
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2058,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52868
+    },
+    {
+      "round": 30,
+      "start": "2026-08-06T01:24:22.401Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6960
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30855,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2477
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2962
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2062,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52861
+    },
+    {
+      "round": 31,
+      "start": "2026-08-06T01:25:15.268Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6966
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30837,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2465
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2936
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2063,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52809
+    },
+    {
+      "round": 32,
+      "start": "2026-08-06T01:26:08.082Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6938
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30843,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2473
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2979
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2065,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52865
+    },
+    {
+      "round": 33,
+      "start": "2026-08-06T01:27:00.952Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6939
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30891,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2476
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2969
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2055,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52891
+    },
+    {
+      "round": 34,
+      "start": "2026-08-06T01:27:53.844Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6973
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30852,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2451
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2941
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52791
+    },
+    {
+      "round": 35,
+      "start": "2026-08-06T01:28:46.640Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6968
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30837,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2476
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2943
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52851
+    },
+    {
+      "round": 36,
+      "start": "2026-08-06T01:29:39.494Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6964
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30900,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2505
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3227
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 53186
+    },
+    {
+      "round": 37,
+      "start": "2026-08-06T01:30:32.681Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6970
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30896,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2461
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2977
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2073,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 53180
+    },
+    {
+      "round": 38,
+      "start": "2026-08-06T01:31:25.863Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6929
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30852,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2460
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2961
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2051,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52820
+    },
+    {
+      "round": 39,
+      "start": "2026-08-06T01:32:18.685Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6991
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30843,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2460
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2946
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2049,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52819
+    },
+    {
+      "round": 40,
+      "start": "2026-08-06T01:33:11.509Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6952
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30895,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2467
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2975
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2050,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52853
+    },
+    {
+      "round": 41,
+      "start": "2026-08-06T01:34:04.364Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6967
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30859,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2478
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2994
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52887
+    },
+    {
+      "round": 42,
+      "start": "2026-08-06T01:34:57.253Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6954
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30865,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2486
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2958
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2055,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52910
+    },
+    {
+      "round": 43,
+      "start": "2026-08-06T01:35:50.169Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6953
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30838,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2462
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2949
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2058,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52853
+    },
+    {
+      "round": 44,
+      "start": "2026-08-06T01:36:43.027Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6979
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30867,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2455
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2974
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2054,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52890
+    },
+    {
+      "round": 45,
+      "start": "2026-08-06T01:37:35.922Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6981
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30850,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2472
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3015
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2057,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52908
+    },
+    {
+      "round": 46,
+      "start": "2026-08-06T01:38:28.835Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6967
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30877,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2443
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2973
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2053,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52833
+    },
+    {
+      "round": 47,
+      "start": "2026-08-06T01:39:21.670Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6943
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30853,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2468
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2983
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2054,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52876
+    },
+    {
+      "round": 48,
+      "start": "2026-08-06T01:40:14.552Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6964
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30879,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2469
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2993
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2055,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52898
+    },
+    {
+      "round": 49,
+      "start": "2026-08-06T01:41:07.455Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6984
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30851,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2471
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2993
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2059,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52885
+    },
+    {
+      "round": 50,
+      "start": "2026-08-06T01:42:00.345Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6987
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30851,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2448
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2955
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2053,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52781
+    },
+    {
+      "round": 51,
+      "start": "2026-08-06T01:42:53.130Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6977
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30829,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2453
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2962
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2059,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52843
+    },
+    {
+      "round": 52,
+      "start": "2026-08-06T01:43:45.979Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6922
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30792,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2439
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2897
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2055,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52642
+    },
+    {
+      "round": 53,
+      "start": "2026-08-06T01:44:38.626Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6959
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30903,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2484
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2987
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2062,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52892
+    },
+    {
+      "round": 54,
+      "start": "2026-08-06T01:45:31.523Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6961
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30894,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2466
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2936
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2052,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52840
+    },
+    {
+      "round": 55,
+      "start": "2026-08-06T01:46:24.369Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6969
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30863,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2461
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2953
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2059,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52941
+    },
+    {
+      "round": 56,
+      "start": "2026-08-06T01:47:17.313Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6947
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30919,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2453
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2957
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2062,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52823
+    },
+    {
+      "round": 57,
+      "start": "2026-08-06T01:48:10.138Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6953
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30922,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2460
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3031
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2064,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52943
+    },
+    {
+      "round": 58,
+      "start": "2026-08-06T01:49:03.084Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6969
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30866,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2475
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2984
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2072,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52875
+    },
+    {
+      "round": 59,
+      "start": "2026-08-06T01:49:55.961Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6957
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30879,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2483
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3003
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2065,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52928
+    },
+    {
+      "round": 60,
+      "start": "2026-08-06T01:50:48.895Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6929
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30853,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2462
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2957
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2057,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52806
+    },
+    {
+      "round": 61,
+      "start": "2026-08-06T01:51:41.703Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 7001
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30911,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2480
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2970
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2053,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52976
+    },
+    {
+      "round": 62,
+      "start": "2026-08-06T01:52:34.684Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6967
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30885,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2465
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2977
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2063,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52908
+    },
+    {
+      "round": 63,
+      "start": "2026-08-06T01:53:27.594Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 7016
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30878,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2468
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2951
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2053,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52900
+    },
+    {
+      "round": 64,
+      "start": "2026-08-06T01:54:20.499Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 7021
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30886,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2454
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2956
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2065,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 53003
+    },
+    {
+      "round": 65,
+      "start": "2026-08-06T01:55:13.504Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6960
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30909,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2458
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2954
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2065,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52879
+    },
+    {
+      "round": 66,
+      "start": "2026-08-06T01:56:06.385Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6983
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30886,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2470
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3004
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2072,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52910
+    },
+    {
+      "round": 67,
+      "start": "2026-08-06T01:56:59.301Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6981
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30854,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2467
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2986
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2055,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52901
+    },
+    {
+      "round": 68,
+      "start": "2026-08-06T01:57:52.208Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6964
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30863,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2466
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2953
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2057,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52904
+    },
+    {
+      "round": 69,
+      "start": "2026-08-06T01:58:45.117Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6929
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30863,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2481
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2947
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2052,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52808
+    },
+    {
+      "round": 70,
+      "start": "2026-08-06T01:59:37.927Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 7012
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30856,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2474
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3177
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2070,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 53155
+    },
+    {
+      "round": 71,
+      "start": "2026-08-06T02:00:31.087Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6983
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30861,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2468
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2963
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2061,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52857
+    },
+    {
+      "round": 72,
+      "start": "2026-08-06T02:01:23.946Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6969
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30889,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2450
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2953
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2066,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52925
+    },
+    {
+      "round": 73,
+      "start": "2026-08-06T02:02:16.873Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6970
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30901,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2487
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2961
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2074,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 52921
+    },
+    {
+      "round": 74,
+      "start": "2026-08-06T02:03:09.799Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6966
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30862,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2474
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 3005
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2070,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52901
+    },
+    {
+      "round": 75,
+      "start": "2026-08-06T02:04:02.702Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6988
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30853,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2453
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2973
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2056,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52913
+    },
+    {
+      "round": 76,
+      "start": "2026-08-06T02:04:55.620Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6992
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30840,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2480
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2960
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2057,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52886
+    },
+    {
+      "round": 77,
+      "start": "2026-08-06T02:05:48.511Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 7009
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30877,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2463
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2961
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2068,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52887
+    },
+    {
+      "round": 78,
+      "start": "2026-08-06T02:06:41.399Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6970
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30984,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2760
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 4196
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2143,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 150,
+      "dur": 54624
+    },
+    {
+      "round": 79,
+      "start": "2026-08-06T02:07:36.025Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6955
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30861,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2458
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2962
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2056,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52784
+    },
+    {
+      "round": 80,
+      "start": "2026-08-06T02:08:28.817Z",
+      "scenes": [
+        {
+          "name": "1.5页截图",
+          "status": "PASS",
+          "dur": 6956
+        },
+        {
+          "name": "2.Chat Ollama",
+          "status": "PASS",
+          "dur": 30878,
+          "note": ""
+        },
+        {
+          "name": "3.主题切换",
+          "status": "PASS",
+          "dur": 2467
+        },
+        {
+          "name": "4.CommandPalette",
+          "status": "PASS",
+          "dur": 2954
+        },
+        {
+          "name": "5.MCP filesystem",
+          "status": "FAIL",
+          "dur": 2068,
+          "err": "Error: MCP listTools 返 0 工具 (raw: {\"success\":true,\"data\":[]})"
+        }
+      ],
+      "memoryMB": 159,
+      "dur": 52791
+    }
+  ],
+  "errors": [
+    {
+      "round": 81,
+      "time": "2026-08-06T02:09:25.340Z",
+      "error": "Error: 启动失败: electron.launch: WebSocket error: connect ETIMEDOUT 127.0.0.1:42251\nCall log:\n\u001b[2m  - <launching> \"D:\\pipiclaw\\piclaw\\node_modules\\electron\\dist\\electron.exe\" \"-r\" \"D:\\pipiclaw\\piclaw\\node_modules\\playwright-core\\lib\\server\\electron\\loader.js\" \"--inspect=0\" \"--remote-debugging-port=0\" \""
+    }
+  ],
+  "memoryPeakMB": 159
+}
